@@ -1,0 +1,54 @@
+name: 'Get GIT environment variables'
+description: 'Get GIT environment: LATEST_TAG, FIRST_COMMIT_HASH, COMMIT_MESSAGE, LAST_COMMIT_HASH'
+outputs:
+  latest_tag:
+    description: "Latest tag"
+    value: ${{ steps.latest_tag.outputs.tag }}
+  first_commit_hash:
+    description: "First commit hash"
+    value: ${{ steps.latest_tag.outputs.first_commit_hash }}
+  commit_message:
+    description: "First commit message"
+    value: ${{ steps.latest_tag.outputs.commit_message }}
+  last_commit_hash:
+    description: "Last commit hash"
+    value: ${{ steps.latest_tag.outputs.last_commit_hash }}
+runs:
+  using: "composite"
+  steps:
+    - name: set LATEST_TAG
+      id: latest_tag
+      run: |
+        LATEST_TAG=$(git describe --abbrev=0 --tags)
+        echo "::set-output tag::$(echo $LATEST_TAG)"
+      shell: bash
+
+    - name: Save commit info to env variable
+      id: commit
+      run: |
+        PULL_REQUEST_COMMITS=${{github.event.pull_request.commits}}
+        echo "PULL_REQUEST_COMMITS = $PULL_REQUEST_COMMITS"
+
+        COMMIT_TO_SKIP=$((${PULL_REQUEST_COMMITS:-1}))
+        echo "COMMIT_TO_SKIP = $COMMIT_TO_SKIP"
+
+        FIRST_COMMIT_HASH=$(git log -n 1 --skip $PULL_REQUEST_COMMITS --pretty=format:"%H")
+        COMMIT_MESSAGE=$(git log -n 1 --skip $PULL_REQUEST_COMMITS --pretty=format:"%B")
+        LAST_COMMIT_HASH=$(git log -n 1 --skip 1 --pretty=format:"%H")
+        
+        echo "::set-output first_commit_hash::$(echo $FIRST_COMMIT_HASH)"
+        echo "::set-output commit_message::$(echo $COMMIT_MESSAGE)"
+        echo "::set-output last_commit_hash::$(echo $LAST_COMMIT_HASH)"
+      shell: bash
+    - name: Debug
+      run: |
+        echo "LATEST_TAG = $LATEST_TAG"
+        echo "FIRST_COMMIT HASH = $FIRST_COMMIT_HASH"
+        echo "COMMIT MESSAGE = $COMMIT_MESSAGE"
+        echo "LAST_COMMIT HASH = $LAST_COMMIT_HASH"
+      env:
+        LATEST_TAG: ${{ steps.latest_tag.outputs.tag }}
+        FIRST_COMMIT_HASH: ${{ steps.commit.outputs.first_commit_hash }}
+        COMMIT_MESSAGE: ${{ steps.commit.outputs.commit_message }}
+        LAST_COMMIT_HASH: ${{ steps.commit.outputs.last_commit_hash }}
+      shell: bash

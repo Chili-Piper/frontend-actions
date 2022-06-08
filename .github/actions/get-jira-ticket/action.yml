@@ -1,0 +1,31 @@
+name: 'Get JIRA ticket'
+description: 'Get JIRA ticket from branch name'
+inputs:
+  branch:
+    description: 'Branch name'
+    required: true
+outputs:
+  ticket:
+    description: "JIRA ticket"
+    value: ${{ steps.get_ticket.outputs.ticket }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get ticket
+      id: get_ticket
+      run: |
+        #Split the branch name by '-' and get the issue key
+        ISSUE_KEY_PREFIX="$(cut -f1 -d"-" <<<"$BRANCH")"
+        ISSUE_KEY_NUMBER="$(cut -f2 -d"-" <<<"$BRANCH")"
+        ISSUE_KEY="${ISSUE_KEY_PREFIX}-${ISSUE_KEY_NUMBER}"
+        JIRA_TICKET="$(tr [A-Z] [a-z] <<< "$ISSUE_KEY")"
+        
+        echo JIRA_TICKET=$JIRA_TICKET >> $GITHUB_ENV
+        echo "::set-output ticket::$(echo $JIRA_TICKET)"
+      env:
+        BRANCH: ${{ inputs.branch }}
+      shell: bash
+    - name: Debug
+      run: |
+        echo JIRA_TICKET=${JIRA_TICKET}
+      shell: bash

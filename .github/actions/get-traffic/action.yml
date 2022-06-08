@@ -1,0 +1,48 @@
+name: 'Get traffic'
+description: 'Get traffic'
+inputs:
+  is_default_branch:
+    description: 'Flag if the branch is default'
+    required: true
+  deployment_type:
+    description: "Deployment type"
+    required: false
+  traffic:
+    description: 'Traffic'
+    required: false
+outputs:
+  traffic:
+    description: "Traffic"
+    value: ${{ steps.get_traffic.outputs.traffic }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get traffic
+      id: get_traffic
+      run: |
+        if [ -z "$TRAFFIC" ]
+        then
+          if [ -z $IS_DEFAULT_BRANCH ]
+          then
+            export TRAFFIC=100
+          else
+            if [ "$DEPLOYMENT_TYPE" != "staging" ]
+            then
+              export TRAFFIC=0
+            else
+              export TRAFFIC=100
+            fi
+          fi
+        fi
+        
+        echo TRAFFIC=$TRAFFIC >> $GITHUB_ENV
+        echo "::set-output traffic::$(echo $TRAFFIC)"
+      env:
+        IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
+        DEPLOYMENT_TYPE: ${{ inputs.deployment_type }}
+        TRAFFIC: ${{ inputs.traffic }}
+      shell: bash
+    - name: Debug
+      run: |
+        echo TRAFFIC=${TRAFFIC}
+      shell: bash

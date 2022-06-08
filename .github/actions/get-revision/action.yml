@@ -1,0 +1,42 @@
+name: 'Get revision'
+description: 'Get revision'
+inputs:
+  is_default_branch:
+    description: 'Flag if the branch is default'
+    required: true
+  build_number:
+    description: "Build number that can be used in revision"
+    required: false
+  pipeline_version:
+    description: "Version that can be used in revision"
+    required: false
+outputs:
+  revision:
+    description: "Revision"
+    value: ${{ steps.set_revision.outputs.revision }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set revision
+      id: set_revision
+      run: |
+        PACKAGE_VERSION=$(node -p 'require("./package.json").version')
+        
+        if [ -n $IS_DEFAULT_BRANCH ]
+        then
+          REVISION=$PACKAGE_VERSION-${BUILD_NUMBER:-0}
+        else
+          REVISION=${PIPELINE_VERSION:-$PACKAGE_VERSION}
+        fi
+        
+        echo REVISION=$REVISION >> $GITHUB_ENV
+        echo "::set-output revision::$(echo $REVISION)"
+      env:
+        IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
+        BUILD_NUMBER: ${{ inputs.build_number }}
+        PIPELINE_VERSION: ${{ inputs.pipeline_version }}
+      shell: bash
+    - name: Debug
+      run: |
+        echo ${REVISION}
+      shell: bash

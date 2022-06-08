@@ -1,0 +1,42 @@
+name: 'Use GCloud'
+description: 'Set GCloud'
+inputs:
+  credentials_json:
+    description: 'Credentials JSON for GCloud'
+    required: true
+  project_name:
+    description: "GCloud project name"
+    required: false
+outputs:
+  name:
+    description: "GCloud project name"
+    value: ${{ steps.set_project.outputs.name }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        install_components: 'alpha'
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ inputs.credentials_json }}
+    - name: Set project
+      id: set_project
+      run: |
+        GCLOUD_PROJECT_NAME=${GCLOUD_PROJECT_NAME:-chili-piper-sandbox}
+        gcloud config set project "GCLOUD_PROJECT_NAME"
+        
+        echo "::set-output name::$(echo $GCLOUD_PROJECT_NAME)"
+      env:
+        GCLOUD_PROJECT_NAME: ${{ inputs.project_name }}
+      shell: bash
+    - name: Configure docker
+      run: gcloud auth configure-docker -q
+      shell: bash
+    - name: Debug
+      run: |
+        gcloud config list
+        echo "gcloud authentication succeeded"
+      shell: bash

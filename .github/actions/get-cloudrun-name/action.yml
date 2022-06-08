@@ -1,0 +1,53 @@
+name: 'Get cloud run name'
+description: 'Get cloud run name'
+inputs:
+  is_default_branch:
+    description: 'Flag if the branch is default'
+    required: true
+  branch:
+    description: 'Branch name'
+    required: true
+  project_name:
+    description: 'Project name'
+    required: true
+  deployment_type:
+    description: "Deployment type"
+    required: false
+outputs:
+  name:
+    description: "Cloud run name"
+    value: ${{ steps.get_name.outputs.name }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get JIRA ticket
+      id: jira_ticket
+      if: ${{ ! inputs.is_default_branch }}
+      uses: Chili-Piper/frontend-actions/.github/actions/get-jira-ticket@main
+      with:
+        branch: ${{ inputs.branch }}
+    - name: Get name
+      id: get_name
+      run: |
+        DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE:-staging}
+        CLOUDRUN_NAME="$PROJECT_NAME-$DEPLOYMENT_TYPE"
+        
+        if [ -z $IS_DEFAULT_BRANCH ]
+        then
+          CLOUDRUN_NAME="$JIRA_TICKET-$CLOUDRUN_NAME"
+        fi
+        
+        export CLOUDRUN_NAME="$(tr '.' '_' <<< $(tr [A-Z] [a-z] <<< "$CLOUDRUN_NAME"))"
+        
+        echo CLOUDRUN_NAME=$CLOUDRUN_NAME >> $GITHUB_ENV
+        echo "::set-output name::$(echo $CLOUDRUN_NAME)"
+      env:
+        IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
+        DEPLOYMENT_TYPE: ${{ inputs.deployment_type }}
+        PROJECT_NAME: ${{ inputs.project_name }}
+        JIRA_TICKET: ${{ steps.jira_ticket.outputs.ticket }}
+      shell: bash
+    - name: Debug
+      run: |
+        echo ${CLOUDRUN_NAME}
+      shell: bash

@@ -1,0 +1,114 @@
+name: 'Deploy to cloudrun'
+description: 'Deploy to cloudrun'
+inputs:
+  credentials_json:
+    description: 'Credentials JSON for GCloud'
+    required: true
+  is_default_branch:
+    description: 'Flag if the branch is default'
+    required: true
+  branch:
+    description: 'Branch name'
+    required: true
+  commit:
+    description: 'Commit hash'
+    required: true
+  npm_token:
+    description: 'NPM token'
+    required: true
+  roject_name:
+    description: "GCloud project name"
+    required: false
+  gcloud_project_name:
+    description: "GCloud project name"
+    required: false
+  build_number:
+    description: "Build number that can be used in revision"
+    required: false
+  pipeline_version:
+    description: "Version that can be used in revision"
+    required: false
+  deployment_type:
+    description: "Deployment type"
+    required: false
+  traffic:
+    description: 'Traffic'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Install GCloud & auth
+      id: gcloud
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@main
+      with:
+        credentials_json: ${{ inputs.credentials_json }}
+        project_name: ${{ inputs.gcloud_project_name }}
+    - name: Get revision
+      id: get_revision
+      uses: Chili-Piper/frontend-actions/.github/actions/get-revision@main
+      with:
+        is_default_branch: ${{ inputs.is_default_branch }}
+        build_number: ${{ inputs.build_number }}
+        pipeline_version: ${{ inputs.pipeline_version }}
+    - name: Get cloud run name
+      id: get_cloudrun_name
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@main
+      with:
+        is_default_branch: ${{ inputs.is_default_branch }}
+        branch: ${{ inputs.branch }}
+        project_name: ${{ inputs.project_name }}
+        deployment_type: ${{ inputs.deployment_type }}
+    - name: Get traffic
+      id: get_traffic
+      uses: Chili-Piper/frontend-actions/.github/actions/get-traffic@main
+      with:
+        is_default_branch: ${{ inputs.is_default_branch }}
+        deployment_type: ${{ inputs.deployment_type }}
+        traffic: ${{ inputs.traffic }}
+    - name: Setup env
+      run: |
+        DEPLOY_ENV=${DEPLOYMENT_TYPE:-staging}
+        REVISION_SUFFIX=$( echo "$REVISION" | sed 's/\./-/g' )
+        IMAGE="gcr.io/$GOOGLE_CLOUD_PROJECT/$CLOUDRUN_NAME:$REVISION"
+
+        echo DEPLOY_ENV=$DEPLOY_ENV >> $GITHUB_ENV
+        echo REVISION_SUFFIX=$REVISION_SUFFIX >> $GITHUB_ENV
+        echo IMAGE=$IMAGE >> $GITHUB_ENV
+      env:
+        GOOGLE_CLOUD_PROJECT: ${{ steps.gcloud.outputs.name }}
+        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+        REVISION: ${{ steps.get_revision.outputs.revision }}
+      shell: bash
+    - name: Debug
+      run: |
+        echo "Deploying image $IMAGE, service $CLOUDRUN_NAME, GOOGLE_CLOUD_PROJECT $GOOGLE_CLOUD_PROJECT, traffic $TRAFFIC, revision suffix $REVISION_SUFFIX"
+      env:
+        TRAFFIC: ${{ steps.get_traffic.outputs.traffic }}
+        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+        COMMIT: ${{ inputs.commit }}
+      shell: bash
+    - name: Build & push docker image
+      run: |
+        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker push $IMAGE
+      env:
+        NPM_TOKEN:  ${{ inputs.npm_token }}
+      shell: bash
+    - name: Deploy to cloudrun
+      run: |
+        if [ "$TRAFFIC" = "100" ]
+        then
+          echo "Deploying with traffic"
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV"
+          gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
+        else
+          echo "Deploying without traffic"
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV"
+        fi
+        
+        echo "Deployed"
+      env:
+        TRAFFIC: ${{ steps.get_traffic.outputs.traffic }}
+        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+        COMMIT: ${{ inputs.commit }}
+      shell: bash

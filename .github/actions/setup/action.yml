@@ -10,6 +10,9 @@ inputs:
   npm_token:
     description: 'NPM token'
     required: false
+  project_name:
+    description: 'Project name'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -47,6 +50,11 @@ runs:
       shell: bash
 
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.project_name != 'instant-booker'
       run: yarn --immutable
+      shell: bash
+
+    - name: Install dependencies
+      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.project_name == 'instant-booker'
+      run: yarn --frozen-lockfile --ignore-optional --production=false
       shell: bash

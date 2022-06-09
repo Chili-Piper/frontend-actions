@@ -36,7 +36,7 @@ runs:
         fi
         
         echo TRAFFIC=$TRAFFIC >> $GITHUB_ENV
-        echo "::set-output traffic::$(echo $TRAFFIC)"
+        echo "::set-output name=traffic::$(echo $TRAFFIC)"
       env:
         IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
         DEPLOYMENT_TYPE: ${{ inputs.deployment_type }}

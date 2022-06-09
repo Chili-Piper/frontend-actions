@@ -30,7 +30,7 @@ runs:
         fi
         
         echo REVISION=$REVISION >> $GITHUB_ENV
-        echo "::set-output revision::$(echo $REVISION)"
+        echo "::set-output name=revision::$(echo $REVISION)"
       env:
         IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
         BUILD_NUMBER: ${{ inputs.build_number }}

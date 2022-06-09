@@ -1,0 +1,33 @@
+name: 'Tag version'
+description: 'Update version and create tag'
+inputs:
+  github_token:
+    description: "GitHub token"
+    required: true
+  repo_name:
+    description: 'Repository name'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3.1.0
+      with:
+        node-version: '14'
+    - name: Checkout
+      uses: actions/checkout@v3.0.0
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.github_token }}
+    - name: Get traffic
+      id: get_traffic
+      run: |
+        git config --global user.email "alexey@chilipiper.com"
+        git config --global user.name "Alexey Nekrasov"
+        git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/Chili-Piper/$REPO_NAME
+        npm version patch -m "[skip ci] CPP-2716 - Version: %s" --no-commit-hooks;
+        git push && git push origin --tags;
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        REPO_NAME: ${{ inputs.repo_name }}
+      shell: bash

@@ -32,7 +32,7 @@ runs:
         DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE:-staging}
         CLOUDRUN_NAME="$PROJECT_NAME-$DEPLOYMENT_TYPE"
         
-        if [ -z $IS_DEFAULT_BRANCH ]
+        if ! $IS_DEFAULT_BRANCH
         then
           CLOUDRUN_NAME="$JIRA_TICKET-$CLOUDRUN_NAME"
         fi

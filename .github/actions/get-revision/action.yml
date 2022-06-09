@@ -22,7 +22,7 @@ runs:
       run: |
         PACKAGE_VERSION=$(node -p 'require("./package.json").version')
         
-        if [ -n $IS_DEFAULT_BRANCH ]
+        if $IS_DEFAULT_BRANCH 
         then
           REVISION=$PACKAGE_VERSION-${BUILD_NUMBER:-0}
         else

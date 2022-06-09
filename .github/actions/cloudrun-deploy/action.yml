@@ -16,7 +16,7 @@ inputs:
   npm_token:
     description: 'NPM token'
     required: true
-  roject_name:
+  project_name:
     description: "GCloud project name"
     required: false
   gcloud_project_name:

@@ -22,7 +22,7 @@ runs:
   steps:
     - name: Get JIRA ticket
       id: jira_ticket
-      if: ${{ ! inputs.is_default_branch }}
+      # if: ${{ ! inputs.is_default_branch }} doesn't work for some reason
       uses: Chili-Piper/frontend-actions/.github/actions/get-jira-ticket@main
       with:
         branch: ${{ inputs.branch }}

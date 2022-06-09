@@ -13,10 +13,6 @@ inputs:
   deployment_type:
     description: "Deployment type"
     required: false
-outputs:
-  link:
-    description: "Cloud run link"
-    value: ${{ steps.get_link.outputs.link }}
 runs:
   using: "composite"
   steps:

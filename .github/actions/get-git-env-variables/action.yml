@@ -20,7 +20,7 @@ runs:
       id: latest_tag
       run: |
         LATEST_TAG=$(git describe --abbrev=0 --tags)
-        echo "::set-output tag::$(echo $LATEST_TAG)"
+        echo "::set-output name=tag::$LATEST_TAG"
       shell: bash
 
     - name: Save commit info to env variable
@@ -36,9 +36,9 @@ runs:
         COMMIT_MESSAGE=$(git log -n 1 --skip $PULL_REQUEST_COMMITS --pretty=format:"%B")
         LAST_COMMIT_HASH=$(git log -n 1 --skip 1 --pretty=format:"%H")
         
-        echo "::set-output first_commit_hash::$(echo $FIRST_COMMIT_HASH)"
-        echo "::set-output commit_message::$(echo $COMMIT_MESSAGE)"
-        echo "::set-output last_commit_hash::$(echo $LAST_COMMIT_HASH)"
+        echo "::set-output name=first_commit_hash::$(echo $FIRST_COMMIT_HASH)"
+        echo "::set-output name=commit_message::$(echo $COMMIT_MESSAGE)"
+        echo "::set-output name=last_commit_hash::$(echo $LAST_COMMIT_HASH)"
       shell: bash
     - name: Debug
       run: |

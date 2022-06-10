@@ -24,9 +24,9 @@ runs:
         
         if $IS_DEFAULT_BRANCH 
         then
-          REVISION=$PACKAGE_VERSION-${BUILD_NUMBER:-0}
-        else
           REVISION=${PIPELINE_VERSION:-$PACKAGE_VERSION}
+        else
+          REVISION=$PACKAGE_VERSION-${BUILD_NUMBER:-0}
         fi
         
         echo REVISION=$REVISION >> $GITHUB_ENV

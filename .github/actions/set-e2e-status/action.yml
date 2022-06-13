@@ -1,0 +1,47 @@
+name: 'Set e2e status'
+description: 'Set e2e status'
+inputs:
+  token:
+    description: 'GitHub token'
+    required: true
+  repo_name:
+    description: "Repository name"
+    required: true
+  commit_hash:
+    description: 'Commit hash'
+    required: true
+  run_id:
+    description: 'e2e run id for target link'
+    required: true
+  state:
+    description: 'e2e status (pending|success|failure)'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create commit status
+      run: |
+        if [[ $STATE == 'success' ]]
+        then
+          DESCRIPTION = 'e2e run succeeded'
+        else
+          if [[ $STATE == 'failure' ]]
+          then
+            DESCRIPTION = 'e2e run failed'
+          else
+            DESCRIPTION = 'e2e run in progress'
+          fi
+        fi
+
+        curl \
+        -X POST \
+        -H "Accept: application/vnd.github.v3+json" -H 'Authorization: token '"$GITHUB_TOKEN" \
+        https://api.github.com/repos/Chili-Piper/$REPO_NAME/statuses/$COMMIT_HASH \
+        -d '{"state":"'"$STATE"'pending","target_url":"https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"'","description":"'"$DESCRIPTION"'", "context": "Chili Piper - e2e"}'
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        COMMIT_HASH: ${{ inputs.commit_hash }}
+        RUN_ID: ${{ inputs.run_id }}
+        STATE: ${{ inputs.state }}
+      shell: bash

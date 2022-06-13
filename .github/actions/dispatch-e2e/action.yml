@@ -1,0 +1,44 @@
+name: 'Dispatch e2e run'
+description: 'Dispatch e2e run'
+inputs:
+  repo_name:
+    description: 'Repo name. In case if you need to create a status check and a comment'
+    required: false
+  commit_sha:
+    description: "Commit hash. In case if you need to create a status check and a comment"
+    required: false
+  issue:
+    description: 'Issue number. In case if you need to create a comment'
+    required: false
+  branch:
+    description: 'Preferred branch to run tests instead of main'
+    required: false
+  homebase_url:
+    description: 'Homebase URL'
+    required: false
+  ib_url:
+    description: 'Instant-booker URL'
+    required: false
+  specs:
+    description: "e2e specs to run"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: CALL E2E
+      run: |
+        echo CALL E2E RUN
+        curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H 'Authorization: token '"$GITHUB_TOKEN" \
+        --data '{"event_type": "e2e_call", "client_payload": { "repo_name": "'"$REPO_NAME"'", "sha": "'"$COMMIT_SHA"'", "issue": "'"$ISSUE"'", "branch": "'"$BRANCH"'", "homebase_url": "'"$HOMEBASE_URL"'", "ib_url": "'"$IB_URL"'", "specs": "'"$SPECS"'" }}'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        ISSUE: ${{ inputs.issue }}
+        BRANCH: ${{ inputs.branch }}
+        HOMEBASE_URL: ${{ inputs.homebase_url }}
+        IB_URL: ${{ inputs.ib_url }}
+        SPECS: ${{ inputs.specs }}
+      shell: bash

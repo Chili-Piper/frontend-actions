@@ -19,8 +19,8 @@ inputs:
   ib_url:
     description: 'Instant-booker URL'
     required: false
-  specs:
-    description: "e2e specs to run"
+  event:
+    description: "Dispatched event (e2e_call|ib_e2e_call)"
     required: false
 runs:
   using: "composite"
@@ -28,6 +28,7 @@ runs:
     - name: CALL E2E
       run: |
         echo CALL E2E RUN
+        EVENT=${EVENT:-e2e_call}
         curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Authorization: token '"$GITHUB_TOKEN" \
@@ -40,5 +41,5 @@ runs:
         BRANCH: ${{ inputs.branch }}
         HOMEBASE_URL: ${{ inputs.homebase_url }}
         IB_URL: ${{ inputs.ib_url }}
-        SPECS: ${{ inputs.specs }}
+        EVENT: ${{ inputs.event }}
       shell: bash

@@ -11,7 +11,7 @@ inputs:
     description: 'NPM token'
     required: false
   project_name:
-    description: 'Project name'
+    description: 'Project name. We use another install command to install instant-booker deps'
     required: false
 runs:
   using: "composite"

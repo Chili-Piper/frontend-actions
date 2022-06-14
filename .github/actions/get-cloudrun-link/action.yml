@@ -46,7 +46,7 @@ runs:
         CLOUDRUN_LINK="$(gcloud run services list --platform managed --project $GOOGLE_CLOUD_PROJECT --filter="$CLOUDRUN_NAME" --format="value(status.url)" --sort-by="~lastTransitionTime" --limit=1)"
         
         echo CLOUDRUN_LINK=$CLOUDRUN_LINK >> $GITHUB_ENV
-        echo "::set-output name=name::$(echo $CLOUDRUN_LINK)"
+        echo "::set-output name=link::$(echo $CLOUDRUN_LINK)"
       env:
         GOOGLE_CLOUD_PROJECT: ${{ inputs.gcloud_project_name }}
         CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}

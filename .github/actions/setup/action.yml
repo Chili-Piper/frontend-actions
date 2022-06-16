@@ -10,8 +10,8 @@ inputs:
   npm_token:
     description: 'NPM token'
     required: false
-  project_name:
-    description: 'Project name. We use another install command to install instant-booker deps'
+  full_install:
+    description: 'Run yarn with --ignore-optional --production=false flags'
     required: false
 runs:
   using: "composite"
@@ -50,11 +50,11 @@ runs:
       shell: bash
 
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.project_name != 'instant-booker'
+      if: steps.node-modules-cache.outputs.cache-hit != 'true' && ! inputs.full_install
       run: yarn --immutable
       shell: bash
 
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.project_name == 'instant-booker'
-      run: yarn --frozen-lockfile --ignore-optional --production=false
+      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.full_install
+      run: yarn --immutable --ignore-optional --production=false
       shell: bash

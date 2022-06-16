@@ -23,13 +23,13 @@ runs:
       run: |
         if [[ $STATE == 'success' ]]
         then
-          DESCRIPTION = 'e2e run succeeded'
+          DESCRIPTION='e2e run succeeded'
         else
           if [[ $STATE == 'failure' ]]
           then
-            DESCRIPTION = 'e2e run failed'
+            DESCRIPTION='e2e run failed'
           else
-            DESCRIPTION = 'e2e run in progress'
+            DESCRIPTION='e2e run in progress'
           fi
         fi
 

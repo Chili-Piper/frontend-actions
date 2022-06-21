@@ -35,7 +35,7 @@ runs:
           -X POST \
           -H "Accept: application/vnd.github.v3+json"  -H 'Authorization: token '"$GITHUB_TOKEN" \
           https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/issues/comments/$COMMENT_ID \
-          -d $DATA
+          -d "$DATA"
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ inputs.repo_name }}

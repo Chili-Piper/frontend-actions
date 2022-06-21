@@ -28,7 +28,7 @@ runs:
       run: |
         COMMENTS=$(curl \
         -H "Accept: application/vnd.github.v3+json" -H 'Authorization: token '"$GITHUB_TOKEN" \
-        https://api.github.com/repos/Chili-Piper/$REPO_NAME/issues/$ISSUE/comments)
+        https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/issues/$ISSUE/comments)
         
         for k in $(jq 'keys | .[]' <<< "$COMMENTS"); do
           value=$(jq -r ".[$k]" <<< "$COMMENTS");
@@ -47,14 +47,14 @@ runs:
           curl \
           -X POST \
           -H "Accept: application/vnd.github.v3+json"  -H 'Authorization: token '"$GITHUB_TOKEN" \
-          https://api.github.com/repos/Chili-Piper/$REPO_NAME/issues/comments/$COMMENT_ID \
-          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/$REPO_NAME/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
+          https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/issues/comments/$COMMENT_ID \
+          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'"$REPO_NAME"'/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
         else
           COMMENT_RES=$(curl \
           -X POST \
           -H "Accept: application/vnd.github.v3+json"  -H 'Authorization: token '"$GITHUB_TOKEN" \
-          https://api.github.com/repos/Chili-Piper/$REPO_NAME/issues/$ISSUE/comments \
-          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/$REPO_NAME/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}')
+          https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/issues/$ISSUE/comments \
+          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'"$REPO_NAME"'/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}')
         
           echo COMMENT_RES = $COMMENT_RES
           echo ID STRINGS = $(echo $COMMENT_RES | grep -o '"id": [^,]*')

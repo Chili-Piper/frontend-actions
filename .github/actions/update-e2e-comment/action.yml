@@ -26,15 +26,15 @@ runs:
       run: |
         if [[ $STATUS == 'success' ]]
         then
-          DATA='{"body":"✅ e2e run succeeded\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ✅ status | Success |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/$REPO_NAME/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
+          DATA='{"body":"✅ e2e run succeeded\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ✅ status | Success |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'"$REPO_NAME"'/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
         else
-          DATA='{"body":"❌ e2e run failed\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ❌ status | Fail |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/$REPO_NAME/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
+          DATA='{"body":"❌ e2e run failed\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ❌ status | Fail |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'"$REPO_NAME"'/commit/'"$COMMIT_HASH"' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"' |"}'
         fi
         
         curl \
           -X POST \
           -H "Accept: application/vnd.github.v3+json"  -H 'Authorization: token '"$GITHUB_TOKEN" \
-          https://api.github.com/repos/Chili-Piper/$REPO_NAME/issues/comments/$COMMENT_ID \
+          https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/issues/comments/$COMMENT_ID \
           -d $DATA
       env:
         GITHUB_TOKEN: ${{ inputs.token }}

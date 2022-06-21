@@ -36,7 +36,7 @@ runs:
         curl \
         -X POST \
         -H "Accept: application/vnd.github.v3+json" -H 'Authorization: token '"$GITHUB_TOKEN" \
-        https://api.github.com/repos/Chili-Piper/$REPO_NAME/statuses/$COMMIT_HASH \
+        https://api.github.com/repos/Chili-Piper/'"$REPO_NAME"'/statuses/$COMMIT_HASH \
         -d '{"state":"'"$STATE"'","target_url":"https://github.com/Chili-Piper/e2e/actions/runs/'"$RUN_ID"'","description":"'"$DESCRIPTION"'", "context": "Chili Piper - e2e"}'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}

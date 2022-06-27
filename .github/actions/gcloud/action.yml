@@ -8,9 +8,9 @@ inputs:
     description: "GCloud project name"
     required: false
 outputs:
-  name:
+  project_name:
     description: "GCloud project name"
-    value: ${{ steps.set_project.outputs.name }}
+    value: ${{ steps.set_project.outputs.project_name }}
 runs:
   using: "composite"
   steps:
@@ -28,7 +28,7 @@ runs:
         GCLOUD_PROJECT_NAME=${GCLOUD_PROJECT_NAME:-chili-piper-sandbox}
         gcloud config set project $GCLOUD_PROJECT_NAME
         
-        echo "::set-output name=name::$(echo $GCLOUD_PROJECT_NAME)"
+        echo "::set-output name=project_name::$(echo $GCLOUD_PROJECT_NAME)"
       env:
         GCLOUD_PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash

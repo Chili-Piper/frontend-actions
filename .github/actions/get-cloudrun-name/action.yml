@@ -1,14 +1,14 @@
-name: 'Get cloud run name'
-description: 'Get cloud run name'
+name: "Get cloud run name"
+description: "Get cloud run name"
 inputs:
   is_default_branch:
-    description: 'Flag if the branch is default'
+    description: "Flag if the branch is default"
     required: true
   branch:
-    description: 'Branch name'
+    description: "Branch name"
     required: true
-  project_name:
-    description: 'Project name'
+  app_name:
+    description: "App name"
     required: true
   deployment_type:
     description: "Deployment type"
@@ -30,21 +30,26 @@ runs:
       id: get_name
       run: |
         DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE:-staging}
-        CLOUDRUN_NAME="$PROJECT_NAME-$DEPLOYMENT_TYPE"
-        
+        CLOUDRUN_NAME="$APP_NAME-$DEPLOYMENT_TYPE"
+
         if ! $IS_DEFAULT_BRANCH
         then
           CLOUDRUN_NAME="$JIRA_TICKET-$CLOUDRUN_NAME"
         fi
-        
+
+        echo $APP_NAME
+        echo $CLOUDRUN_NAME
+
         export CLOUDRUN_NAME="$(tr '.' '_' <<< $(tr [A-Z] [a-z] <<< "$CLOUDRUN_NAME"))"
-        
+
+        echo $CLOUDRUN_NAME
+
         echo CLOUDRUN_NAME=$CLOUDRUN_NAME >> $GITHUB_ENV
         echo "::set-output name=name::$(echo $CLOUDRUN_NAME)"
       env:
         IS_DEFAULT_BRANCH: ${{ inputs.is_default_branch }}
         DEPLOYMENT_TYPE: ${{ inputs.deployment_type }}
-        PROJECT_NAME: ${{ inputs.project_name }}
+        APP_NAME: ${{ inputs.app_name }}
         JIRA_TICKET: ${{ steps.jira_ticket.outputs.ticket }}
       shell: bash
     - name: Debug

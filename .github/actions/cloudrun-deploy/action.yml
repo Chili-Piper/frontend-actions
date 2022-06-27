@@ -1,20 +1,20 @@
-name: 'Deploy to cloudrun'
-description: 'Deploy to cloudrun'
+name: "Deploy to cloudrun"
+description: "Deploy to cloudrun"
 inputs:
   credentials_json:
-    description: 'Credentials JSON for GCloud'
+    description: "Credentials JSON for GCloud"
     required: true
   is_default_branch:
-    description: 'Flag if the branch is default'
+    description: "Flag if the branch is default"
     required: true
   branch:
-    description: 'Branch name'
+    description: "Branch name"
     required: true
   commit:
-    description: 'Commit hash'
+    description: "Commit hash"
     required: true
   npm_token:
-    description: 'NPM token'
+    description: "NPM token"
     required: true
   project_name:
     description: "GCloud project name"
@@ -32,27 +32,27 @@ inputs:
     description: "Deployment type"
     required: false
   traffic:
-    description: 'Traffic'
+    description: "Traffic"
     required: false
 runs:
   using: "composite"
   steps:
     - name: Install GCloud & auth
       id: gcloud
-      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@main
       with:
         credentials_json: ${{ inputs.credentials_json }}
         project_name: ${{ inputs.gcloud_project_name }}
     - name: Get revision
       id: get_revision
-      uses: Chili-Piper/frontend-actions/.github/actions/get-revision@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-revision@main
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         build_number: ${{ inputs.build_number }}
         pipeline_version: ${{ inputs.pipeline_version }}
     - name: Get cloud run name
       id: get_cloudrun_name
-      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@main
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         branch: ${{ inputs.branch }}
@@ -60,7 +60,7 @@ runs:
         deployment_type: ${{ inputs.deployment_type }}
     - name: Get traffic
       id: get_traffic
-      uses: Chili-Piper/frontend-actions/.github/actions/get-traffic@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-traffic@main
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         deployment_type: ${{ inputs.deployment_type }}
@@ -92,7 +92,7 @@ runs:
         docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
         docker push $IMAGE
       env:
-        NPM_TOKEN:  ${{ inputs.npm_token }}
+        NPM_TOKEN: ${{ inputs.npm_token }}
       shell: bash
     - name: Deploy to cloudrun
       run: |
@@ -105,7 +105,7 @@ runs:
           echo "Deploying without traffic"
           gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV"
         fi
-        
+
         echo "Deployed"
       env:
         TRAFFIC: ${{ steps.get_traffic.outputs.traffic }}

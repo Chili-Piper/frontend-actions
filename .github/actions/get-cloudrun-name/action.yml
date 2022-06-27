@@ -1,14 +1,14 @@
-name: 'Get cloud run name'
-description: 'Get cloud run name'
+name: "Get cloud run name"
+description: "Get cloud run name"
 inputs:
   is_default_branch:
-    description: 'Flag if the branch is default'
+    description: "Flag if the branch is default"
     required: true
   branch:
-    description: 'Branch name'
+    description: "Branch name"
     required: true
   app_name:
-    description: 'App name'
+    description: "App name"
     required: true
   deployment_type:
     description: "Deployment type"
@@ -23,7 +23,7 @@ runs:
     - name: Get JIRA ticket
       id: jira_ticket
       # if: ${{ ! inputs.is_default_branch }} doesn't work for some reason
-      uses: Chili-Piper/frontend-actions/.github/actions/get-jira-ticket@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-jira-ticket@main
       with:
         branch: ${{ inputs.branch }}
     - name: Get name
@@ -31,7 +31,7 @@ runs:
       run: |
         DEPLOYMENT_TYPE=${DEPLOYMENT_TYPE:-staging}
         CLOUDRUN_NAME="$APP_NAME-$DEPLOYMENT_TYPE"
-        
+
         if ! $IS_DEFAULT_BRANCH
         then
           CLOUDRUN_NAME="$JIRA_TICKET-$CLOUDRUN_NAME"
@@ -39,11 +39,11 @@ runs:
 
         echo $APP_NAME
         echo $CLOUDRUN_NAME
-        
+
         export CLOUDRUN_NAME="$(tr '.' '_' <<< $(tr [A-Z] [a-z] <<< "$CLOUDRUN_NAME"))"
 
         echo $CLOUDRUN_NAME
-        
+
         echo CLOUDRUN_NAME=$CLOUDRUN_NAME >> $GITHUB_ENV
         echo "::set-output name=name::$(echo $CLOUDRUN_NAME)"
       env:

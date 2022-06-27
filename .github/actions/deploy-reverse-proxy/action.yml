@@ -1,14 +1,14 @@
-name: 'Deploy reverse proxy'
-description: 'Deploy reverse proxy'
+name: "Deploy reverse proxy"
+description: "Deploy reverse proxy"
 inputs:
   credentials_json:
-    description: 'Credentials JSON for GCloud'
+    description: "Credentials JSON for GCloud"
     required: true
   is_default_branch:
-    description: 'Flag if the branch is default'
+    description: "Flag if the branch is default"
     required: true
   branch:
-    description: 'Branch name'
+    description: "Branch name"
     required: true
   deployment_type:
     description: "Deployment type"
@@ -21,17 +21,17 @@ runs:
   steps:
     - name: Install GCloud & auth
       id: gcloud
-      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@main
       with:
         credentials_json: ${{ inputs.credentials_json }}
-        project_name: 'chili-piper-sandbox'
+        project_name: "chili-piper-sandbox"
     - name: Get cloud run name
       id: get_cloudrun_name
-      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@main
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         branch: ${{ inputs.branch }}
-        app_name: 'reverse-proxy'
+        app_name: "reverse-proxy"
         deployment_type: ${{ inputs.deployment_type }}
     - name: Setup env and deploy to cloud run
       run: |
@@ -39,7 +39,7 @@ runs:
         HOMEBASE_URL=${HOMEBASE_URL:-https://homebase-staging-a6llso2ukq-uc.a.run.app}
         IB_URL=${IB_URL:-https://instant-booker-new-staging-a6llso2ukq-uc.a.run.app}
         BOOKING_APP_URL=${BOOKING_APP_URL:-https://booking-app-staging-a6llso2ukq-uc.a.run.app}
-        
+
         echo IMAGE=$IMAGE >> $GITHUB_ENV
         echo HOMEBASE_URL=$HOMEBASE_URL >> $GITHUB_ENV
         echo IB_URL=$IB_URL >> $GITHUB_ENV
@@ -48,7 +48,7 @@ runs:
         source $GITHUB_ENV
 
         echo "Deploying image $IMAGE, service $CLOUDRUN_NAME, GOOGLE_CLOUD_PROJECT $GOOGLE_CLOUD_PROJECT"
-        
+
         gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --platform=managed --region us-central1 --allow-unauthenticated  --set-env-vars "HOMEBASE_URL=$HOMEBASE_URL","IB_URL=$IB_URL","BOOKING_APP_URL=$BOOKING_APP_URL"
         gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
       env:
@@ -56,4 +56,3 @@ runs:
         CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
         IB_URL: ${{ inputs.ib_url }}
       shell: bash
-

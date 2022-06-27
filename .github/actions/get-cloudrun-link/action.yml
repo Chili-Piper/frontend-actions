@@ -1,14 +1,14 @@
-name: 'Get cloudrun link'
-description: 'Get cloudrun link'
+name: "Get cloudrun link"
+description: "Get cloudrun link"
 inputs:
   credentials_json:
-    description: 'Credentials JSON for GCloud'
+    description: "Credentials JSON for GCloud"
     required: true
   is_default_branch:
-    description: 'Flag if the branch is default'
+    description: "Flag if the branch is default"
     required: true
   branch:
-    description: 'Branch name'
+    description: "Branch name"
     required: true
   project_name:
     description: "GCloud project name"
@@ -28,13 +28,13 @@ runs:
   steps:
     - name: Install GCloud & auth
       id: gcloud
-      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@main
       with:
         credentials_json: ${{ inputs.credentials_json }}
         project_name: ${{ inputs.gcloud_project_name }}
     - name: Get cloud run name
       id: get_cloudrun_name
-      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@CPP-6475
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@main
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         branch: ${{ inputs.branch }}
@@ -44,7 +44,7 @@ runs:
       id: get_link
       run: |
         CLOUDRUN_LINK="$(gcloud run services list --platform managed --project $GOOGLE_CLOUD_PROJECT --filter="$CLOUDRUN_NAME" --format="value(status.url)" --sort-by="~lastTransitionTime" --limit=1)"
-        
+
         echo CLOUDRUN_LINK=$CLOUDRUN_LINK >> $GITHUB_ENV
         echo "::set-output name=link::$(echo $CLOUDRUN_LINK)"
       env:

@@ -39,28 +39,28 @@ runs:
   steps:
     - name: Install GCloud & auth
       id: gcloud
-      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@main
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud@CPP-6475
       with:
         credentials_json: ${{ inputs.credentials_json }}
         project_name: ${{ inputs.gcloud_project_name }}
     - name: Get revision
       id: get_revision
-      uses: Chili-Piper/frontend-actions/.github/actions/get-revision@main
+      uses: Chili-Piper/frontend-actions/.github/actions/get-revision@CPP-6475
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         build_number: ${{ inputs.build_number }}
         pipeline_version: ${{ inputs.pipeline_version }}
     - name: Get cloud run name
       id: get_cloudrun_name
-      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@main
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-name@CPP-6475
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         branch: ${{ inputs.branch }}
-        project_name: ${{ inputs.project_name }}
+        app_name: ${{ inputs.project_name }}
         deployment_type: ${{ inputs.deployment_type }}
     - name: Get traffic
       id: get_traffic
-      uses: Chili-Piper/frontend-actions/.github/actions/get-traffic@main
+      uses: Chili-Piper/frontend-actions/.github/actions/get-traffic@CPP-6475
       with:
         is_default_branch: ${{ inputs.is_default_branch }}
         deployment_type: ${{ inputs.deployment_type }}
@@ -75,7 +75,7 @@ runs:
         echo REVISION_SUFFIX=$REVISION_SUFFIX >> $GITHUB_ENV
         echo IMAGE=$IMAGE >> $GITHUB_ENV
       env:
-        GOOGLE_CLOUD_PROJECT: ${{ steps.gcloud.outputs.name }}
+        GOOGLE_CLOUD_PROJECT: ${{ steps.gcloud.outputs.project_name }}
         CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
         REVISION: ${{ steps.get_revision.outputs.revision }}
       shell: bash

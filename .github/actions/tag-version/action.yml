@@ -15,7 +15,7 @@ runs:
       with:
         node-version: '14'
     - name: Checkout
-      uses: actions/checkout@v3.0.0
+      uses: actions/checkout@v3.0.2
       with:
         fetch-depth: 0
         token: ${{ inputs.github_token }}

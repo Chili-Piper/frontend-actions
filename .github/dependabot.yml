@@ -1,7 +1,77 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: ".github/actions/**/*"
+  directory: ".github/actions/cloudrun-deploy/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/create-e2e-comment/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/deploy-reverse-proxy/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/dispatch-e2e/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/gcloud/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-cloudrun-link/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-cloudrun-name/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-git-env-variables/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-jira-ticket/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-revision/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/get-traffic/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/set-e2e-status/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/setup/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/tag-version/action.yml"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+  directory: ".github/actions/update-e2e-comment/action.yml"
     open-pull-requests-limit: 15
     schedule:
       interval: "weekly"

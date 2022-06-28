@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: ".github/actions/"
+    directory: ".github/actions/**/*"
     open-pull-requests-limit: 15
     schedule:
       interval: "weekly"

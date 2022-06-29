@@ -29,11 +29,11 @@ runs:
         PULL_REQUEST_COMMITS=${{github.event.pull_request.commits}}
         echo "PULL_REQUEST_COMMITS = $PULL_REQUEST_COMMITS"
 
-        COMMIT_TO_SKIP=$((${PULL_REQUEST_COMMITS:-1}))
+        COMMIT_TO_SKIP=$((${PULL_REQUEST_COMMITS:-0}))
         echo "COMMIT_TO_SKIP = $COMMIT_TO_SKIP"
 
-        FIRST_COMMIT_HASH=$(git log -n 1 --skip $PULL_REQUEST_COMMITS --pretty=format:"%H")
-        COMMIT_MESSAGE=$(git log -n 1 --skip $PULL_REQUEST_COMMITS --pretty=format:"%B")
+        FIRST_COMMIT_HASH=$(git log -n 1 --skip $COMMIT_TO_SKIP --pretty=format:"%H")
+        COMMIT_MESSAGE=$(git log -n 1 --skip $COMMIT_TO_SKIP --pretty=format:"%B")
         LAST_COMMIT_HASH=$(git log -n 1 --skip 1 --pretty=format:"%H")
         
         echo "::set-output name=first_commit_hash::$(echo $FIRST_COMMIT_HASH)"

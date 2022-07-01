@@ -22,6 +22,9 @@ inputs:
   ib_url:
     description: 'Instant-booker URL'
     required: false
+  concierge_url:
+    description: 'Concierge URL'
+    required: false
   event:
     description: "Dispatched event (e2e_call|ib_e2e_call)"
     required: false
@@ -35,7 +38,7 @@ runs:
         curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Authorization: token '$GITHUB_TOKEN \
-        --data '{"event_type": "'$EVENT'", "client_payload": { "repo_name": "'$REPO_NAME'", "sha": "'$COMMIT_SHA'", "issue": "'$ISSUE'", "branch": "'$BRANCH'", "homebase_url": "'$HOMEBASE_URL'", "ib_url": "'$IB_URL'" }}'
+        --data '{"event_type": "'$EVENT'", "client_payload": { "repo_name": "'$REPO_NAME'", "sha": "'$COMMIT_SHA'", "issue": "'$ISSUE'", "branch": "'$BRANCH'", "homebase_url": "'$HOMEBASE_URL'", "ib_url": "'$IB_URL'", "concierge_url": "'$CONCIERGE_URL'" }}'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ inputs.repo_name }}
@@ -44,5 +47,6 @@ runs:
         BRANCH: ${{ inputs.branch }}
         HOMEBASE_URL: ${{ inputs.homebase_url }}
         IB_URL: ${{ inputs.ib_url }}
+        CONCIERGE_URL: ${{ inputs.concierge_url }}
         EVENT: ${{ inputs.event }}
       shell: bash

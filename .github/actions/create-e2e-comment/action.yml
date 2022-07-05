@@ -16,6 +16,9 @@ inputs:
   issue:
     description: 'Issue ID'
     required: true
+  dashboard_url:
+    description: 'Cypress dashboard URL'
+    required: false
 outputs:
   comment_id:
     description: "Comment ID"
@@ -54,7 +57,7 @@ runs:
           -X POST \
           -H "Accept: application/vnd.github.v3+json"  -H 'Authorization: token '$GITHUB_TOKEN \
           https://api.github.com/repos/Chili-Piper/$REPO_NAME/issues/$ISSUE/comments \
-          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |"}')
+          -d '{"body":"⚙ e2e run in progress\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ⚙ status | In progress |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |\r\n| 📝 Cypress dashboard | '$DASHBOARD_URL' |"}')
 
           echo COMMENT_RES = $COMMENT_RES
           echo ID STRINGS = $(echo $COMMENT_RES | grep -o '"id": [^,]*')
@@ -72,4 +75,5 @@ runs:
         COMMIT_HASH: ${{ inputs.commit_hash }}
         RUN_ID: ${{ inputs.run_id }}
         ISSUE: ${{ inputs.issue }}
+        DASHBOARD_URL: ${{ inputs.dashboard_url }}
       shell: bash

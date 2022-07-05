@@ -19,6 +19,9 @@ inputs:
   status:
     description: 'e2e run status (success|failure)'
     required: true
+  dashboard_url:
+    description: 'Cypress dashboard URL'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -26,9 +29,9 @@ runs:
       run: |
         if [[ $STATUS == 'success' ]]
         then
-        DATA='{"body":"✅ e2e run succeeded\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ✅ status | Success |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |"}'
+        DATA='{"body":"✅ e2e run succeeded\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ✅ status | Success |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |\r\n| 📝 Cypress dashboard | '$DASHBOARD_URL' |"}'
         else
-        DATA='{"body":"❌ e2e run failed\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ❌ status | Fail |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |"}'
+        DATA='{"body":"❌ e2e run failed\r\n| Name  | Info |\r\n| ---- | ---- |\r\n| ❌ status | Fail |\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |\r\n| 📝 Cypress dashboard | '$DASHBOARD_URL' |"}'
         fi
         
         curl \
@@ -43,4 +46,5 @@ runs:
         RUN_ID: ${{ inputs.run_id }}
         COMMENT_ID: ${{ inputs.comment_id }}
         STATUS: ${{ inputs.status }}
+        DASHBOARD_URL: ${{ inputs.dashboard_url }}
       shell: bash

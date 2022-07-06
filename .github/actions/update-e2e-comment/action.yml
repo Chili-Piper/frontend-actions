@@ -31,7 +31,7 @@ runs:
         COMMIT_LINE='\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |'
         RUN_LINE='\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |'
         
-        if [ -n $DASHBOARD_URL ]
+        if [ -n ${DASHBOARD_URL+x} ]
         then
           DASHBOARD_LINE='\r\n| 📝 Cypress dashboard | '$DASHBOARD_URL' |'
         fi

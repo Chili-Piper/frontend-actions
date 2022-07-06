@@ -49,7 +49,8 @@ runs:
         STATUS_LINE='\r\n| ⚙ status | In progress |'
         COMMIT_LINE='\r\n| 🔨 Latest commit | https://github.com/Chili-Piper/'$REPO_NAME'/commit/'$COMMIT_HASH' |'
         RUN_LINE='\r\n| 🔍 Latest run | https://github.com/Chili-Piper/e2e/actions/runs/'$RUN_ID' |'
-        if (( $DASHBOARD_URL ))
+        
+        if [ -n $DASHBOARD_URL ]
         then
           DASHBOARD_LINE='\r\n| 📝 Cypress dashboard | '$DASHBOARD_URL' |'
         fi

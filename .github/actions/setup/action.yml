@@ -13,6 +13,10 @@ inputs:
   full_install:
     description: 'Run yarn with --ignore-optional --production=false flags'
     required: false
+  cache:
+    description: 'If need to cache dependencies'
+    required: false
+    default: 'true'
 runs:
   using: "composite"
   steps:
@@ -32,6 +36,7 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
+      if: inputs.cache
       uses: actions/cache@v3
       id: node-modules-cache
       env:

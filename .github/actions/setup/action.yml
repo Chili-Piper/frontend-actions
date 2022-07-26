@@ -36,7 +36,7 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
-      if: inputs.cache === 'true'
+      if: inputs.cache == 'true'
       uses: actions/cache@v3
       id: node-modules-cache
       env:
@@ -55,11 +55,11 @@ runs:
       shell: bash
 
     - name: Install dependencies
-      if: (inputs.cache === 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && ! inputs.full_install
+      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && ! inputs.full_install
       run: yarn --immutable
       shell: bash
 
     - name: Install dependencies
-      if: (inputs.cache === 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install
+      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install
       run: yarn --immutable --ignore-optional --production=false
       shell: bash

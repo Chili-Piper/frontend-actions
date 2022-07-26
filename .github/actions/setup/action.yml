@@ -13,6 +13,9 @@ inputs:
   full_install:
     description: 'Run yarn with --ignore-optional --production=false flags'
     required: false
+  custom_install:
+    description: 'Use custom params for install dependencies'
+    required: false
   cache:
     description: 'If need to cache dependencies'
     required: false

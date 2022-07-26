@@ -1,0 +1,44 @@
+name: 'Create JIRA comment'
+description: 'Create JIRA comment with cloudrun link if no comments exist'
+inputs:
+  credentials_json:
+    description: "Credentials JSON for GCloud"
+    required: true
+  branch:
+    description: "Branch name"
+    required: true
+  project_name:
+    description: "Application project name in GCloud"
+    required: true
+  jira_username:
+    description: "JIRA username"
+    required: true
+  jira_password:
+    description: "JIRA password"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Get JIRA ticket
+      id: jira_ticket
+      uses: Chili-Piper/frontend-actions/.github/actions/get-jira-ticket@main
+      with:
+        branch: ${{ inputs.branch }}
+    - name: Get cloud run link
+      id: get_cloudrun_link
+      uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-link@main
+      with:
+        credentials_json:${{ inputs.credentials_json }}
+        is_default_branch: false
+        branch: ${{ inputs.branch }}
+        project_name: ${{ inputs.project_name }}
+        gcloud_project_name: 'chili-sandbox'
+        deployment_type: 'staging'
+    - name: Create comment if not exist
+      uses: Chili-Piper/frontend-actions/.github/actions/create-jira-comment/create-comment@main
+      with:
+        jira_ticket: ${{ steps.jira_ticket.outputs.ticket }}
+        cloudrun_link: ${{ steps.get_cloudrun_link.outputs.link }}
+        project_name: ${{ inputs.project_name }}
+        jira_username: ${{ inputs.jira_username }}
+        jira_password: ${{ inputs.jira_password }}

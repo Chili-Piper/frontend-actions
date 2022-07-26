@@ -4,3 +4,5 @@
 /.idea/
 # Editor-based HTTP Client requests
 /httpRequests/
+
+/**/node_modules

@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const { jira } = require('./helpers/atlassian')
+const { jira } = require("../../../../helpers/jira");
 
 const jiraTicket = core.getInput('jira_ticket');
 const cloudrunLink = core.getInput('cloudrunLink');

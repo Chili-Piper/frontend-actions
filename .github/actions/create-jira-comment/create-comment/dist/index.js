@@ -2019,10 +2019,44 @@ exports.debug = debug; // for test
 
 /***/ }),
 
-/***/ 753:
+/***/ 551:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(617);
+const JiraApi = __nccwpck_require__(656)
+
+const username = core.getInput('jira_username');
+const password = core.getInput('jira_password');
+
+const jira = new JiraApi({
+    protocol: 'https',
+    host: 'floatingapps.atlassian.net',
+    // https://id.atlassian.com/manage-profile/email
+    username,
+    // https://id.atlassian.com/manage-profile/security/api-tokens
+    password,
+    apiVersion: '2',
+    strictSSL: true,
+})
+
+module.exports = {
+    jira
+}
+
+/***/ }),
+
+/***/ 617:
 /***/ ((module) => {
 
-module.exports = eval("require")("./helpers/atlassian");
+module.exports = eval("require")("@actions/core");
+
+
+/***/ }),
+
+/***/ 656:
+/***/ ((module) => {
+
+module.exports = eval("require")("jira-client");
 
 
 /***/ }),
@@ -2149,7 +2183,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(855);
-const { jira } = __nccwpck_require__(753)
+const { jira } = __nccwpck_require__(551);
 
 const jiraTicket = core.getInput('jira_ticket');
 const cloudrunLink = core.getInput('cloudrunLink');

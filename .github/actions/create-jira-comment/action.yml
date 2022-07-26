@@ -32,7 +32,7 @@ runs:
         is_default_branch: false
         branch: ${{ inputs.branch }}
         project_name: ${{ inputs.project_name }}
-        gcloud_project_name: 'chili-sandbox'
+        gcloud_project_name: 'chili-piper-sandbox'
         deployment_type: 'staging'
     - name: Create comment if not exist
       uses: Chili-Piper/frontend-actions/.github/actions/create-jira-comment/create-comment@main

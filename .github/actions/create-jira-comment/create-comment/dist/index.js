@@ -55031,7 +55031,7 @@ jira.getComments(jiraTicket).then(({ comments }) => {
     if (commentsBody.includes(comment)) {
         console.log('Comment with URL exists')
     } else {
-        jira.addComment(jiraTicket, comment).catch(onError)
+        jira.addComment(jiraTicket, comment)
     }
 })
 })();

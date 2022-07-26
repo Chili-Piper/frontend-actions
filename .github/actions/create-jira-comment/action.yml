@@ -28,7 +28,7 @@ runs:
       id: get_cloudrun_link
       uses: Chili-Piper/frontend-actions/.github/actions/get-cloudrun-link@main
       with:
-        credentials_json:${{ inputs.credentials_json }}
+        credentials_json: ${{ inputs.credentials_json }}
         is_default_branch: false
         branch: ${{ inputs.branch }}
         project_name: ${{ inputs.project_name }}

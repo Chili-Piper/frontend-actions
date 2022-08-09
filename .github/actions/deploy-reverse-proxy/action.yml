@@ -51,6 +51,7 @@ runs:
         echo HOMEBASE_URL=$HOMEBASE_URL >> $GITHUB_ENV
         echo IB_URL=$IB_URL >> $GITHUB_ENV
         echo BOOKING_APP_URL=$BOOKING_APP_URL >> $GITHUB_ENV
+        echo CHILICAL_URL=$CHILICAL_URL >> $GITHUB_ENV
 
         source $GITHUB_ENV
 

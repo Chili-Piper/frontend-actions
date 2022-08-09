@@ -16,6 +16,12 @@ inputs:
   ib_url:
     description: "Deployment type"
     required: false
+  chilical_url:
+    description: "Deployment type"
+    required: false
+  booking_app_url:
+    description: "Deployment type"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -38,6 +44,7 @@ runs:
         IMAGE="gcr.io/$GOOGLE_CLOUD_PROJECT/cloudrun-fe-reverse-proxy"
         HOMEBASE_URL=${HOMEBASE_URL:-https://homebase-staging-a6llso2ukq-uc.a.run.app}
         IB_URL=${IB_URL:-https://instant-booker-new-staging-a6llso2ukq-uc.a.run.app}
+        CHILICAL_URL=${CHILICAL_URL:-https://chilical-staging-a6llso2ukq-uc.a.run.app}
         BOOKING_APP_URL=${BOOKING_APP_URL:-https://booking-app-staging-a6llso2ukq-uc.a.run.app}
         
         echo IMAGE=$IMAGE >> $GITHUB_ENV
@@ -55,5 +62,7 @@ runs:
         GOOGLE_CLOUD_PROJECT: ${{ steps.gcloud.outputs.project_name }}
         CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
         IB_URL: ${{ inputs.ib_url }}
+        CHILICAL_URL: ${{ inputs.chilical_url }}
+        BOOKING_APP_URL: ${{ inputs.booking_app_url }}
       shell: bash
 

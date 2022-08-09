@@ -14,13 +14,13 @@ inputs:
     description: "Deployment type"
     required: false
   ib_url:
-    description: "Deployment type"
+    description: "Cloudrun IB url"
     required: false
   chilical_url:
-    description: "Deployment type"
+    description: "Cloudrun Chilical URL"
     required: false
   booking_app_url:
-    description: "Deployment type"
+    description: "Cloudrun Booking app URL"
     required: false
 runs:
   using: "composite"
@@ -41,6 +41,7 @@ runs:
         deployment_type: ${{ inputs.deployment_type }}
     - name: Setup env and deploy to cloud run
       run: |
+        echo "Chilical URL: $CHILICAL_URL, IB: $IB_URL"
         IMAGE="gcr.io/$GOOGLE_CLOUD_PROJECT/cloudrun-fe-reverse-proxy"
         HOMEBASE_URL=${HOMEBASE_URL:-https://homebase-staging-a6llso2ukq-uc.a.run.app}
         IB_URL=${IB_URL:-https://instant-booker-new-staging-a6llso2ukq-uc.a.run.app}

@@ -58,7 +58,7 @@ runs:
 
         echo "Deploying image $IMAGE, service $CLOUDRUN_NAME, GOOGLE_CLOUD_PROJECT $GOOGLE_CLOUD_PROJECT"
         
-        gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --platform=managed --region us-central1 --allow-unauthenticated  --set-env-vars "HOMEBASE_URL=$HOMEBASE_URL","IB_URL=$IB_URL","BOOKING_APP_URL=$BOOKING_APP_URL"
+        gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --platform=managed --region us-central1 --allow-unauthenticated  --set-env-vars "CHILICAL_URL=$CHILICAL_URL","HOMEBASE_URL=$HOMEBASE_URL","IB_URL=$IB_URL","BOOKING_APP_URL=$BOOKING_APP_URL"
         gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
       env:
         GOOGLE_CLOUD_PROJECT: ${{ steps.gcloud.outputs.project_name }}

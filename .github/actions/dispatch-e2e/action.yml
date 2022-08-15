@@ -22,20 +22,52 @@ inputs:
   ib_url:
     description: 'Instant-booker URL'
     required: false
+  concierge_url:
+    description: 'Concierge URL'
+    required: false
   event:
     description: "Dispatched event (e2e_call|ib_e2e_call)"
     required: false
+  environment:
+    required: false
+    description: Select environment to run tests
+  additionalTags:
+    required: false
+    description: Add additional tags, comma separated
+  skip3rdparty:
+    required: false
+    description: Skip 3rd party
+  skipIb:
+    required: false
+    description: Skip Instant Booker
+  skipChat:
+    required: false
+    description: Skip Chat
+  skipChiliCal:
+    required: false
+    description: Skip ChiliCal
+  skipConcierge:
+    required: false
+    description: Skip Concierge
+  skipIntegrations:
+    required: false
+    description: Skip Integartions
+  skipPlatform:
+    required: false
+    description: Skip Platform
+  skipUnsorted:
+    required: false
+    description: Skip Unsorted
 runs:
   using: "composite"
   steps:
     - name: CALL E2E
       run: |
         echo CALL E2E RUN
-        EVENT=${EVENT:-e2e_call}
         curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Authorization: token '$GITHUB_TOKEN \
-        --data '{"event_type": "'$EVENT'", "client_payload": { "repo_name": "'$REPO_NAME'", "sha": "'$COMMIT_SHA'", "issue": "'$ISSUE'", "branch": "'$BRANCH'", "homebase_url": "'$HOMEBASE_URL'", "ib_url": "'$IB_URL'" }}'
+        --data '{"event_type": "full_e2e", "client_payload": { "inputs": ${{ toJson(inputs) }} }}'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         REPO_NAME: ${{ inputs.repo_name }}
@@ -44,5 +76,5 @@ runs:
         BRANCH: ${{ inputs.branch }}
         HOMEBASE_URL: ${{ inputs.homebase_url }}
         IB_URL: ${{ inputs.ib_url }}
-        EVENT: ${{ inputs.event }}
+        CONCIERGE_URL: ${{ inputs.concierge_url }}
       shell: bash

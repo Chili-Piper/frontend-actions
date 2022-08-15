@@ -1,0 +1,77 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/cloudrun-deploy"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/create-e2e-comment"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/deploy-reverse-proxy"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/dispatch-e2e"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/gcloud"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-cloudrun-link"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-cloudrun-name"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-git-env-variables"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-jira-ticket"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-revision"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/get-traffic"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/set-e2e-status"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/setup"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/tag-version"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/update-e2e-comment"
+    open-pull-requests-limit: 15
+    schedule:
+      interval: "weekly"

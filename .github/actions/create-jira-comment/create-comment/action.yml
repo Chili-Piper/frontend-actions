@@ -1,0 +1,21 @@
+name: 'Create JIRA comment'
+description: 'Create JIRA comment with cloudrun link if no comments exist'
+inputs:
+  jira_ticket:
+    description: "JIRA ticket"
+    required: true
+  cloudrun_link:
+    description: "Cloudrun link of deployed application"
+    required: true
+  project_name:
+    description: "Application project name in GCloud"
+    required: true
+  jira_username:
+    description: "JIRA username"
+    required: true
+  jira_password:
+    description: "JIRA password"
+    required: true
+runs:
+  using: "node16"
+  main: 'dist/index.js'

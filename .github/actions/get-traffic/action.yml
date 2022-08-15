@@ -20,9 +20,9 @@ runs:
     - name: Get traffic
       id: get_traffic
       run: |
-        if ! $TRAFFIC
+        if (( ! ${TRAFFIC:-0} ))
         then
-          if ! $IS_DEFAULT_BRANCH
+          if [[ "${IS_DEFAULT_BRANCH}" != "true" ]]
           then
             export TRAFFIC=100
           else

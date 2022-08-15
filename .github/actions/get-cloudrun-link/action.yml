@@ -11,8 +11,8 @@ inputs:
     description: "Branch name"
     required: true
   project_name:
-    description: "GCloud project name"
-    required: false
+    description: "Application name in GCloud"
+    required: true
   gcloud_project_name:
     description: "GCloud project name"
     required: false

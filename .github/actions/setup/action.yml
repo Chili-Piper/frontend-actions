@@ -17,11 +17,18 @@ inputs:
     description: 'Path variable sent to cache action'
     required: false
     default: node_modules
+  custom_install:
+    description: 'Use custom params for install dependencies'
+    required: false
+  cache:
+    description: 'If need to cache dependencies'
+    required: false
+    default: 'true'
 runs:
   using: "composite"
   steps:
     - name: Setup Node.js environment
-      uses: actions/setup-node@v3.1.0
+      uses: actions/setup-node@v3.3.0
       with:
         node-version: '14'
 
@@ -30,17 +37,18 @@ runs:
       shell: bash
 
     - name: Checkout
-      uses: actions/checkout@v3.0.0
+      uses: actions/checkout@v3
       with:
         ref: ${{ inputs.ref }}
         fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
-      uses: actions/cache@v3.0.1
+      if: inputs.cache == 'true'
+      uses: actions/cache@v3
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn
-        cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('yarn.lock') }}
+        cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: ${{ inputs.cache_path }}
         key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
@@ -54,11 +62,11 @@ runs:
       shell: bash
 
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true' && ! inputs.full_install
+      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && ! inputs.full_install
       run: yarn --immutable
       shell: bash
 
     - name: Install dependencies
-      if: steps.node-modules-cache.outputs.cache-hit != 'true' && inputs.full_install
+      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install
       run: yarn --immutable --ignore-optional --production=false
       shell: bash

@@ -13,7 +13,7 @@ inputs:
   full_install:
     description: 'Run yarn with --ignore-optional --production=false flags'
     required: false
-  path:
+  cache_path:
     description: 'Path variable sent to cache action'
     required: false
     default: node_modules
@@ -42,7 +42,7 @@ runs:
         cache-name: node-modules-yarn
         cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('yarn.lock') }}
       with:
-        path: ${{ inputs.npm_token }}
+        path: ${{ inputs.cache_path }}
         key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
         restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 

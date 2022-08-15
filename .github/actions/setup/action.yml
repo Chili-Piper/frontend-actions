@@ -40,7 +40,9 @@ runs:
       with:
         path: |
           node_modules
-          **/node_modules
+          # cache node_modules on monorepos with nohoist and avoid caching dependencies node_modules
+          !(node_modules)/node_modules
+          !(node_modules)/!(node_modules)/node_modules
         key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
         restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 

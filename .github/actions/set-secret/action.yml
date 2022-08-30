@@ -1,6 +1,9 @@
 name: 'Set secret'
 description: 'Create or update GitHub secret'
 inputs:
+  token:
+    description: "GitHub token"
+    required: true
   name:
     description: "GitHub secret name"
     required: true

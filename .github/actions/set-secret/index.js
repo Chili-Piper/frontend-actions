@@ -1,11 +1,11 @@
 const core = require('@actions/core');
 import libsodium from 'libsodium-wrappers'
-const { Octokit } = require("@octokit/action");
+import fetch from 'node-fetch';
 
+const token = core.getInput('token');
 const name = core.getInput('name');
 const value = core.getInput('value');
 
-const octokit = new Octokit();
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
 const encrypt = async (repoPublicKey, secretValue) => {
@@ -21,24 +21,40 @@ const encrypt = async (repoPublicKey, secretValue) => {
     return Buffer.from(encryptedBytes).toString('base64');
 }
 
-const getPublicKey = () => octokit.request('GET /repos/{owner}/{repo}/actions/secrets/public-key', {
-    owner,
-    repo
-})
+const getPublicKey = async () => {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/secrets/public-key`,
+    {
+        headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${token}`
+        }
+    });
 
-const setSecretRequest = async (repoPublicKey, secretName, encryptedSecretValue) => octokit.request('PUT /repos/{owner}/{repo}/actions/secrets/{secret_name}', {
-    owner,
-    repo,
-    secret_name: secretName,
-    encrypted_value: encryptedSecretValue,
-    key_id: repoPublicKey
-})
+    const json = await response.json();
 
-const setSecret = async (repo, secretName, secretValue) => {
-    const repoPublicKey = await getPublicKey(repo)
-    const encryptedSecretValue = encrypt(repoPublicKey, secretValue);
+    console.log('public key: ', json)
 
-    await setSecretRequest(repo, repoPublicKey, secretName, encryptedSecretValue)
+    return json;
 }
 
-setSecret(repo, name, value)
+const setSecretRequest = async (repoPublicKeyId, secretName, encryptedSecretValue) => fetch(`https://api.github.com/repos/${owner}/${repo}/actions/secrets/${secretName}`,
+{
+    method: 'PUT',
+    headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+        encrypted_value: encryptedSecretValue,
+        key_id: repoPublicKeyId
+    })
+})
+
+const setSecret = async (secretName, secretValue) => {
+    const {key_id, key} = await getPublicKey(repo)
+    const encryptedSecretValue = encrypt(key, secretValue);
+
+    await setSecretRequest(repo, key_id, secretName, encryptedSecretValue)
+}
+
+setSecret(name, value)

@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const sodium = require('tweetsodium');
+import libsodium from 'libsodium-wrappers'
 const Octokit = require('octokit')
 
 const owner = 'Chili-Piper'
@@ -13,13 +13,14 @@ const octokit = new Octokit({
     auth: token
 })
 
-const encrypt = (repoPublicKey, secretValue) => {
+const encrypt = async (repoPublicKey, secretValue) => {
     // Convert the message and key to Uint8Array's (Buffer implements that interface)
     const messageBytes = Buffer.from(secretValue);
     const keyBytes = Buffer.from(repoPublicKey, 'base64');
 
     // Encrypt using LibSodium.
-    const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+    await libsodium.ready
+    const encryptedBytes = libsodium.crypto_box_seal(messageBytes, keyBytes)
 
     // Base64 the encrypted secret
     return Buffer.from(encryptedBytes).toString('base64');

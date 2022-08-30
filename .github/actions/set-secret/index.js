@@ -1,6 +1,6 @@
 const core = require('@actions/core');
-import libsodium from 'libsodium-wrappers'
-import fetch from 'node-fetch';
+const libsodium = require('libsodium-wrappers')
+const fetch = require('node-fetch');
 
 const token = core.getInput('token');
 const name = core.getInput('name');
@@ -52,9 +52,9 @@ const setSecretRequest = async (repoPublicKeyId, secretName, encryptedSecretValu
 
 const setSecret = async (secretName, secretValue) => {
     const {key_id, key} = await getPublicKey(repo)
-    const encryptedSecretValue = encrypt(key, secretValue);
+    const encryptedSecretValue = await encrypt(key, secretValue);
 
-    await setSecretRequest(repo, key_id, secretName, encryptedSecretValue)
+    await setSecretRequest(key_id, secretName, encryptedSecretValue)
 }
 
 setSecret(name, value)

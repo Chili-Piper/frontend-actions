@@ -1,0 +1,18 @@
+name: 'Set secret'
+description: 'Create or update GitHub secret'
+inputs:
+  repo:
+    description: "GitHub repo name"
+    required: true
+  token:
+    description: "GitHub token"
+    required: true
+  name:
+    description: "GitHub secret name"
+    required: true
+  value:
+    description: 'GitHub secret value'
+    required: true
+runs:
+  using: "node16"
+  main: 'dist/index.js'

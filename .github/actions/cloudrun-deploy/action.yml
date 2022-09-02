@@ -89,7 +89,7 @@ runs:
       shell: bash
     - name: Build & push docker image
       run: |
-        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker build -f "./frontend-configs/docker/Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
         docker push $IMAGE
       env:
         NPM_TOKEN: ${{ inputs.npm_token }}

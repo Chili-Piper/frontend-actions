@@ -38,6 +38,10 @@ inputs:
     description: "Path to dockerfile"
     required: false
     default: "./Dockerfile"
+  dockerpath:
+    description: "Path"
+    required: false
+    default: "."
 runs:
   using: "composite"
   steps:
@@ -93,11 +97,12 @@ runs:
       shell: bash
     - name: Build & push docker image
       run: |
-        docker build -f "$DOCKERFILE" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker build -f "$DOCKERFILE" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" $DOCKERPATH
         docker push $IMAGE
       env:
         NPM_TOKEN: ${{ inputs.npm_token }}
         DOCKERFILE: ${{ inputs.dockerfile }}
+        DOCKERPATH: ${{ inputs.dockerpath }}
       shell: bash
     - name: Deploy to cloudrun
       run: |

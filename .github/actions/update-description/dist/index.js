@@ -9042,6 +9042,7 @@ const updateDescription = async () => {
 
         const processedBodyTemplateRegExp = new RegExp(inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match))
         const needUpdate = !processedBodyTemplateRegExp.test(body)
+        core.debug('need update', needUpdate, processedBodyTemplateRegExp)
 
         if (needUpdate) {
             core.debug(`body: ${body}`);

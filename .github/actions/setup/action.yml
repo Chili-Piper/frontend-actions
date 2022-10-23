@@ -66,7 +66,7 @@ runs:
       run: yarn --immutable
       shell: bash
 
-    - name: Install dependencies
+    - name: Install dependencies FULL
       if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install
       run: yarn --immutable --ignore-optional --production=false
       shell: bash

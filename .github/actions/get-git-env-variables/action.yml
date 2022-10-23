@@ -37,14 +37,14 @@ runs:
         LAST_COMMIT_HASH=$(git log -n 1 --skip 1 --pretty=format:"%H")
         
         echo "first_commit_hash=$FIRST_COMMIT_HASH" >> $GITHUB_OUTPUT
-        echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+        echo "commit_message='$COMMIT_MESSAGE'" >> $GITHUB_OUTPUT
         echo "last_commit_hash=$LAST_COMMIT_HASH" >> $GITHUB_OUTPUT
       shell: bash
     - name: Debug
       run: |
         echo "LATEST_TAG = $LATEST_TAG"
         echo "FIRST_COMMIT HASH = $FIRST_COMMIT_HASH"
-        echo "COMMIT MESSAGE = $COMMIT_MESSAGE"
+        echo "COMMIT MESSAGE = '$COMMIT_MESSAGE'"
         echo "LAST_COMMIT HASH = $LAST_COMMIT_HASH"
       env:
         LATEST_TAG: ${{ steps.latest_tag.outputs.tag }}

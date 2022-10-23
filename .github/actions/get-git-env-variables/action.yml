@@ -37,7 +37,7 @@ runs:
         LAST_COMMIT_HASH=$(git log -n 1 --skip 1 --pretty=format:"%H")
         
         echo "first_commit_hash=$FIRST_COMMIT_HASH" >> $GITHUB_OUTPUT
-        echo "commit_message='$(echo $COMMIT_MESSAGE)'" >> $GITHUB_OUTPUT
+        echo "commit_message=$(echo $COMMIT_MESSAGE)" >> $GITHUB_OUTPUT
         echo "last_commit_hash=$LAST_COMMIT_HASH" >> $GITHUB_OUTPUT
       shell: bash
     - name: Debug

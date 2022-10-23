@@ -30,6 +30,7 @@ runs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
       with:
+        # https://github.com/facebook/jest/issues/11956
         node-version: '16.10.0'
 
     - name: Install yarn

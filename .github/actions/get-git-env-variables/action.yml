@@ -21,12 +21,12 @@ runs:
       run: |
         if [ "$WITH_TAGS" == "1" ]
         then
-          LATEST_TAG=$(git describe --abbrev=0 --tags || "")
+          LATEST_TAG=$(git describe --abbrev=0 --tags)
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
         fi
       shell: bash
       env:
-        WITH_TAGS: ${{ inputs.branch || 1}}
+        WITH_TAGS: ${{ inputs.WITH_TAGS || 1}}
 
     - name: Save commit info to env variable
       id: commit

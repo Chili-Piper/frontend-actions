@@ -21,7 +21,7 @@ runs:
         JIRA_TICKET="$(tr [A-Z] [a-z] <<< "$ISSUE_KEY")"
         
         echo JIRA_TICKET=$JIRA_TICKET >> $GITHUB_ENV
-        echo "::set-output name=ticket::$(echo $JIRA_TICKET)"
+        echo "JIRA_TICKET=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
       env:
         BRANCH: ${{ inputs.branch }}
       shell: bash

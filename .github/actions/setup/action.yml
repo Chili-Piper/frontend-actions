@@ -52,8 +52,8 @@ runs:
         cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: ${{ inputs.cache_path }}
-        key: v1-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
-        restore-keys: v1-${{ runner.os }}-${{ env.cache-name }}-
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
+        restore-keys: ${{ runner.os }}-${{ env.cache-name }}-
 
     - name: NPM auth
       if: ${{ inputs.npm_token }}

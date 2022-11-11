@@ -30,10 +30,6 @@ runs:
         ref: ${{ inputs.ref }}
         token: ${{ env.GITHUB_TOKEN }}
         fetch-depth: ${{ inputs.fetch-depth }}
-        cache_path: |
-          **/node_modules
-          !**/node_modules/.cache/turbo
-          .yarn/cache
 
     - name: Cache node_modules
       if: inputs.cache == 'true'
@@ -43,7 +39,10 @@ runs:
         cache-name: node-modules-yarn
         cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
       with:
-        path: ${{ inputs.cache_path }}
+        path: |
+          **/node_modules
+          !**/node_modules/.cache/turbo
+          .yarn/cache
         key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
 

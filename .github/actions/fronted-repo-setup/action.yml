@@ -4,9 +4,6 @@ inputs:
   fetch-depth:
     description: 'Fetch depth for checkout'
     required: false
-  github_token:
-    description: 'github_token'
-    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"
@@ -32,7 +29,6 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
-      if: inputs.cache == 'true'
       uses: actions/cache@v3
       id: node-modules-cache
       env:
@@ -47,13 +43,8 @@ runs:
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
 
     - name: Install dependencies
-      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && ! inputs.full_install
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: yarn --immutable
-      shell: bash
-
-    - name: Install dependencies FULL
-      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install
-      run: yarn --immutable --ignore-optional --production=false
       shell: bash
 
     - name: set LATEST_TAG

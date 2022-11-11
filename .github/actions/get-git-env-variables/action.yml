@@ -23,6 +23,7 @@ runs:
         then
           LATEST_TAG=$(git describe --abbrev=0 --tags)
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
         fi
       shell: bash
       env:

@@ -1,0 +1,25 @@
+name: 'Set up'
+description: 'Set up environment'
+inputs:
+  fetch-depth:
+    description: 'Fetch depth for checkout'
+    required: false
+  github_token:
+    description: 'github_token'
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup
+      uses: Chili-Piper/frontend-actions/.github/actions/setup@CPP-0-cache2
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+        github_token: ${{ inputs.github_token }}
+        cache_path: |
+          **/node_modules
+          !**/node_modules/.cache/turbo
+          .yarn/cache
+    - name: 'Get GIT env variables'
+      if: inputs.fetch-depth == '0'
+      id: get_git_env_variables
+      uses: Chili-Piper/frontend-actions/.github/actions/get-git-env-variables@main

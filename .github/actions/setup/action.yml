@@ -40,6 +40,12 @@ runs:
       run: corepack enable
       shell: bash
 
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.ref }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+
     - name: Cache node_modules
       if: inputs.cache == 'true'
       uses: actions/cache@v3

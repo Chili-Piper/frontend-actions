@@ -7,25 +7,25 @@ inputs:
   github_token:
     description: 'github_token'
     required: false
+outputs:
+  LATEST_TAG:
+    description: "Latest tag"
+    value: ${{ steps.latest_tag.outputs.LATEST_TAG }}
 runs:
   using: 'composite'
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ inputs.ref }}
-        fetch-depth: ${{ inputs.fetch-depth }}
-        token: ${{ inputs.github_token }}
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/setup@CPP-0-cache3
+      uses: Chili-Piper/frontend-actions/.github/actions/setup@CPP-0-cache2
       with:
         fetch-depth: ${{ inputs.fetch-depth }}
-        github_token: ${{ inputs.github_token }}
         cache_path: |
           **/node_modules
           !**/node_modules/.cache/turbo
           .yarn/cache
-    - name: 'Get GIT env variables'
+    - name: set LATEST_TAG
       if: inputs.fetch-depth == '0'
-      id: get_git_env_variables
-      uses: Chili-Piper/frontend-actions/.github/actions/get-git-env-variables@main
+      id: latest_tag
+      run: |
+          LATEST_TAG=$(git describe --abbrev=0 --tags)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+      shell: bash

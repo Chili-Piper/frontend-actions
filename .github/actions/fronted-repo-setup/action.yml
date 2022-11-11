@@ -28,7 +28,7 @@ runs:
       uses: actions/checkout@v3
       with:
         ref: ${{ inputs.ref }}
-        token: ${{ inputs.github_token }}
+        token: ${{ env.GITHUB_TOKEN }}
         fetch-depth: ${{ inputs.fetch-depth }}
         cache_path: |
           **/node_modules

@@ -1,0 +1,56 @@
+name: 'Set up'
+description: 'Set up environment'
+inputs:
+  fetch-depth:
+    description: 'Fetch depth for checkout'
+    required: false
+outputs:
+  LATEST_TAG:
+    description: "Latest tag"
+    value: ${{ steps.latest_tag.outputs.LATEST_TAG }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        # https://github.com/facebook/jest/issues/11956
+        node-version: '16.10.0'
+
+    - name: Install yarn
+      run: corepack enable
+      shell: bash
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.ref }}
+        token: ${{ env.GITHUB_TOKEN }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      id: node-modules-cache
+      env:
+        cache-name: node-modules-yarn
+        cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
+      with:
+        path: |
+          **/node_modules
+          !**/node_modules/.cache/turbo
+          .yarn/cache
+        key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
+        restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
+
+    - name: Install dependencies
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      run: yarn --immutable
+      shell: bash
+
+    - name: set LATEST_TAG
+      if: inputs.fetch-depth == '0'
+      id: latest_tag
+      run: |
+          LATEST_TAG=$(git describe --abbrev=0 --tags)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+      shell: bash

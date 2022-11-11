@@ -17,7 +17,7 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
         token: ${{ inputs.github_token }}
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/setup@CPP-0-cache2
+      uses: Chili-Piper/frontend-actions/.github/actions/setup@CPP-0-cache3
       with:
         fetch-depth: ${{ inputs.fetch-depth }}
         github_token: ${{ inputs.github_token }}

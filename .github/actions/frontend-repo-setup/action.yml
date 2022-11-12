@@ -66,10 +66,15 @@ runs:
         ISSUE_KEY_NUMBER="$(cut -f2 -d"-" <<<"$BRANCH")"
         ISSUE_KEY="${ISSUE_KEY_PREFIX}-${ISSUE_KEY_NUMBER}"
         JIRA_TICKET="$(tr [A-Z] [a-z] <<< "$ISSUE_KEY")"
-        
-        echo JIRA_TICKET=$JIRA_TICKET >> $GITHUB_ENV
-        echo "JIRA_TICKET=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
-        echo "ticket=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
+        if [ "$JIRA_TICKET" != "-" ];
+        then
+          echo "JIRA_TICKET=$JIRA_TICKET"
+          echo JIRA_TICKET=$JIRA_TICKET >> $GITHUB_ENV
+          echo "JIRA_TICKET=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
+          echo "ticket=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
+        else
+          echo "Not possible to derive ticket"
+        fi
       env:
         BRANCH: ${{ github.head_ref }}
       shell: bash

@@ -71,5 +71,5 @@ runs:
         echo "JIRA_TICKET=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
         echo "ticket=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
       env:
-        BRANCH: ${{ inputs.ref }}
+        BRANCH: ${{ github.head_ref }}
       shell: bash

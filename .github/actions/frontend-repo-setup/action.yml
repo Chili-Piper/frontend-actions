@@ -1,6 +1,9 @@
 name: 'Set up'
 description: 'Set up environment'
 inputs:
+  ref:
+    description: 'Ref for checkout'
+    required: false
   fetch-depth:
     description: 'Fetch depth for checkout'
     required: false
@@ -53,4 +56,20 @@ runs:
       run: |
           LATEST_TAG=$(git describe --abbrev=0 --tags)
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Get ticket
+      run: |
+        #Split the branch name by '-' and get the issue key
+        ISSUE_KEY_PREFIX="$(cut -f1 -d"-" <<<"$BRANCH")"
+        ISSUE_KEY_NUMBER="$(cut -f2 -d"-" <<<"$BRANCH")"
+        ISSUE_KEY="${ISSUE_KEY_PREFIX}-${ISSUE_KEY_NUMBER}"
+        JIRA_TICKET="$(tr [A-Z] [a-z] <<< "$ISSUE_KEY")"
+        
+        echo JIRA_TICKET=$JIRA_TICKET >> $GITHUB_ENV
+        echo "JIRA_TICKET=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
+        echo "ticket=$(echo $JIRA_TICKET)" >> $GITHUB_OUTPUT
+      env:
+        BRANCH: ${{ inputs.ref }}
       shell: bash

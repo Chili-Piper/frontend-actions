@@ -22,6 +22,8 @@ const projectName = core.getInput('project_name');
 console.log('jiraTicket', jiraTicket)
 console.log('cloudrunLink', cloudrunLink)
 console.log('projectName', projectName)
+console.log('username', username)
+console.log('password', password)
 jira.getComments(jiraTicket).then(({ comments }) => {
     const commentsBody = comments.map(comment => comment.body)
 

@@ -19,7 +19,9 @@ const jira = new JiraApi({
 const jiraTicket = core.getInput('jira_ticket');
 const cloudrunLink = core.getInput('cloudrun_link');
 const projectName = core.getInput('project_name');
-
+console.log('jiraTicket', jiraTicket)
+console.log('cloudrunLink', cloudrunLink)
+console.log('projectName', projectName)
 jira.getComments(jiraTicket).then(({ comments }) => {
     const commentsBody = comments.map(comment => comment.body)
 

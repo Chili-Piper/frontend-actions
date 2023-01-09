@@ -16,7 +16,7 @@ runs:
         # https://github.com/facebook/jest/issues/11956
         node-version: '16.10.0'
     - name: Checkout
-      uses: actions/checkout@v3.0.2
+      uses: actions/checkout@v3.3.0
       with:
         fetch-depth: 0
         token: ${{ inputs.github_token }}

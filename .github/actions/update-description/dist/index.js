@@ -9010,7 +9010,6 @@ const updateDescription = async () => {
         const headTokenRegex = new RegExp('%headbranch%', "g");
 
         const inputs = {
-            token: core.getInput('token'),
             branchRegExp: core.getInput('head-branch-regex'),
             bodyTemplate: core.getInput('body-template'),
             bodyTemplateRegExp: core.getInput('body-template-regex'),
@@ -9042,7 +9041,7 @@ const updateDescription = async () => {
 
         const processedBodyTemplateRegExp = new RegExp(inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match))
         const needUpdate = !processedBodyTemplateRegExp.test(body)
-        core.debug('need update', needUpdate, processedBodyTemplateRegExp)
+        core.debug('need update', needUpdate, processedBodyTemplateRegExp, body)
 
         if (needUpdate) {
             core.debug(`body: ${body}`);
@@ -9053,7 +9052,7 @@ const updateDescription = async () => {
             return;
         }
 
-        const octokit = github.getOctokit(inputs.token);
+        const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
         const response = await octokit.rest.pulls.update(request);
 
         if (response.status !== 200) {
@@ -9067,6 +9066,7 @@ const updateDescription = async () => {
 }
 
 updateDescription()
+
 })();
 
 module.exports = __webpack_exports__;

@@ -9040,6 +9040,7 @@ const updateDescription = async () => {
         const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
         // Getting actual PR data to have updated description on rerun a job
         const pullRequest = await octokit.rest.pulls.get(request);
+        core.debug(`New body: ${JSON.stringify(pullRequest)}`);
 
         const body = pullRequest.body || '';
 

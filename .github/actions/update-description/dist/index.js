@@ -9042,7 +9042,7 @@ const updateDescription = async () => {
         const processedBodyTemplateRegExpString = inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match) + '.*'
         const processedBodyTemplateRegExp = new RegExp(processedBodyTemplateRegExpString)
         const needUpdate = !processedBodyTemplateRegExp.test(body)
-        core.debug(`need update, ${needUpdate}, ${processedBodyTemplateRegExp.toString()}, ${body}`)
+        core.debug(`need update, ${needUpdate}, ${processedBodyTemplateRegExpString}, ${body}`)
 
         if (needUpdate) {
             request.body = inputs.bodyTemplate.replace(headTokenRegex, match).concat('\n\n', body);

@@ -35,12 +35,12 @@ const updateDescription = async () => {
 
         const body = github.context.payload.pull_request.body || '';
 
-        const processedBodyTemplateRegExp = new RegExp(inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match))
+        const processedBodyTemplateRegExpString = inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match) + '.*'
+        const processedBodyTemplateRegExp = new RegExp(processedBodyTemplateRegExpString)
         const needUpdate = !processedBodyTemplateRegExp.test(body)
-        core.debug('need update', needUpdate, processedBodyTemplateRegExp, body)
+        core.debug(`need update, ${needUpdate}, ${processedBodyTemplateRegExp.toString()}, ${body}`)
 
         if (needUpdate) {
-            core.debug(`body: ${body}`);
             request.body = inputs.bodyTemplate.replace(headTokenRegex, match).concat('\n\n', body);
             core.debug(`New body: ${request.body}`);
         } else {

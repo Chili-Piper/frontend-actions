@@ -39,7 +39,7 @@ const updateDescription = async () => {
 
         const body = pullRequestResponse.data.body || '';
 
-        const processedBodyTemplateRegExpString = inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match) + '.*'
+        const processedBodyTemplateRegExpString = '^' + inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match) + '.*'
         const processedBodyTemplateRegExp = new RegExp(processedBodyTemplateRegExpString)
         const needUpdate = !processedBodyTemplateRegExp.test(body)
         core.debug(`need update, ${needUpdate}, ${processedBodyTemplateRegExpString}, ${body}`)

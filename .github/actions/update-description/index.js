@@ -33,7 +33,11 @@ const updateDescription = async () => {
             pull_number: github.context.payload.pull_request.number,
         }
 
-        const body = github.context.payload.pull_request.body || '';
+        const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+        // Getting actual PR data to have updated description on rerun a job
+        const pullRequest = await octokit.rest.pulls.get(request);
+
+        const body = pullRequest.body || '';
 
         const processedBodyTemplateRegExpString = inputs.bodyTemplateRegExp.trim().replace(headTokenRegex, match) + '.*'
         const processedBodyTemplateRegExp = new RegExp(processedBodyTemplateRegExpString)
@@ -48,7 +52,6 @@ const updateDescription = async () => {
             return;
         }
 
-        const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
         const response = await octokit.rest.pulls.update(request);
 
         if (response.status !== 200) {

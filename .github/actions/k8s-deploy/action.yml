@@ -22,7 +22,7 @@ runs:
       run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
     - name: Setup env
       run: |
-        export VERSION=$( echo "$npm_package_version" )
+        export VERSION=$( node -p -e "require('./package.json').version" )
         export IMAGE="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$PROJECT_NAME:${VERSION}"
         
         echo VERSION=$VERSION >> $GITHUB_ENV

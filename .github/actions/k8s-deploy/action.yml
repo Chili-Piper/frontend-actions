@@ -1,0 +1,51 @@
+name: "Deploy to cloudrun"
+description: "Deploy to cloudrun"
+inputs:
+  credentials_json:
+    description: "Credentials JSON for GCloud"
+    required: true
+  npm_token:
+    description: "NPM token"
+    required: true
+  project_name:
+    description: "GCloud project name"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ inputs.credentials_json }}
+    - name: Authenticate to Docker Registry
+      shell: bash
+      run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
+    - name: Setup env
+      run: |
+        export VERSION=$( echo "$npm_package_version" )
+        export IMAGE="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$CLOUDRUN_NAME:${VERSION}"
+        
+        echo VERSION=$VERSION >> $GITHUB_ENV
+        echo IMAGE=$IMAGE >> $GITHUB_ENV
+      env:
+        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+      shell: bash
+    - name: Build & push docker image
+      run: |
+        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker push $IMAGE
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      shell: bash
+    - name: Deploy to cloudrun
+      if: ${{ inputs.target_env == 'staging' }}
+      run: |
+        export IMAGEWithEnv="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$CLOUDRUN_NAME:${VERSION}-$TARGET_ENV"
+        docker tag "$IMAGE" "$IMAGEWithEnv"
+        docker push $IMAGEWithEnv
+        
+        echo "Deployed to $TARGET_ENV"
+      env:
+        TARGET_ENV: ${{ inputs.target_env }}
+        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+      shell: bash

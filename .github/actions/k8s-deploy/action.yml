@@ -1,14 +1,11 @@
-name: "Deploy to cloudrun"
-description: "Deploy to cloudrun"
+name: "Deploy to k8s"
+description: "Deploy to k8s"
 inputs:
   credentials_json:
     description: "Credentials JSON for GCloud"
     required: true
-  npm_token:
-    description: "NPM token"
-    required: true
   project_name:
-    description: "GCloud project name"
+    description: "Project name"
     required: false
 runs:
   using: "composite"
@@ -23,29 +20,27 @@ runs:
     - name: Setup env
       run: |
         export VERSION=$( echo "$npm_package_version" )
-        export IMAGE="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$CLOUDRUN_NAME:${VERSION}"
+        export IMAGE="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$PROJECT_NAME:${VERSION}"
         
         echo VERSION=$VERSION >> $GITHUB_ENV
         echo IMAGE=$IMAGE >> $GITHUB_ENV
       env:
-        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+        PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash
     - name: Build & push docker image
       run: |
-        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker build -f "./Dockerfile" -t "$IMAGE" .
         docker push $IMAGE
-      env:
-        NPM_TOKEN: ${{ inputs.npm_token }}
       shell: bash
-    - name: Deploy to cloudrun
+    - name: Deploy to docker registry with env tag
       if: ${{ inputs.target_env == 'staging' }}
       run: |
-        export IMAGEWithEnv="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$CLOUDRUN_NAME:${VERSION}-$TARGET_ENV"
+        export IMAGEWithEnv="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$PROJECT_NAME:${VERSION}-$TARGET_ENV"
         docker tag "$IMAGE" "$IMAGEWithEnv"
         docker push $IMAGEWithEnv
         
         echo "Deployed to $TARGET_ENV"
       env:
         TARGET_ENV: ${{ inputs.target_env }}
-        CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
+        PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash

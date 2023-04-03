@@ -7,6 +7,9 @@ inputs:
   project_name:
     description: "Project name"
     required: false
+  target_env:
+    description: "Target environment"
+    required: false
 runs:
   using: "composite"
   steps:

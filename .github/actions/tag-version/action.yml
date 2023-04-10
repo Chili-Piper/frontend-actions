@@ -26,7 +26,7 @@ runs:
         git config --global user.email "alexey@chilipiper.com"
         git config --global user.name "Alexey Nekrasov"
         git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/Chili-Piper/$REPO_NAME
-        npm version patch -m "[skip ci] CPP-2716 - Version: %s" --no-commit-hooks;
+        npm version patch -m "[skip ci] CPP-0 - Version: %s" --no-commit-hooks;
         git push && git push origin --tags;
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}

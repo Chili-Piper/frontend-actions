@@ -34,6 +34,10 @@ inputs:
   traffic:
     description: "Traffic"
     required: false
+  memory:
+    description: "Memory limit of the container"
+    required: false
+    default: "512Mi"
 runs:
   using: "composite"
   steps:
@@ -99,11 +103,11 @@ runs:
         if [ "$TRAFFIC" == "100" ]
         then
           echo "Deploying with traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV"
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --memory=$MEMORY
           gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
         else
           echo "Deploying without traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV"
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --memory=$MEMORY
         fi
 
         echo "Deployed"
@@ -111,4 +115,5 @@ runs:
         TRAFFIC: ${{ steps.get_traffic.outputs.traffic }}
         CLOUDRUN_NAME: ${{ steps.get_cloudrun_name.outputs.name }}
         COMMIT: ${{ inputs.commit }}
+        MEMORY: ${{ inputs.memory }}
       shell: bash

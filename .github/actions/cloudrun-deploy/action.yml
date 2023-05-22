@@ -41,7 +41,7 @@ inputs:
   cpu:
     description: "CPU limit of the container"
     required: false
-    default: "0.5"
+    default: "1"
 runs:
   using: "composite"
   steps:

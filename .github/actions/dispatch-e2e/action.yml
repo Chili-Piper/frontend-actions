@@ -31,6 +31,9 @@ inputs:
   environment:
     required: false
     description: Select environment to run tests
+  stableOptions:
+    description: Stable - exclude unstable tests, All - run all tests
+    default: fire
   additionalTags:
     required: false
     description: Add additional tags, comma separated

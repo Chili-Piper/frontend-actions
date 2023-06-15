@@ -67,10 +67,10 @@ runs:
     - name: CALL E2E
       run: |
         echo CALL E2E RUN
-        curl -X POST https://api.github.com/repos/Chili-Piper/e2e/.github/actions/workflows/full_run.yml/dispatches \
+        curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Authorization: token '$GITHUB_TOKEN \
-        --data '{"event_type": "full_e2e", "client_payload": { "inputs": ${{ toJson(inputs) }} }}'
+        --data '{"event_type": "full_e2e","ref": "refs/heads/workflow-changes", "client_payload": { "inputs": ${{ toJson(inputs) }} }}'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       shell: bash

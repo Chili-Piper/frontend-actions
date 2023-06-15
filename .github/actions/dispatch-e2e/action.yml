@@ -70,14 +70,7 @@ runs:
         curl -X POST https://api.github.com/repos/Chili-Piper/e2e/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Authorization: token '$GITHUB_TOKEN \
-        --data '{"event_type": "full_e2e", "client_payload": { "inputs": ${{ toJson(inputs) }} }}'
+        --data '{"event_type": "full_run", "client_payload": { "inputs": ${{ toJson(inputs) }} }}'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
-        REPO_NAME: ${{ inputs.repo_name }}
-        COMMIT_SHA: ${{ inputs.commit_sha }}
-        ISSUE: ${{ inputs.issue }}
-        BRANCH: ${{ inputs.branch }}
-        HOMEBASE_URL: ${{ inputs.homebase_url }}
-        IB_URL: ${{ inputs.ib_url }}
-        CONCIERGE_URL: ${{ inputs.concierge_url }}
       shell: bash

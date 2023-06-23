@@ -107,11 +107,11 @@ runs:
         if [ "$TRAFFIC" == "100" ]
         then
           echo "Deploying with traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=--max_old_space_size=2048" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --cpu=$CPU --memory=$MEMORY
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=--max_old_space_size=1792" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --cpu=$CPU --memory=$MEMORY
           gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
         else
           echo "Deploying without traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=--max_old_space_size=2048" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --cpu=$CPU --memory=$MEMORY
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=--max_old_space_size=1792" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --cpu=$CPU --memory=$MEMORY
         fi
 
         echo "Deployed"

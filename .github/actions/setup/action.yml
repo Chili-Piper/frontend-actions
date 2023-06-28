@@ -62,6 +62,13 @@ runs:
         NPM_TOKEN: ${{ inputs.npm_token }}
       shell: bash
 
+    - name: Yarn berry NPM auth
+      if: ${{ inputs.npm_token }}
+      run: yarn config set 'npmRegistries["//registry.npmjs.org"].npmAuthToken' "${NPM_TOKEN}"
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      shell: bash
+
     - name: Install dependencies
       if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && ! inputs.full_install
       run: yarn --immutable

@@ -28,7 +28,15 @@ runs:
         git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/Chili-Piper/$REPO_NAME
         npm version patch -m "[skip ci] CPP-0 - Version: %s" --no-commit-hooks;
         git push && git push origin --tags;
+        echo new_tag=$(git describe --tags) >> $GITHUB_OUTPUT
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         REPO_NAME: ${{ inputs.repo_name }}
       shell: bash
+    - name: Create a GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.get_traffic.outputs.new_tag }}
+        name: Release ${{ steps.get_traffic.outputs.new_tag }}
+        token: ${{ inputs.github_token }}
+        repo: ${{ inputs.repo_name }}

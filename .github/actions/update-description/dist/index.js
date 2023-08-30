@@ -11563,7 +11563,7 @@
         // Getting actual PR data to have updated description on rerun a job
         const pullRequestResponse = await octokit.rest.pulls.get(request);
 
-        const body = pullRequestResponse.data.body || "";
+        let body = pullRequestResponse.data.body || "";
 
         const bodyPrefixRegexp = new RegExp(
           `^${inputs.bodyTemplateRegExp

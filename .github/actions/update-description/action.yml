@@ -8,11 +8,17 @@ inputs:
     description: "Head branch regexp"
     required: true
   body-template:
-    description: 'Body template'
+    description: 'Body template that will be added to PR description as prefix if body-template-regex won\'t match'
     required: true
   body-template-regex:
-    description: 'Body template reg exp'
+    description: 'Body template reg exp to decide if body-template should be added to PR description as prefix'
     required: true
+  body-footer-template:
+    description: 'Body footer template that will be added to PR description as suffix if body-footer-regexp won\'t match'
+    required: false
+  body-footer-regexp:
+    description: 'Body footer reg exp to decide if body-footer-template should be added to PR description as suffix'
+    required: false
 runs:
   using: "node16"
   main: 'dist/index.js'

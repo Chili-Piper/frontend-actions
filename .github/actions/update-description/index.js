@@ -58,18 +58,19 @@ const updateDescription = async () => {
     );
 
     if (shouldAddPrefix) {
-      request.body = inputs.bodyTemplate
+      body = inputs.bodyTemplate
         .replace(headTokenRegex, headToken)
         .concat("\n\n", body);
     }
     if (shouldAddFooter) {
-      request.body = request.body.concat(
+      body = body.concat(
         "\n\n",
         inputs.bodyFooterTemplate.replace(headTokenRegex, headToken)
       );
     }
 
     if (shouldAddFooter || shouldAddPrefix) {
+      request.body = body;
       core.debug(`New body: ${request.body}`);
     } else {
       core.warning("No updates were made to PR body");

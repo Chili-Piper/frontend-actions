@@ -56,7 +56,12 @@ runs:
       run: |
           COMMIT_WITH_TAG=$(git describe --tag --abbrev=0)
           echo "COMMIT_WITH_TAG=$COMMIT_WITH_TAG"
-          git tag -l v1.3.136*
+          echo "all tags on this commit"
+          git tag -l --contains $COMMIT_WITH_TAG
+          echo "with grep 1"
+          git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'
+          echo "with grep 2"
+          git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v\d+\.\d+\.\d+$'
           # LATEST_TAG=$(git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v\d+\.\d+\.\d+$')
           LATEST_TAG=$(git describe --tag --abbrev=0)
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT

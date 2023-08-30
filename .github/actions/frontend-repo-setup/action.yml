@@ -54,7 +54,8 @@ runs:
       if: inputs.fetch-depth == '0'
       id: latest_tag
       run: |
-          LATEST_TAG=$(git tag -l --contains `git describe --tag --abbrev=0` | grep -E '^v\d+\.\d+\.\d+$')
+          COMMIT_WITH_TAG=$(git describe --tag --abbrev=0)
+          LATEST_TAG=$(git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v\d+\.\d+\.\d+$')
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
       shell: bash

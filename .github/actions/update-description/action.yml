@@ -13,7 +13,7 @@ inputs:
   body-template-regex:
     description: 'Body template reg exp to decide if body-template should be added to PR description as prefix'
     required: true
-  body-footer-templage:
+  body-footer-template:
     description: 'Body footer template that will be added to PR description as suffix if body-footer-regexp won\'t match'
     required: false
   body-footer-regexp:

@@ -7,7 +7,7 @@ const updateDescription = async () => {
       branchRegExp: core.getInput("head-branch-regex"),
       bodyTemplate: core.getInput("body-template") || "",
       bodyTemplateRegExp: core.getInput("body-template-regex") || "",
-      bodyFooterTemplate: core.getInput("body-footer-templage") || "",
+      bodyFooterTemplate: core.getInput("body-footer-template") || "",
       bodyFooterRegex: core.getInput("body-footer-regexp") || "",
     };
 

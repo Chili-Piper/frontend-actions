@@ -11563,7 +11563,7 @@
         // Getting actual PR data to have updated description on rerun a job
         const pullRequestResponse = await octokit.rest.pulls.get(request);
 
-        const body = pullRequestResponse.data.body || "";
+        let body = pullRequestResponse.data.body || "";
 
         const bodyPrefixRegexp = new RegExp(
           `^${inputs.bodyTemplateRegExp
@@ -11582,18 +11582,19 @@
         );
 
         if (shouldAddPrefix) {
-          request.body = inputs.bodyTemplate
+          body = inputs.bodyTemplate
             .replace(headTokenRegex, headToken)
             .concat("\n\n", body);
         }
         if (shouldAddFooter) {
-          request.body = request.body.concat(
+          body = body.concat(
             "\n\n",
             inputs.bodyFooterTemplate.replace(headTokenRegex, headToken)
           );
         }
 
         if (shouldAddFooter || shouldAddPrefix) {
+          request.body = body;
           core.debug(`New body: ${request.body}`);
         } else {
           core.warning("No updates were made to PR body");

@@ -16,6 +16,9 @@ inputs:
   npm_token:
     description: "NPM token"
     required: true
+  sentry_auth_token:
+    description: "SENTRY Auth token"
+    required: false
   project_name:
     description: "GCloud project name"
     required: false
@@ -101,10 +104,11 @@ runs:
       shell: bash
     - name: Build & push docker image
       run: |
-        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" .
+        docker build -f "./Dockerfile" -t "$IMAGE" --build-arg=DEPLOY_ENV="$DEPLOY_ENV" --build-arg=NPM_TOKEN="$NPM_TOKEN" --build-arg=SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" .
         docker push $IMAGE
       env:
         NPM_TOKEN: ${{ inputs.npm_token }}
+        SENTRY_AUTH_TOKEN: ${{ inputs.sentry_auth_token }}
       shell: bash
     - name: Deploy to cloudrun
       run: |

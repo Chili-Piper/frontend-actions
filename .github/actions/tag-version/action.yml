@@ -4,6 +4,14 @@ inputs:
   github_token:
     description: "GitHub token"
     required: true
+  git_email:
+    description: "Git email"
+    required: false
+    default: "SRE ChiliPiper Committer"
+  git_name:
+    description: "Git name"
+    required: false
+    default: "sre+bot@chilipiper.com"
   repo_name:
     description: 'Repository name'
     required: true

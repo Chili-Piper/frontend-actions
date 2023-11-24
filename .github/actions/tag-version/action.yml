@@ -31,14 +31,16 @@ runs:
     - name: Get traffic
       id: get_traffic
       run: |
-        git config --global user.email "alexey@chilipiper.com"
-        git config --global user.name "Alexey Nekrasov"
+        git config --global user.email "$GIT_EMAIL"
+        git config --global user.name "$GIT_NAME"
         git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/Chili-Piper/$REPO_NAME
         npm version patch -m "[skip ci] CPP-0 - Version: %s" --no-commit-hooks;
         git push && git push origin --tags;
         echo new_tag=$(git describe --tags) >> $GITHUB_OUTPUT
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        GIT_NAME: ${{ inputs.git_name }}
+        GIT_EMAIL: ${{ inputs.git_email }}
         REPO_NAME: ${{ inputs.repo_name }}
       shell: bash
     - name: Create a GitHub release

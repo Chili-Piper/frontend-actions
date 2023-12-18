@@ -48,7 +48,11 @@ inputs:
   node_options:
     description: "NODE_OPTIONS"
     required: false
-    default: "--max_old_space_size=1280"
+    default: "--max_old_space_size=8192"
+  port:
+    description: "Container Port"
+    required: false
+    default: "8080"
 runs:
   using: "composite"
   steps:
@@ -115,11 +119,11 @@ runs:
         if [ "$TRAFFIC" == "100" ]
         then
           echo "Deploying with traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=$NODE_OPTIONS" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --set-env-vars "DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "NODE_ENV=$DEPLOY_ENV" --set-env-vars "NPM_TOKEN=$NPM_TOKEN" --cpu=$CPU --memory=$MEMORY
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=$NODE_OPTIONS" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --set-env-vars "DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "NODE_ENV=$DEPLOY_ENV" --set-env-vars "NPM_TOKEN=$NPM_TOKEN" --cpu=$CPU --memory=$MEMORY --port=$PORT
           gcloud alpha run services update-traffic $CLOUDRUN_NAME --to-latest --platform=managed --region us-central1
         else
           echo "Deploying without traffic"
-          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=$NODE_OPTIONS" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --set-env-vars "DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "NODE_ENV=$DEPLOY_ENV" --set-env-vars "NPM_TOKEN=$NPM_TOKEN" --cpu=$CPU --memory=$MEMORY
+          gcloud run deploy $CLOUDRUN_NAME --image "$IMAGE" --labels version=$REVISION_SUFFIX,commit=$COMMIT --platform=managed --region us-central1 --allow-unauthenticated --no-traffic --revision-suffix=$REVISION_SUFFIX --set-env-vars "NODE_OPTIONS=$NODE_OPTIONS" --set-env-vars "REACT_APP_DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "ENV=$DEPLOY_ENV" --set-env-vars "DEPLOY_ENV=$DEPLOY_ENV" --set-env-vars "NODE_ENV=$DEPLOY_ENV" --set-env-vars "NPM_TOKEN=$NPM_TOKEN" --cpu=$CPU --memory=$MEMORY --port=$PORT
         fi
 
         echo "Deployed"
@@ -131,4 +135,5 @@ runs:
         CPU: ${{ inputs.cpu }}
         NODE_OPTIONS: ${{ inputs.node_options }}
         NPM_TOKEN: ${{ inputs.npm_token }}
+        PORT: ${{ inputs.port }}
       shell: bash

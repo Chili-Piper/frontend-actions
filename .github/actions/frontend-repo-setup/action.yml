@@ -32,7 +32,7 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn

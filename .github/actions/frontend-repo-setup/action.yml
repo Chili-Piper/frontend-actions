@@ -1,24 +1,28 @@
-name: 'Set up'
-description: 'Set up environment'
+name: "Set up"
+description: "Set up environment"
 inputs:
   ref:
-    description: 'Ref for checkout'
+    description: "Ref for checkout"
     required: false
   fetch-depth:
-    description: 'Fetch depth for checkout'
+    description: "Fetch depth for checkout"
     required: false
+  node_version:
+    description: "Node version"
+    required: false
+    # https://github.com/facebook/jest/issues/11956
+    default: "16.10.0"
 outputs:
   LATEST_TAG:
     description: "Latest tag"
     value: ${{ steps.latest_tag.outputs.LATEST_TAG }}
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Setup Node.js environment
       uses: actions/setup-node@v4
       with:
-        # https://github.com/facebook/jest/issues/11956
-        node-version: '16.10.0'
+        node-version: ${{ inputs.node_version }}
 
     - name: Install yarn
       run: corepack enable
@@ -55,12 +59,12 @@ runs:
       if: inputs.fetch-depth == '0'
       id: latest_tag
       run: |
-          COMMIT_WITH_TAG=$(git describe --tag --abbrev=0)
-          echo "COMMIT_WITH_TAG=$COMMIT_WITH_TAG"
-          LATEST_TAG=$(git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'  | tail -n 1)
-          echo "LATEST_TAG=$LATEST_TAG"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+        COMMIT_WITH_TAG=$(git describe --tag --abbrev=0)
+        echo "COMMIT_WITH_TAG=$COMMIT_WITH_TAG"
+        LATEST_TAG=$(git tag -l --contains $COMMIT_WITH_TAG | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'  | tail -n 1)
+        echo "LATEST_TAG=$LATEST_TAG"
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
       shell: bash
 
     - name: Get ticket

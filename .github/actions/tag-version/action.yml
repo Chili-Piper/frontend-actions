@@ -15,14 +15,18 @@ inputs:
   repo_name:
     description: 'Repository name'
     required: true
+  node_version:
+    description: "Node version"
+    required: false
+    # https://github.com/facebook/jest/issues/11956
+    default: "16.10.0"
 runs:
   using: "composite"
   steps:
     - name: Setup Node.js environment
       uses: actions/setup-node@v4
       with:
-        # https://github.com/facebook/jest/issues/11956
-        node-version: '16.10.0'
+        node-version: ${{ inputs.node_version }}
     - name: Checkout
       uses: actions/checkout@v4
       with:

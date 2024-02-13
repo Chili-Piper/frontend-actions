@@ -1,29 +1,33 @@
-name: 'Set up'
-description: 'Set up environment'
+name: "Set up"
+description: "Set up environment"
 inputs:
   ref:
-    description: 'Ref for checkout'
+    description: "Ref for checkout"
     required: false
   fetch-depth:
-    description: 'Fetch depth for checkout'
+    description: "Fetch depth for checkout"
     required: false
   npm_token:
-    description: 'NPM token'
+    description: "NPM token"
     required: false
   full_install:
-    description: 'Run yarn with --ignore-optional --production=false flags'
+    description: "Run yarn with --ignore-optional --production=false flags"
     required: false
   cache_path:
-    description: 'Path variable sent to cache action'
+    description: "Path variable sent to cache action"
     required: false
     default: node_modules
   custom_install:
-    description: 'Use custom params for install dependencies'
+    description: "Use custom params for install dependencies"
     required: false
   cache:
-    description: 'If need to cache dependencies'
+    description: "If need to cache dependencies"
     required: false
-    default: 'true'
+    default: "true"
+  node_version:
+    description: "Node version"
+    required: false
+    default: "16.10.0"
 runs:
   using: "composite"
   steps:
@@ -31,7 +35,7 @@ runs:
       uses: actions/setup-node@v4
       with:
         # https://github.com/facebook/jest/issues/11956
-        node-version: '16.10.0'
+        node-version: ${{ inputs.node_version }}
 
     - name: Install yarn
       run: corepack enable

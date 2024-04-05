@@ -10,8 +10,7 @@ inputs:
   node_version:
     description: "Node version"
     required: false
-    # https://github.com/facebook/jest/issues/11956
-    default: "16.10.0"
+    default: "20.12.1"
 outputs:
   LATEST_TAG:
     description: "Latest tag"

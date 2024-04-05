@@ -1,5 +1,5 @@
-name: 'Tag version'
-description: 'Update version and create tag'
+name: "Tag version"
+description: "Update version and create tag"
 inputs:
   github_token:
     description: "GitHub token"
@@ -13,13 +13,12 @@ inputs:
     required: false
     default: "sre+bot@chilipiper.com"
   repo_name:
-    description: 'Repository name'
+    description: "Repository name"
     required: true
   node_version:
     description: "Node version"
     required: false
-    # https://github.com/facebook/jest/issues/11956
-    default: "16.10.0"
+    default: "20.12.1"
 runs:
   using: "composite"
   steps:

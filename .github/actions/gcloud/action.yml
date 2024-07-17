@@ -36,7 +36,9 @@ runs:
         GCLOUD_PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash
     - name: Configure docker
-      run: gcloud auth configure-docker -q ${{ inputs.registries }}
+      run: |
+        gcloud auth configure-docker
+        gcloud auth configure-docker -q ${{ inputs.registries }}
       shell: bash
     - name: Debug
       run: |

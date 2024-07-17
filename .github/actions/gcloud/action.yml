@@ -5,14 +5,17 @@ inputs:
     description: 'Credentials JSON for GCloud'
     required: true
   project_name:
-    description: "GCloud project name"
+    description: 'GCloud project name'
     required: false
+  registries:
+    description: 'Registries in which gcloud needs to configure authentication (space-separated)'
+    default: us-central1-docker.pkg.dev
 outputs:
   project_name:
-    description: "GCloud project name"
+    description: 'GCloud project name'
     value: ${{ steps.set_project.outputs.project_name }}
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -27,13 +30,13 @@ runs:
       run: |
         GCLOUD_PROJECT_NAME=${GCLOUD_PROJECT_NAME:-chili-piper-sandbox}
         gcloud config set project $GCLOUD_PROJECT_NAME
-        
+
         echo "::set-output name=project_name::$(echo $GCLOUD_PROJECT_NAME)"
       env:
         GCLOUD_PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash
     - name: Configure docker
-      run: gcloud auth configure-docker -q
+      run: gcloud auth configure-docker -q ${{ inputs.registries }}
       shell: bash
     - name: Debug
       run: |

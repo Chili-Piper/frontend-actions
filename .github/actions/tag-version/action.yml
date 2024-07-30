@@ -19,6 +19,10 @@ inputs:
     description: "Node version"
     required: false
     default: "20.12.1"
+outputs:
+  new_tag:
+    description: "Newly created tag"
+    value: ${{ steps.bump_version.outputs.new_tag }}
 runs:
   using: "composite"
   steps:
@@ -31,8 +35,8 @@ runs:
       with:
         fetch-depth: 0
         token: ${{ inputs.github_token }}
-    - name: Get traffic
-      id: get_traffic
+    - name: Bump version
+      id: bump_version
       run: |
         git config --global user.email "$GIT_EMAIL"
         git config --global user.name "$GIT_NAME"
@@ -49,7 +53,7 @@ runs:
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ steps.get_traffic.outputs.new_tag }}
-        name: Release ${{ steps.get_traffic.outputs.new_tag }}
+        tag: ${{ steps.bump_version.outputs.new_tag }}
+        name: Release ${{ steps.bump_version.outputs.new_tag }}
         token: ${{ inputs.github_token }}
         repo: ${{ inputs.repo_name }}

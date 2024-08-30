@@ -17,6 +17,8 @@ runs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ inputs.credentials_json }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
     - name: Authenticate to Docker Registry
       shell: bash
       run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
@@ -24,7 +26,7 @@ runs:
       run: |
         export VERSION=$( node -p -e "require('./package.json').version" )
         export IMAGE="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$PROJECT_NAME:${VERSION}"
-        
+
         echo VERSION=$VERSION >> $GITHUB_ENV
         echo IMAGE=$IMAGE >> $GITHUB_ENV
       env:
@@ -41,7 +43,7 @@ runs:
         export IMAGEWithEnv="us-central1-docker.pkg.dev/chilipiper-cloud/apps/$PROJECT_NAME:${VERSION}-$TARGET_ENV"
         docker tag "$IMAGE" "$IMAGEWithEnv"
         docker push $IMAGEWithEnv
-        
+
         echo "Deployed to $TARGET_ENV"
       env:
         TARGET_ENV: ${{ inputs.target_env }}

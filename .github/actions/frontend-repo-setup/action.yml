@@ -11,6 +11,9 @@ inputs:
     description: "Node version"
     required: false
     default: "20.12.1"
+  npm_token:
+    description: "NPM token"
+    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"
@@ -48,6 +51,20 @@ runs:
           /home/runner/.cache/Cypress
         key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
+
+    - name: NPM auth
+      if: ${{ inputs.npm_token }}
+      run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      shell: bash
+
+    - name: Yarn berry NPM auth
+      if: ${{ inputs.npm_token }}
+      run: yarn config set 'npmRegistries["//registry.npmjs.org"].npmAuthToken' "${NPM_TOKEN}"
+      env:
+        NPM_TOKEN: ${{ inputs.npm_token }}
+      shell: bash
 
     - name: Install dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'

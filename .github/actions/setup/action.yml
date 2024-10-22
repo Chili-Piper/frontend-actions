@@ -91,6 +91,11 @@ runs:
       run: yarn --immutable --production=false
       shell: bash
 
+    - name: Install dependencies FULL WITH OPTIONAL INSTALL - Yarn v3
+      if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_with_optional_install_v3 == 'true'
+      run: yarn --immutable --mode=development
+      shell: bash
+
     - name: Install dependencies FULL
       if: (inputs.cache == 'false' || steps.node-modules-cache.outputs.cache-hit != 'true') && inputs.full_install == 'true'
       run: yarn --immutable --ignore-optional --production=false

@@ -10,7 +10,7 @@ inputs:
   node_version:
     description: "Node version"
     required: false
-    default: "20.12.1"
+    default: "20.18.1"
   npm_token:
     description: "NPM token"
     required: false
@@ -21,21 +21,34 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node_version }}
-
-    - name: Install yarn
-      run: corepack enable
-      shell: bash
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.ref }}
         token: ${{ env.GITHUB_TOKEN }}
         fetch-depth: ${{ inputs.fetch-depth }}
+
+    - name: Check .nvmrc
+      id: nvmrc-check
+      shell: bash
+      run: |
+        if [ -f .nvmrc ]; then
+          echo "Found .nvmrc file"
+          echo "NVMRC_FILE_FOUND=true" >> $GITHUB_ENV
+        else
+          echo "No .nvmrc file found"
+          echo "NVMRC_FILE_FOUND=false" >> $GITHUB_ENV
+        fi
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ steps.nvmrc-check.outputs.NVMRC_FILE_FOUND == 'true' || inputs.node_version }}
+        node-version-file: ${{ steps.nvmrc-check.outputs.NVMRC_FILE_FOUND == 'true' && '.nvmrc' }}
+
+    - name: Install yarn
+      run: corepack enable
+      shell: bash
 
     - name: Cache node_modules
       uses: actions/cache@v4

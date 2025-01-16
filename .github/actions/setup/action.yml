@@ -36,7 +36,7 @@ inputs:
   node_version:
     description: "Node version"
     required: false
-    default: "20.13.0"
+    default: "22.13.0"
 runs:
   using: "composite"
   steps:

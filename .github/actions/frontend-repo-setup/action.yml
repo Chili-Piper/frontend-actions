@@ -10,7 +10,7 @@ inputs:
   node_version:
     description: "Node version"
     required: false
-    default: "20.12.1"
+    default: "22.13.0"
   npm_token:
     description: "NPM token"
     required: false

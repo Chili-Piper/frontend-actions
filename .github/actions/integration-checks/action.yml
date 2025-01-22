@@ -32,4 +32,3 @@ runs:
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks
       with:
         backend: ${{ inputs.backend }}
-        checkout_path: api-client-source

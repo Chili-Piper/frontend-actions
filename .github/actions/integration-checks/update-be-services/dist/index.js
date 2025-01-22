@@ -1843,175 +1843,6 @@ class DecodedURL extends URL {
 
 /***/ }),
 
-/***/ 230:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-const FS = __nccwpck_require__(9896);
-const PATH = __nccwpck_require__(6928);
-const constants = {
-  DIRECTORY: 'directory',
-  FILE: 'file'
-}
-
-function safeReadDirSync (path) {
-  let dirData = {};
-  try {
-    dirData = FS.readdirSync(path);
-  } catch(ex) {
-    if (ex.code == "EACCES" || ex.code == "EPERM") {
-      //User does not have permissions, ignore directory
-      return null;
-    }
-    else throw ex;
-  }
-  return dirData;
-}
-
-/**
- * Normalizes windows style paths by replacing double backslahes with single forward slahes (unix style).
- * @param  {string} path
- * @return {string}
- */
-function normalizePath(path) {
-  return path.replace(/\\/g, '/');
-}
-
-/**
- * Tests if the supplied parameter is of type RegExp
- * @param  {any}  regExp
- * @return {Boolean}
- */
-function isRegExp(regExp) {
-  return typeof regExp === "object" && regExp.constructor == RegExp;
-}
-
-/**
- * Collects the files and folders for a directory path into an Object, subject
- * to the options supplied, and invoking optional
- * @param  {String} path
- * @param  {Object} options
- * @param  {function} onEachFile
- * @param  {function} onEachDirectory
- * @return {Object}
- */
-function directoryTree (path, options, onEachFile, onEachDirectory, currentDepth = 0) {
-  options = options || {};
-
-  if (options.depth !== undefined && options.attributes && options.attributes.indexOf('size') !== -1) {
-    throw new Error('usage of size attribute with depth option is prohibited');
-  }
-
-  const name = PATH.basename(path);
-  path = options.normalizePath ? normalizePath(path) : path;
-  const item = { path, name };
-  let stats;
-  let lstat;
-
-  try {
-    stats = FS.statSync(path);
-    lstat = FS.lstatSync(path);
-  }
-  catch (e) { return null }
-
-  // Skip if it matches the exclude regex
-  if (options.exclude) {
-    const excludes =  isRegExp(options.exclude) ? [options.exclude] : options.exclude;
-    if (excludes.some((exclusion) => exclusion.test(path))) {
-      return null;
-    }
-  }
-
-  if (lstat.isSymbolicLink()) {
-    item.isSymbolicLink = true;
-    // Skip if symbolic links should not be followed
-    if (options.followSymlinks === false)
-      return null;
-    // Initialize the symbolic links array to avoid infinite loops
-    if (!options.symlinks)
-      options = { ...options, symlinks: [] };
-    // Skip if a cyclic symbolic link has been found
-    if (options.symlinks.find(ino => ino === lstat.ino)) {
-      return null;
-    } else {
-      options.symlinks.push(lstat.ino);
-    }
-  }
-
-  if (stats.isFile()) {
-
-    const ext = PATH.extname(path).toLowerCase();
-
-    // Skip if it does not match the extension regex
-    if (options.extensions && !options.extensions.test(ext))
-      return null;
-
-
-    if (options.attributes) {
-      options.attributes.forEach((attribute) => {
-        switch (attribute) {
-          case 'extension':
-            item.extension = ext;
-            break;
-          case 'type':
-            item.type = constants.FILE;
-            break;
-          default:
-            item[attribute] = stats[attribute];
-            break;
-        }
-      });
-    }
-
-    if (onEachFile) {
-      onEachFile(item, path, stats);
-    }
-  }
-  else if (stats.isDirectory()) {
-    let dirData = safeReadDirSync(path);
-    if (dirData === null) return null;
-
-    if (options.depth === undefined || options.depth > currentDepth) {
-      item.children = dirData
-          .map(child => directoryTree(PATH.join(path, child), options, onEachFile, onEachDirectory, currentDepth + 1))
-          .filter(e => !!e);
-    }
-
-    if (options.attributes) {
-      options.attributes.forEach((attribute) => {
-        switch (attribute) {
-          case 'size':
-            item.size = item.children.reduce((prev, cur) => prev + cur.size, 0);
-            break;
-          case 'type':
-            item.type = constants.DIRECTORY;
-            break;
-          case 'extension':
-            break;
-          default:
-            item[attribute] = stats[attribute];
-            break;
-        }
-        
-      });
-    }
-
-    if (onEachDirectory) {
-      onEachDirectory(item, path, stats);
-    }
-  } else {
-    return null; // Or set item.size = 0 for devices, FIFO and sockets ?
-  }
-  return item;
-}
-
-module.exports = directoryTree;
-
-
-/***/ }),
-
 /***/ 770:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -27041,26 +26872,25 @@ var external_node_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_node_
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = require("node:path");
 var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
-// EXTERNAL MODULE: ./node_modules/directory-tree/lib/directory-tree.js
-var directory_tree = __nccwpck_require__(230);
-var directory_tree_default = /*#__PURE__*/__nccwpck_require__.n(directory_tree);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7484);
 ;// CONCATENATED MODULE: ./index.ts
 
 
 
-
 async function run() {
     try {
-        (0,core.info)(JSON.stringify(directory_tree_default()(".", { depth: 5 })));
         const servicesFilePath = external_node_path_default().join("frontend-packages", "api-client", "src", "services.json");
         if (!external_node_fs_default().existsSync(servicesFilePath)) {
             (0,core.setFailed)(`services.json not found at ${servicesFilePath}`);
             return;
         }
         const fileContent = external_node_fs_default().readFileSync(servicesFilePath, "utf-8");
-        (0,core.info)("services.json content:");
+        const services = JSON.parse(fileContent);
+        const backendVersions = (0,core.getInput)("backend");
+        console.log("backendVersions", backendVersions);
+        external_node_fs_default().writeFileSync(servicesFilePath, JSON.stringify(services, null, 2));
+        (0,core.info)("services.json content updated:");
         (0,core.info)(fileContent);
     }
     catch (error) {

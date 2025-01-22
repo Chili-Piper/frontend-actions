@@ -1,11 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import dirTree from "directory-tree";
-import { info, setFailed } from "@actions/core";
+import { info, getInput, setFailed } from "@actions/core";
 
 async function run() {
   try {
-    info(JSON.stringify(dirTree(".", { depth: 5 })));
     const servicesFilePath = path.join(
       "frontend-packages",
       "api-client",
@@ -19,7 +17,13 @@ async function run() {
     }
 
     const fileContent = fs.readFileSync(servicesFilePath, "utf-8");
-    info("services.json content:");
+    const services = JSON.parse(fileContent);
+
+    const backendVersions = getInput("backend");
+    console.log("backendVersions", backendVersions);
+
+    fs.writeFileSync(servicesFilePath, JSON.stringify(services, null, 2));
+    info("services.json content updated:");
     info(fileContent);
   } catch (error: any) {
     setFailed(error.message);

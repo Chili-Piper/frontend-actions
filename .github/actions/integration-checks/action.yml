@@ -17,7 +17,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup
-      uses: ../frontend-repo-setup
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@integration-checks
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend

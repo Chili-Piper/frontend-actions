@@ -1,0 +1,9 @@
+{
+  "name": "update-be-services",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "@actions/core": "^1.10.0"
+  }
+}

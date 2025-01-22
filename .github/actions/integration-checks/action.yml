@@ -2,10 +2,10 @@ name: "Integration Checks"
 description: "Checks for FE <-> BE Integration"
 inputs:
   frontend:
-    description: "Ref for checkout"
+    description: "Frontend apps versions"
     required: false
   backend:
-    description: "Fetch depth for checkout"
+    description: "Backend services versions"
     required: false
   gcloud_credentials_json:
     description: "GCLOUD credentials"
@@ -28,3 +28,5 @@ runs:
         credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+    - name: Update api-client services.json
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks

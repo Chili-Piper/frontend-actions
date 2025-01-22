@@ -1,0 +1,18 @@
+name: TEST
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: test
+    runs-on: [cp-small]
+    env:
+      GCLOUD_KEY: ${{ secrets.CPCLOUD_GCLOUD_KEY }}
+      GITHUB_TOKEN: ${{ secrets.CREATE_PR_PAT }}
+    steps:
+      - uses: ./actions/integration-checks
+        with:
+          gcloud_credentials_json: ${{ env.GCLOUD_KEY }}
+          checkout_token: ${{ env.GITHUB_TOKEN }}

@@ -20,6 +20,9 @@ inputs:
   checkout_path:
     description: "Relative path under $GITHUB_WORKSPACE to place the repository"
     required: false
+  checkout_token:
+    description: "Github Token for when checking out a different repository"
+    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"

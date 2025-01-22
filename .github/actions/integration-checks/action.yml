@@ -1,0 +1,30 @@
+name: "Integration Checks"
+description: "Checks for FE <-> BE Integration"
+inputs:
+  frontend:
+    description: "Ref for checkout"
+    required: false
+  backend:
+    description: "Fetch depth for checkout"
+    required: false
+  gcloud_credentials_json:
+    description: "GCLOUD credentials"
+    required: true
+  checkout_token:
+    description: "Github Token"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Setup
+      uses: ../frontend-repo-setup
+      with:
+        checkout_path: api-client-source
+        checkout_repo: Chili-Piper/frontend
+        checkout_token: ${{ inputs.checkout_token }}
+    - name: Authenticate to CPCLOUD
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.gcloud_key }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2

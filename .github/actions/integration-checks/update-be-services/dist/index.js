@@ -27054,8 +27054,7 @@ var core = __nccwpck_require__(7484);
 async function run() {
     try {
         (0,core.info)(JSON.stringify(directory_tree_default()(".", { depth: 5 })));
-        const checkoutPath = (0,core.getInput)("checkout_path");
-        const servicesFilePath = external_node_path_default().join(checkoutPath, "frontend-packages", "api-client", "src", "services.json");
+        const servicesFilePath = external_node_path_default().join("frontend-packages", "api-client", "src", "services.json");
         if (!external_node_fs_default().existsSync(servicesFilePath)) {
             (0,core.setFailed)(`services.json not found at ${servicesFilePath}`);
             return;

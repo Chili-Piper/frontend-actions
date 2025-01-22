@@ -31,6 +31,6 @@ runs:
     - name: Update api-client services.json
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks
       with:
-        backend:
+        backend: |
           concierge-fire: v0.55.297
           concierge-ice: v0.55.297

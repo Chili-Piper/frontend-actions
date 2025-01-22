@@ -26827,35 +26827,76 @@ module.exports = parseParams
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-const fs = __nccwpck_require__(9896);
-const path = __nccwpck_require__(6928);
-const core = __nccwpck_require__(7484);
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = require("node:fs");
+var external_node_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_node_fs_namespaceObject);
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = require("node:path");
+var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(7484);
+;// CONCATENATED MODULE: ./index.ts
+
+
 
 async function run() {
-  try {
-    const checkoutPath = core.getInput('checkout_path');
-    const servicesFilePath = path.join(checkoutPath, 'frontend-packages', 'services.json');
-
-    if (!fs.existsSync(servicesFilePath)) {
-      core.setFailed(`services.json not found at ${servicesFilePath}`);
-      return;
+    try {
+        const checkoutPath = (0,core.getInput)("checkout_path");
+        const servicesFilePath = external_node_path_default().join(checkoutPath, "frontend-packages", "services.json");
+        if (!external_node_fs_default().existsSync(servicesFilePath)) {
+            (0,core.setFailed)(`services.json not found at ${servicesFilePath}`);
+            return;
+        }
+        const fileContent = external_node_fs_default().readFileSync(servicesFilePath, "utf-8");
+        (0,core.info)("services.json content:");
+        (0,core.info)(fileContent);
     }
-
-    const fileContent = fs.readFileSync(servicesFilePath, 'utf-8');
-    core.info('services.json content:');
-    core.info(fileContent);
-  } catch (error) {
-    core.setFailed(error.message);
-  }
+    catch (error) {
+        (0,core.setFailed)(error.message);
+    }
 }
-
 run();
+
+})();
 
 module.exports = __webpack_exports__;
 /******/ })()

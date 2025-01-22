@@ -30,3 +30,6 @@ runs:
       uses: google-github-actions/setup-gcloud@v2
     - name: Update api-client services.json
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks
+      with:
+        backend: ${{ inputs.backend }}
+        checkout_path: api-client-source

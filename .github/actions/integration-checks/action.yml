@@ -25,6 +25,6 @@ runs:
     - name: Authenticate to CPCLOUD
       uses: google-github-actions/auth@v1
       with:
-        credentials_json: ${{ inputs.gcloud_key }}
+        credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2

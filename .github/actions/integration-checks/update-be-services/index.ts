@@ -8,6 +8,8 @@ async function run() {
     const servicesFilePath = path.join(
       checkoutPath,
       "frontend-packages",
+      "api-client",
+      "src",
       "services.json"
     );
 

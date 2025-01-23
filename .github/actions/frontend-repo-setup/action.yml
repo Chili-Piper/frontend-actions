@@ -43,10 +43,10 @@ runs:
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.ref }}
-        token: ${{ env.GITHUB_TOKEN }}
+        token: ${{ inputs.checkout_token || env.GITHUB_TOKEN }}
         fetch-depth: ${{ inputs.fetch-depth }}
         repository: ${{ inputs.checkout_repo }}
-        path: ${{ inputs.checkout-path }}
+        path: ${{ inputs.checkout_path }}
 
     - name: Cache node_modules
       uses: actions/cache@v4

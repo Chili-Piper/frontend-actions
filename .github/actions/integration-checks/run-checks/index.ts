@@ -26,46 +26,7 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-const includePatterns = [
-  "./.yarn/cache/",
-  "./node_modules",
-  "./apps/*/node_modules",
-  "./frontend-packages/*/node_modules",
-];
-
-function copyCacheDeps(src: string, dest: string) {
-  try {
-    for (const pattern of includePatterns) {
-      const matches = glob.sync(pattern, {
-        cwd: src,
-        dot: true,
-      });
-
-      for (const match of matches) {
-        const sourcePath = path.join(src, match);
-        const destPath = path.join(dest, match);
-
-        info(`Copying ${sourcePath} into ${destPath}`);
-        fs.cpSync(sourcePath, destPath, { recursive: true, force: true });
-      }
-    }
-  } catch (error) {
-    setFailed(`Error during copy operation: ${error}`);
-  }
-}
-
-async function install({
-  directory,
-  apiClientRepoPath,
-}: {
-  apiClientRepoPath: string;
-  directory: string;
-}) {
-  const localApiClientPath = `${directory}/frontend-packages/api-client`;
-  if (fs.existsSync(localApiClientPath)) {
-    copyCacheDeps(apiClientRepoPath, directory);
-  }
-
+async function install({ directory }: { directory: string }) {
   await exec("yarn", undefined, {
     cwd: directory,
     failOnStdErr: true,
@@ -111,7 +72,6 @@ async function run() {
       string
     >;
     const checkoutToken = getInput("checkout_token");
-    const apiClientRepoPath = getInput("api_client_repo_path");
     const apiClientPath = getInput("api_client_path");
     const frontendsKeys = Object.keys(frontendsConfig) as Array<
       keyof typeof frontendsConfig
@@ -127,7 +87,7 @@ async function run() {
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
-      await install({ directory: frontendKey, apiClientRepoPath });
+      await install({ directory: frontendKey });
       await installApiClient({ apiClientPath, directory: frontendKey });
       const exitCode = await runChecks({
         command: frontend.command,

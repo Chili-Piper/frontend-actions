@@ -30742,7 +30742,7 @@ async function run() {
         const fileContent = external_node_fs_default().readFileSync(servicesFilePath, "utf-8");
         const services = JSON.parse(fileContent);
         const backendVersionsJSON = (0,core.getInput)("backend");
-        const backendVersions = load(backendVersionsJSON);
+        const backendVersions = (load(backendVersionsJSON) ?? {});
         Object.keys(backendVersions).forEach((inputService) => {
             const serviceInfo = services[inputService];
             if (!serviceInfo) {

@@ -24,7 +24,7 @@ async function run() {
     >;
 
     const backendVersionsJSON = getInput("backend");
-    const backendVersions = yaml.load(backendVersionsJSON) as Record<
+    const backendVersions = (yaml.load(backendVersionsJSON) ?? {}) as Record<
       string,
       string
     >;

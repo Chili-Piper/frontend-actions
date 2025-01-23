@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
+import { valid as validSemver } from "semver";
 
 async function run() {
   try {
@@ -40,11 +41,21 @@ async function run() {
         return;
       }
 
-      const newVersion = `v${backendVersions[inputService]}`;
+      if (
+        validSemver(backendVersions[inputService]) !==
+        backendVersions[inputService]
+      ) {
+        info(
+          `Skipping invalid version ${backendVersions[inputService]} for ${inputService}`
+        );
+        return;
+      }
+
+      const newVersion = `v${backendVersions[inputService]}` as const;
 
       if (newVersion !== serviceInfo.version) {
         info(`Setting ${inputService} version to ${newVersion}`);
-        services[inputService].version = `v${newVersion}`;
+        services[inputService].version = newVersion;
       }
     });
 

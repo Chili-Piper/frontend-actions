@@ -20,17 +20,19 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
-  const gitCloneExitCode = await exec(
-    "git",
-    ["clone", "--depth=1", ...tagArgs, repo, directory],
-    {
-      errStream: process.stderr,
-    }
-  );
+  const gitCloneExitCode = await exec("git", [
+    "clone",
+    "--depth=1",
+    ...tagArgs,
+    repo,
+    directory,
+  ]);
 
   if (gitCloneExitCode) {
     setFailed("Failed during git clone");
     return;
+  } else {
+    info("Git cloned successfully");
   }
 
   await exec(`cd ${directory}`, undefined, {

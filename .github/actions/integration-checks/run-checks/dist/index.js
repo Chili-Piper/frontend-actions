@@ -31952,9 +31952,15 @@ const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+    let error = "";
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-        failOnStdErr: true,
+        listeners: {
+            stderr: (data) => {
+                error += data.toString();
+            },
+        },
     });
+    (0,core.info)(error);
 }
 async function install(directory) {
     await (0,exec.exec)("yarn", undefined, {

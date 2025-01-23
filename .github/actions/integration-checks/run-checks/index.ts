@@ -20,9 +20,15 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
+  let error = "";
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-    failOnStdErr: true,
+    listeners: {
+      stderr: (data: Buffer) => {
+        error += data.toString();
+      },
+    },
   });
+  info(error);
 }
 
 async function install(directory: string) {

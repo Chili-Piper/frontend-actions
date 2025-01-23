@@ -31,6 +31,8 @@ runs:
     - name: Update api-client services.json
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks
       with:
-        backend: |
-          customization-settings: 0.0.21
-          concierge-fire: 0.55.296
+        backend: ${{ inputs.backend }}
+    - name: Load Open API Docs
+      run: yarn workspace @chilipiper/api-client load-docs
+    - name: Build API code
+      run: yarn workspace @chilipiper/api-client generate-code

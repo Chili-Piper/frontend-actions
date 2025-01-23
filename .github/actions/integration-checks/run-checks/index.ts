@@ -31,9 +31,9 @@ async function checkout({
   if (gitCloneExitCode) {
     setFailed("Failed during git clone");
     return;
-  } else {
-    info("Git cloned successfully");
   }
+
+  info("Git cloned successfully");
 
   await exec(`cd ${directory}`, undefined, {
     errStream: process.stderr,

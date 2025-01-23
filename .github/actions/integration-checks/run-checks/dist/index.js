@@ -31952,13 +31952,18 @@ const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
-    const gitCloneExitCode = await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-        errStream: process.stderr,
-    });
+    const gitCloneExitCode = await (0,exec.exec)("git", [
+        "clone",
+        "--depth=1",
+        ...tagArgs,
+        repo,
+        directory,
+    ]);
     if (gitCloneExitCode) {
         (0,core.setFailed)("Failed during git clone");
         return;
     }
+    (0,core.info)("Git cloned successfully");
     await (0,exec.exec)(`cd ${directory}`, undefined, {
         errStream: process.stderr,
     });

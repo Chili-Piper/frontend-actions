@@ -28118,6 +28118,9 @@ var exec = __nccwpck_require__(5236);
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = require("node:path");
 var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = require("node:fs");
+var external_node_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_node_fs_namespaceObject);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7484);
 ;// CONCATENATED MODULE: ./node_modules/js-yaml/dist/js-yaml.mjs
@@ -31981,6 +31984,7 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"
 
 
 
+
 const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
@@ -31994,6 +31998,12 @@ async function install(directory) {
     });
 }
 async function installApiClient({ apiClientPath, directory, }) {
+    const localApiClientPath = `${directory}/frontend-packages/api-client`;
+    if (external_node_fs_default().existsSync(localApiClientPath)) {
+        external_node_fs_default().rmdirSync(localApiClientPath);
+        external_node_fs_default().cpSync(apiClientPath, localApiClientPath);
+        return;
+    }
     await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
         failOnStdErr: true,

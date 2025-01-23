@@ -1,5 +1,6 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
+import fs from "node:fs";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
@@ -38,6 +39,12 @@ async function installApiClient({
   directory: string;
   apiClientPath: string;
 }) {
+  const localApiClientPath = `${directory}/frontend-packages/api-client`;
+  if (fs.existsSync(localApiClientPath)) {
+    fs.rmdirSync(localApiClientPath);
+    fs.cpSync(apiClientPath, localApiClientPath);
+    return;
+  }
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
     failOnStdErr: true,

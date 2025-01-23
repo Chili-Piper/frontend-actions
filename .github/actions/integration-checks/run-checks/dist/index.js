@@ -31989,9 +31989,11 @@ const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+    (0,core.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 async function install({ directory }) {
+    (0,core.info)("Installing deps...");
     await (0,exec.exec)("yarn", undefined, {
         cwd: directory,
         failOnStdErr: true,
@@ -32000,16 +32002,19 @@ async function install({ directory }) {
 async function installApiClient({ apiClientPath, directory, }) {
     const localApiClientPath = `${directory}/frontend-packages/api-client`;
     if (external_node_fs_default().existsSync(localApiClientPath)) {
+        (0,core.info)(`Copying api-client from ${apiClientPath}`);
         external_node_fs_default().rmSync(localApiClientPath, { recursive: true, force: true });
         external_node_fs_default().cpSync(apiClientPath, localApiClientPath, { recursive: true });
         return;
     }
+    (0,core.info)(`Linking api-client ${apiClientPath}`);
     await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
         failOnStdErr: true,
     });
 }
 function runChecks({ command, directory, }) {
+    (0,core.info)(`Running type checks with command ${command}`);
     return (0,exec.exec)(command, undefined, {
         cwd: directory,
         failOnStdErr: false,

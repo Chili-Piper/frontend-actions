@@ -22,10 +22,12 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
+  info(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
 async function install({ directory }: { directory: string }) {
+  info("Installing deps...");
   await exec("yarn", undefined, {
     cwd: directory,
     failOnStdErr: true,
@@ -41,10 +43,12 @@ async function installApiClient({
 }) {
   const localApiClientPath = `${directory}/frontend-packages/api-client`;
   if (fs.existsSync(localApiClientPath)) {
+    info(`Copying api-client from ${apiClientPath}`);
     fs.rmSync(localApiClientPath, { recursive: true, force: true });
     fs.cpSync(apiClientPath, localApiClientPath, { recursive: true });
     return;
   }
+  info(`Linking api-client ${apiClientPath}`);
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
     failOnStdErr: true,
@@ -58,6 +62,7 @@ function runChecks({
   command: string;
   directory: string;
 }) {
+  info(`Running type checks with command ${command}`);
   return exec(command, undefined, {
     cwd: directory,
     failOnStdErr: false,

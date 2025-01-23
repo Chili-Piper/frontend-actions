@@ -22,6 +22,9 @@ runs:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
+    - name: CD into api-client-source
+      run: cd api-client-source
+      shell: bash
     - name: Authenticate to CPCLOUD
       uses: google-github-actions/auth@v1
       with:

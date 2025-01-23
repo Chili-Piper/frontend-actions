@@ -1,4 +1,5 @@
 import { exec } from "@actions/exec";
+import path from "node:path";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
@@ -20,15 +21,7 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
-  let error = "";
-  await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-    listeners: {
-      stderr: (data: Buffer) => {
-        error += data.toString();
-      },
-    },
-  });
-  info(error);
+  await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
 async function install(directory: string) {
@@ -90,7 +83,7 @@ async function run() {
       await installApiClient({ apiClientPath, directory: frontendKey });
       const exitCode = await runChecks({
         command: frontend.command,
-        directory: frontendKey,
+        directory: path.join(frontendKey, frontend.directory),
       });
 
       if (exitCode !== 0) {

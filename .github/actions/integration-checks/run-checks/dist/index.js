@@ -32002,6 +32002,10 @@ async function run() {
             if (exitCode !== 0) {
                 failedFrontends.push(frontendKey);
             }
+            await (0,exec.exec)("cd ..", undefined, {
+                failOnStdErr: true,
+                errStream: process.stderr,
+            });
         }
         if (failedFrontends.length > 0) {
             (0,core.setFailed)(`Failed frontends: [${failedFrontends.join(", ")}]`);

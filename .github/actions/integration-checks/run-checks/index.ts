@@ -80,11 +80,16 @@ async function run() {
       if (exitCode !== 0) {
         failedFrontends.push(frontendKey);
       }
+
+      await exec("cd ..", undefined, {
+        failOnStdErr: true,
+        errStream: process.stderr,
+      });
     }
 
     if (failedFrontends.length > 0) {
       setFailed(`Failed frontends: [${failedFrontends.join(", ")}]`);
-      return
+      return;
     }
   } catch (error: any) {
     setFailed(error.message);

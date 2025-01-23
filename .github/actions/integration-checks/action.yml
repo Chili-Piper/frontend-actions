@@ -32,5 +32,5 @@ runs:
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-services@integration-checks
       with:
         backend: |
-          customization-settings: v0.0.21
+          customization-settings: 0.0.21
           concierge-fire: 0.55.296

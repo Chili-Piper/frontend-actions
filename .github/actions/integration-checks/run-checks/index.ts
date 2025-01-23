@@ -23,9 +23,6 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
     failOnStdErr: true,
     errStream: process.stderr,
-    env: {
-      GIT_AUTH_TOKEN: checkoutToken,
-    },
   });
   await exec(`cd ${directory}`, undefined, {
     failOnStdErr: true,

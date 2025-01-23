@@ -31955,9 +31955,6 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
         failOnStdErr: true,
         errStream: process.stderr,
-        env: {
-            GIT_AUTH_TOKEN: checkoutToken,
-        },
     });
     await (0,exec.exec)(`cd ${directory}`, undefined, {
         failOnStdErr: true,

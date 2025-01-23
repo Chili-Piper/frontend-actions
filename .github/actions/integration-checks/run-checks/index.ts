@@ -20,53 +20,43 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
-  const gitCloneExitCode = await exec("git", [
-    "clone",
-    "--depth=1",
-    ...tagArgs,
-    repo,
-    directory,
-  ]);
-
-  if (gitCloneExitCode) {
-    setFailed("Failed during git clone");
-    return;
-  }
-
-  info("Git cloned successfully");
-
-  await exec(`cd ${directory}`, undefined, {
+  await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
+    failOnStdErr: true,
     errStream: process.stderr,
   });
 }
 
-async function install() {
-  const exitCode = await exec("yarn", undefined, {
+async function install(directory: string) {
+  await exec("yarn", undefined, {
+    cwd: directory,
+    failOnStdErr: true,
     errStream: process.stderr,
   });
-  if (exitCode) {
-    setFailed("Failed during yarn install");
-    return;
-  }
 }
 
-async function installApiClient(apiClientPath: string) {
-  const exitCode = await exec(
-    `yarn add @chilipiper/api-client@${apiClientPath}`,
-    undefined,
-    {
-      errStream: process.stderr,
-    }
-  );
-
-  if (exitCode) {
-    setFailed("Failed during install api-client");
-    return;
-  }
+async function installApiClient({
+  apiClientPath,
+  directory,
+}: {
+  directory: string;
+  apiClientPath: string;
+}) {
+  await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+    cwd: directory,
+    failOnStdErr: true,
+    errStream: process.stderr,
+  });
 }
 
-function runChecks(command: string) {
+function runChecks({
+  command,
+  directory,
+}: {
+  command: string;
+  directory: string;
+}) {
   return exec(command, undefined, {
+    cwd: directory,
     errStream: process.stderr,
   });
 }
@@ -94,17 +84,16 @@ async function run() {
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
-      await install();
-      await installApiClient(apiClientPath);
-      const exitCode = await runChecks(frontend.command);
+      await install(frontendKey);
+      await installApiClient({ apiClientPath, directory: frontendKey });
+      const exitCode = await runChecks({
+        command: frontend.command,
+        directory: frontendKey,
+      });
 
       if (exitCode !== 0) {
         failedFrontends.push(frontendKey);
       }
-
-      await exec("cd ..", undefined, {
-        errStream: process.stderr,
-      });
     }
 
     if (failedFrontends.length > 0) {

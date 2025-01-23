@@ -61,6 +61,7 @@ function runChecks({
 }) {
   return exec(command, undefined, {
     cwd: directory,
+    failOnStdErr: false,
   });
 }
 

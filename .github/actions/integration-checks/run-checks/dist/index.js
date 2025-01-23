@@ -32012,6 +32012,7 @@ async function installApiClient({ apiClientPath, directory, }) {
 function runChecks({ command, directory, }) {
     return (0,exec.exec)(command, undefined, {
         cwd: directory,
+        failOnStdErr: false,
     });
 }
 async function run() {

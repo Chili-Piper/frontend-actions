@@ -31998,6 +31998,14 @@ async function install({ directory }) {
         cwd: directory,
     });
 }
+function setApiClientResolution(apiClientPath) {
+    const packageJson = JSON.parse(external_node_fs_default().readFileSync("./package.json", "utf-8"));
+    if (!packageJson.resolutions) {
+        packageJson.resolutions = {};
+    }
+    packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
+    external_node_fs_default().writeFileSync("./package.json", JSON.stringify(packageJson, null, 2));
+}
 async function installApiClient({ apiClientPath, directory, }) {
     const localApiClientPath = `${directory}/frontend-packages/api-client`;
     if (external_node_fs_default().existsSync(localApiClientPath)) {
@@ -32007,6 +32015,7 @@ async function installApiClient({ apiClientPath, directory, }) {
         return;
     }
     (0,core.info)(`Linking api-client ${apiClientPath}`);
+    setApiClientResolution(apiClientPath);
     await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
     });

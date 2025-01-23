@@ -33,6 +33,15 @@ async function install({ directory }: { directory: string }) {
   });
 }
 
+function setApiClientResolution(apiClientPath: string) {
+  const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
+  if (!packageJson.resolutions) {
+    packageJson.resolutions = {};
+  }
+  packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
+  fs.writeFileSync("./package.json", JSON.stringify(packageJson, null, 2));
+}
+
 async function installApiClient({
   apiClientPath,
   directory,
@@ -48,6 +57,7 @@ async function installApiClient({
     return;
   }
   info(`Linking api-client ${apiClientPath}`);
+  setApiClientResolution(apiClientPath);
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
   });

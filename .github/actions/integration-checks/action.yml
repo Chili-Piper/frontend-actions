@@ -12,7 +12,10 @@ inputs:
     required: true
   checkout_token:
     description: "Github Token"
-    required: false
+    required: true
+  npm_token:
+    description: "NPM Token",
+    required: true
 runs:
   using: "composite"
   steps:
@@ -22,6 +25,7 @@ runs:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
+        npm_token: ${{ inputs.npm_token }}
     - name: Authenticate to CPCLOUD
       uses: google-github-actions/auth@v1
       with:

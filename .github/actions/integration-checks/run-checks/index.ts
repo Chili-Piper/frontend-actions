@@ -90,8 +90,8 @@ async function run() {
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
-      await install({ directory: frontendKey });
       await installApiClient({ apiClientPath, directory: frontendKey });
+      await install({ directory: frontendKey });
       const exitCode = await runChecks({
         command: frontend.command,
         directory: path.join(frontendKey, frontend.directory),

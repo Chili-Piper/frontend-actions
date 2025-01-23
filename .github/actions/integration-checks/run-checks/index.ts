@@ -3,6 +3,8 @@ import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
 
+const gitUser = "sre+bot@chilipiper.com";
+
 async function checkout({
   checkoutToken,
   repository,
@@ -16,7 +18,9 @@ async function checkout({
 }) {
   const tagArgs = version ? [`--branch=v${version}`] : [];
 
-  await exec("git", ["clone", "--depth=1", ...tagArgs, repository, directory], {
+  const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+
+  await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
     failOnStdErr: true,
     errStream: process.stderr,
     env: {

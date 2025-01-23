@@ -1,6 +1,6 @@
 {
   "admin-concierge": {
-    "repository": "git@github.com:Chili-Piper/frontend.git",
+    "repository": "Chili-Piper/frontend",
     "directory": "apps/admin-concierge",
     "command": "yarn types:app"
   }

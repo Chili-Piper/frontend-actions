@@ -31942,15 +31942,17 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"git@github.com:Chili-Piper/frontend.git","directory":"apps/admin-concierge","command":"yarn types:app"}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","directory":"apps/admin-concierge","command":"yarn types:app"}}');
 ;// CONCATENATED MODULE: ./index.ts
 
 
 
 
+const gitUser = "sre+bot@chilipiper.com";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
-    await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repository, directory], {
+    const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+    await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
         failOnStdErr: true,
         errStream: process.stderr,
         env: {

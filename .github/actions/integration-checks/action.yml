@@ -35,6 +35,10 @@ runs:
     - name: Load Open API Docs
       shell: bash
       run: yarn workspace @chilipiper/api-client load-docs
+    - name: Update api-client docs json
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/update-be-openapi@integration-checks
+      with:
+        backend: ${{ inputs.backend }}
     - name: Build API code
       shell: bash
       run: yarn workspace @chilipiper/api-client generate-code

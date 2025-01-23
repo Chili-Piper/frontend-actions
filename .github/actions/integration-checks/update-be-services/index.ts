@@ -41,17 +41,25 @@ async function run() {
         return;
       }
 
-      if (
-        validSemver(backendVersions[inputService]) !==
-        backendVersions[inputService]
-      ) {
-        info(
-          `Skipping invalid version ${backendVersions[inputService]} for ${inputService}`
-        );
+      const inputVersion = backendVersions[inputService];
+      let isJson = false;
+
+      try {
+        JSON.parse(inputVersion);
+        isJson = true;
+      } catch (error) {}
+
+      if (isJson) {
+        info(`Skipping ${inputService} as its a JSON`);
         return;
       }
 
-      const newVersion = `v${backendVersions[inputService]}` as const;
+      if (validSemver(backendVersions[inputService]) !== inputVersion) {
+        setFailed(`Invalid version ${inputVersion} for ${inputService}`);
+        return;
+      }
+
+      const newVersion = `v${inputVersion}` as const;
 
       if (newVersion !== serviceInfo.version) {
         info(`Setting ${inputService} version to ${newVersion}`);

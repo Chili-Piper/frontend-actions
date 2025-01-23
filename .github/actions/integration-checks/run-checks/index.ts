@@ -1,7 +1,6 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
 import fs from "node:fs";
-import * as glob from "glob";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
@@ -62,7 +61,7 @@ function runChecks({
   return exec(command, undefined, {
     cwd: directory,
     failOnStdErr: false,
-    errStream: process.stdout,
+    ignoreReturnCode: true,
   });
 }
 

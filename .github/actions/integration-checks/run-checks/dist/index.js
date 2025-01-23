@@ -32013,7 +32013,7 @@ function runChecks({ command, directory, }) {
     return (0,exec.exec)(command, undefined, {
         cwd: directory,
         failOnStdErr: false,
-        errStream: process.stdout,
+        ignoreReturnCode: true,
     });
 }
 async function run() {

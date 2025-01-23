@@ -20,6 +20,7 @@ inputs:
   checkout_path:
     description: "Relative path under $GITHUB_WORKSPACE to place the repository"
     required: false
+    default: "."
   checkout_token:
     description: "Github Token for when checking out a different repository"
     required: false
@@ -56,9 +57,9 @@ runs:
         cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
-          ${{ inputs.checkout_path || . }}/**/node_modules
+          ${{ inputs.checkout_path }}/**/node_modules
           !**/node_modules/.cache/turbo
-          ${{ inputs.checkout_path || . }}/.yarn/cache
+          ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress
         key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-${{ env.cache-fingerprint }}
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-

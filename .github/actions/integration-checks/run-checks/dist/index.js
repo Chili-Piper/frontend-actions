@@ -39996,7 +39996,12 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
-const includePatterns = ["**/node_modules", ".yarn/cache"];
+const includePatterns = [
+    "./.yarn/cache/",
+    "./node_modules",
+    "./apps/*/node_modules",
+    "./frontend-packages/*/node_modules",
+];
 function copyCacheDeps(src, dest) {
     try {
         for (const pattern of includePatterns) {
@@ -40007,6 +40012,7 @@ function copyCacheDeps(src, dest) {
             for (const match of matches) {
                 const sourcePath = external_node_path_default().join(src, match);
                 const destPath = external_node_path_default().join(dest, match);
+                (0,core.info)(`Copying ${sourcePath} into ${destPath}`);
                 external_node_fs_default().cpSync(sourcePath, destPath, { recursive: true, force: true });
             }
         }

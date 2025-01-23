@@ -26,7 +26,12 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-const includePatterns = ["**/node_modules", ".yarn/cache"];
+const includePatterns = [
+  "./.yarn/cache/",
+  "./node_modules",
+  "./apps/*/node_modules",
+  "./frontend-packages/*/node_modules",
+];
 
 function copyCacheDeps(src: string, dest: string) {
   try {
@@ -40,6 +45,7 @@ function copyCacheDeps(src: string, dest: string) {
         const sourcePath = path.join(src, match);
         const destPath = path.join(dest, match);
 
+        info(`Copying ${sourcePath} into ${destPath}`);
         fs.cpSync(sourcePath, destPath, { recursive: true, force: true });
       }
     }

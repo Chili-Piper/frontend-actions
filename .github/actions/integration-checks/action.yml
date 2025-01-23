@@ -33,6 +33,8 @@ runs:
       with:
         backend: ${{ inputs.backend }}
     - name: Load Open API Docs
+      shell: bash
       run: yarn workspace @chilipiper/api-client load-docs
     - name: Build API code
+      shell: bash
       run: yarn workspace @chilipiper/api-client generate-code

@@ -33,29 +33,27 @@ runs:
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
-    - name: CD into api-client-source
-      run: cd api-client-source
-      shell: bash
     - name: Load Open API Docs
       shell: bash
+      working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs
     - name: Update api-client docs json
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-openapi@integration-checks
       with:
+        api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
     - name: Build API code
       shell: bash
+      working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client generate-code
     - name: Get api-client path
       id: get-api-client-path
+      working-directory: api-client-source
       run: |
         FULL_PATH=$(realpath frontend-packages/api-client)
         echo "Full path: $FULL_PATH"
 
         echo "::set-output name=api_client_path::$FULL_PATH"
-      shell: bash
-    - name: CD out of api-client-source
-      run: cd ..
       shell: bash
     - name: Run Checks
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-checks

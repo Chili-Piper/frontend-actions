@@ -42,7 +42,7 @@ async function installApiClient({
   const localApiClientPath = `${directory}/frontend-packages/api-client`;
   if (fs.existsSync(localApiClientPath)) {
     fs.rmSync(localApiClientPath, { recursive: true, force: true });
-    fs.cpSync(apiClientPath, localApiClientPath);
+    fs.cpSync(apiClientPath, localApiClientPath, { recursive: true });
     return;
   }
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {

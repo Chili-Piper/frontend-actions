@@ -30,19 +30,22 @@ async function run() {
     >;
 
     Object.keys(backendVersions).forEach((inputService) => {
-      if (!services[inputService]) {
+      const serviceInfo = services[inputService];
+      if (!serviceInfo) {
         setFailed(
-          `Backend service ${inputService} not found in services.json. Must be one of: [${Object.keys(
+          `${inputService} not found in services.json. Must be one of: [${Object.keys(
             services
           ).join(", ")}]`
         );
         return;
       }
 
-      const newVersion = backendVersions[inputService];
+      const newVersion = `v${backendVersions[inputService]}`;
 
-      info(`Updating service ${inputService} to ${newVersion}:`);
-      services[inputService].version = `v${newVersion}`;
+      if (newVersion !== serviceInfo.version) {
+        info(`Setting ${inputService} version to ${newVersion}`);
+        services[inputService].version = `v${newVersion}`;
+      }
     });
 
     fs.writeFileSync(servicesFilePath, JSON.stringify(services, null, 2));

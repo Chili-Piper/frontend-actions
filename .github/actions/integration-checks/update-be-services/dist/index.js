@@ -30744,13 +30744,16 @@ async function run() {
         const backendVersionsJSON = (0,core.getInput)("backend");
         const backendVersions = load(backendVersionsJSON);
         Object.keys(backendVersions).forEach((inputService) => {
-            if (!services[inputService]) {
-                (0,core.setFailed)(`Backend service ${inputService} not found in services.json. Must be one of: [${Object.keys(services).join(", ")}]`);
+            const serviceInfo = services[inputService];
+            if (!serviceInfo) {
+                (0,core.setFailed)(`${inputService} not found in services.json. Must be one of: [${Object.keys(services).join(", ")}]`);
                 return;
             }
-            const newVersion = backendVersions[inputService];
-            (0,core.info)(`Updating service ${inputService} to ${newVersion}:`);
-            services[inputService].version = `v${newVersion}`;
+            const newVersion = `v${backendVersions[inputService]}`;
+            if (newVersion !== serviceInfo.version) {
+                (0,core.info)(`Setting ${inputService} version to ${newVersion}`);
+                services[inputService].version = `v${newVersion}`;
+            }
         });
         external_node_fs_default().writeFileSync(servicesFilePath, JSON.stringify(services, null, 2));
         (0,core.info)("services.json content updated!");

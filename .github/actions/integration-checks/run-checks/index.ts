@@ -30,7 +30,6 @@ async function install({ directory }: { directory: string }) {
   info("Installing deps...");
   await exec("yarn", undefined, {
     cwd: directory,
-    failOnStdErr: true,
   });
 }
 

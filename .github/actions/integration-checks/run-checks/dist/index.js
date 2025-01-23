@@ -31996,7 +31996,6 @@ async function install({ directory }) {
     (0,core.info)("Installing deps...");
     await (0,exec.exec)("yarn", undefined, {
         cwd: directory,
-        failOnStdErr: true,
     });
 }
 async function installApiClient({ apiClientPath, directory, }) {

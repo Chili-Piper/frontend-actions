@@ -33303,8 +33303,8 @@ async function run() {
                 return;
             }
             const inputVersion = backendVersions[inputService];
-            if (typeof inputVersion === "object") {
-                (0,core.info)(`Skipping ${inputService} as its a JSON`);
+            if (inputVersion.startsWith("/")) {
+                (0,core.info)(`Skipping ${inputService} as its a local file reference`);
                 return;
             }
             if ((0,semver.valid)(backendVersions[inputService]) !== inputVersion) {

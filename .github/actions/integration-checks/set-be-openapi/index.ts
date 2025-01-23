@@ -15,11 +15,10 @@ async function run() {
     Object.keys(backendVersions).forEach((inputService) => {
       const inputValue = backendVersions[inputService];
 
-      if (typeof inputValue !== "object") {
+      if (!inputValue.startsWith("/")) {
         return;
       }
 
-      const openApiJSON = JSON.stringify(inputValue);
       info(`Found OpenApi JSON for ${inputService}`);
 
       const docPath = path.join(
@@ -30,7 +29,7 @@ async function run() {
         `${inputService}.json`
       );
 
-      fs.writeFileSync(docPath, openApiJSON);
+      fs.cpSync(inputValue, docPath);
 
       info(`Updated OpenApi JSON for ${inputService}.json`);
     });

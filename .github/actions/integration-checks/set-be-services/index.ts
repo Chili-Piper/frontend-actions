@@ -45,8 +45,8 @@ async function run() {
 
       const inputVersion = backendVersions[inputService];
 
-      if (typeof inputVersion === "object") {
-        info(`Skipping ${inputService} as its a JSON`);
+      if (inputVersion.startsWith("/")) {
+        info(`Skipping ${inputService} as its a local file reference`);
         return;
       }
 

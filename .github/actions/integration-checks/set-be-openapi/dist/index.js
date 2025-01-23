@@ -30739,13 +30739,12 @@ async function run() {
         const backendVersions = (load(backendVersionsJSON) ?? {});
         Object.keys(backendVersions).forEach((inputService) => {
             const inputValue = backendVersions[inputService];
-            if (typeof inputValue !== "object") {
+            if (!inputValue.startsWith("/")) {
                 return;
             }
-            const openApiJSON = JSON.stringify(inputValue);
             (0,core.info)(`Found OpenApi JSON for ${inputService}`);
             const docPath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "docs", `${inputService}.json`);
-            external_node_fs_default().writeFileSync(docPath, openApiJSON);
+            external_node_fs_default().cpSync(inputValue, docPath);
             (0,core.info)(`Updated OpenApi JSON for ${inputService}.json`);
         });
     }

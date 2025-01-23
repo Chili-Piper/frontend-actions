@@ -14,7 +14,7 @@ inputs:
     description: "Github Token"
     required: true
   npm_token:
-    description: "NPM Token",
+    description: "NPM Token"
     required: true
 runs:
   using: "composite"

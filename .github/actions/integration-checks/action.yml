@@ -42,3 +42,11 @@ runs:
     - name: Build API code
       shell: bash
       run: yarn workspace @chilipiper/api-client generate-code
+    - name: Get api-client path
+      id: get-api-client-path
+      run: |
+        FULL_PATH=$(realpath frontend-packages/api-client)
+        echo "Full path: $FULL_PATH"
+        
+        echo "::set-output name=api_client_path::$FULL_PATH"
+      shell: bash

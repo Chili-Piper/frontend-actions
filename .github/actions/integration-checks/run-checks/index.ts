@@ -22,7 +22,6 @@ async function checkout({
 
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
     failOnStdErr: true,
-    errStream: process.stderr,
   });
 }
 
@@ -30,7 +29,6 @@ async function install(directory: string) {
   await exec("yarn", undefined, {
     cwd: directory,
     failOnStdErr: true,
-    errStream: process.stderr,
   });
 }
 
@@ -44,7 +42,6 @@ async function installApiClient({
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
     failOnStdErr: true,
-    errStream: process.stderr,
   });
 }
 
@@ -57,7 +54,6 @@ function runChecks({
 }) {
   return exec(command, undefined, {
     cwd: directory,
-    errStream: process.stderr,
   });
 }
 

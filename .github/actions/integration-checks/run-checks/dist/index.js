@@ -31954,27 +31954,23 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
         failOnStdErr: true,
-        errStream: process.stderr,
     });
 }
 async function install(directory) {
     await (0,exec.exec)("yarn", undefined, {
         cwd: directory,
         failOnStdErr: true,
-        errStream: process.stderr,
     });
 }
 async function installApiClient({ apiClientPath, directory, }) {
     await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
         failOnStdErr: true,
-        errStream: process.stderr,
     });
 }
 function runChecks({ command, directory, }) {
     return (0,exec.exec)(command, undefined, {
         cwd: directory,
-        errStream: process.stderr,
     });
 }
 async function run() {

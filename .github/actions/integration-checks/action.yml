@@ -47,6 +47,15 @@ runs:
       run: |
         FULL_PATH=$(realpath frontend-packages/api-client)
         echo "Full path: $FULL_PATH"
-        
+
         echo "::set-output name=api_client_path::$FULL_PATH"
       shell: bash
+    - name: CD out of api-client-source
+      run: cd ..
+      shell: bash
+    - name: Run Checks
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-checks
+      with:
+        frontend: ${{ inputs.frontend }}
+        api_client_path: ${{ steps.get-api-client-path.outputs.api_client_path }}
+        checkout_token: ${{ inputs.checkout_token }}

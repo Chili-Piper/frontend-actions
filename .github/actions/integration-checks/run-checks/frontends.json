@@ -1,0 +1,7 @@
+{
+  "admin-concierge": {
+    "repository": "Chili-Piper/frontend",
+    "directory": "apps/admin-concierge",
+    "command": "yarn types:app"
+  }
+}

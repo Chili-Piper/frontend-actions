@@ -1,0 +1,15 @@
+name: "Run api-client checks"
+description: "For each frontend repository, it will run typescript checks with specific versions of api-client"
+inputs:
+  checkout_token:
+    description: "GH token used for checking out repositories"
+    required: true
+  api_client_path:
+    description: "Absolute path to api-client with specific BE services versions"
+    required: true
+  frontend:
+    description: "frontend apps versions"
+    required: false
+runs:
+  using: "node20"
+  main: "dist/index.js"

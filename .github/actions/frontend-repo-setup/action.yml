@@ -58,7 +58,7 @@ runs:
         path: |
           **/node_modules
           !**/node_modules/.cache/turbo
-          .yarn/cache
+          **/.yarn/cache
           /home/runner/.cache/Cypress
         key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-${{ env.cache-fingerprint }}
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-

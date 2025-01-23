@@ -33286,7 +33286,8 @@ var semver = __nccwpck_require__(2088);
 
 async function run() {
     try {
-        const servicesFilePath = external_node_path_default().join("frontend-packages", "api-client", "src", "services.json");
+        const apiClientSourcePath = (0,core.getInput)("api_client_source_path");
+        const servicesFilePath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "src", "services.json");
         if (!external_node_fs_default().existsSync(servicesFilePath)) {
             (0,core.setFailed)(`services.json not found at ${servicesFilePath}`);
             return;

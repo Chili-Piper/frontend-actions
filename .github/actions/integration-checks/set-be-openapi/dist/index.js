@@ -30734,6 +30734,7 @@ var jsYaml = {
 
 async function run() {
     try {
+        const apiClientSourcePath = (0,core.getInput)("api_client_source_path");
         const backendVersionsJSON = (0,core.getInput)("backend");
         const backendVersions = (load(backendVersionsJSON) ?? {});
         Object.keys(backendVersions).forEach((inputService) => {
@@ -30743,7 +30744,7 @@ async function run() {
             }
             const openApiJSON = JSON.stringify(inputValue);
             (0,core.info)(`Found OpenApi JSON for ${inputService}`);
-            const docPath = external_node_path_default().join("frontend-packages", "api-client", "docs", `${inputService}.json`);
+            const docPath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "docs", `${inputService}.json`);
             external_node_fs_default().writeFileSync(docPath, openApiJSON);
             (0,core.info)(`Updated OpenApi JSON for ${inputService}.json`);
         });

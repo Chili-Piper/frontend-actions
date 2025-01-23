@@ -1,6 +1,9 @@
 name: "Create JIRA comment"
 description: "Create JIRA comment with cloudrun link if no comments exist"
 inputs:
+  api_client_source_path:
+    description: "path to api-client source repo"
+    required: true
   checkout_path:
     description: "Path to the checkout directory"
     required: true

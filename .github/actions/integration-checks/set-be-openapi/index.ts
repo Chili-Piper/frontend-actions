@@ -5,6 +5,7 @@ import * as yaml from "js-yaml";
 
 async function run() {
   try {
+    const apiClientSourcePath = getInput("api_client_source_path");
     const backendVersionsJSON = getInput("backend");
     const backendVersions = (yaml.load(backendVersionsJSON) ?? {}) as Record<
       string,
@@ -22,6 +23,7 @@ async function run() {
       info(`Found OpenApi JSON for ${inputService}`);
 
       const docPath = path.join(
+        apiClientSourcePath,
         "frontend-packages",
         "api-client",
         "docs",

@@ -6,7 +6,9 @@ import { valid as validSemver } from "semver";
 
 async function run() {
   try {
+    const apiClientSourcePath = getInput("api_client_source_path");
     const servicesFilePath = path.join(
+      apiClientSourcePath,
       "frontend-packages",
       "api-client",
       "src",

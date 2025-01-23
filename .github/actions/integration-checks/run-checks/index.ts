@@ -3,7 +3,7 @@ import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
 
-const gitUser = "sre+bot@chilipiper.com";
+const gitUser = "srebot";
 
 async function checkout({
   checkoutToken,

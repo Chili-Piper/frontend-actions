@@ -31948,7 +31948,7 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"
 
 
 
-const gitUser = "sre+bot@chilipiper.com";
+const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;

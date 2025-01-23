@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { exec } from "@actions/exec";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";

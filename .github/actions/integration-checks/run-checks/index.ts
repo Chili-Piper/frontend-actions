@@ -20,33 +20,51 @@ async function checkout({
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
 
-  await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-    failOnStdErr: true,
-    errStream: process.stderr,
-  });
+  const gitCloneExitCode = await exec(
+    "git",
+    ["clone", "--depth=1", ...tagArgs, repo, directory],
+    {
+      errStream: process.stderr,
+    }
+  );
+
+  if (gitCloneExitCode) {
+    setFailed("Failed during git clone");
+    return;
+  }
+
   await exec(`cd ${directory}`, undefined, {
-    failOnStdErr: true,
     errStream: process.stderr,
   });
 }
 
 async function install() {
-  await exec("yarn", undefined, {
-    failOnStdErr: true,
+  const exitCode = await exec("yarn", undefined, {
     errStream: process.stderr,
   });
+  if (exitCode) {
+    setFailed("Failed during yarn install");
+    return;
+  }
 }
 
 async function installApiClient(apiClientPath: string) {
-  await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-    failOnStdErr: true,
-    errStream: process.stderr,
-  });
+  const exitCode = await exec(
+    `yarn add @chilipiper/api-client@${apiClientPath}`,
+    undefined,
+    {
+      errStream: process.stderr,
+    }
+  );
+
+  if (exitCode) {
+    setFailed("Failed during install api-client");
+    return;
+  }
 }
 
 function runChecks(command: string) {
   return exec(command, undefined, {
-    failOnStdErr: false,
     errStream: process.stderr,
   });
 }
@@ -83,7 +101,6 @@ async function run() {
       }
 
       await exec("cd ..", undefined, {
-        failOnStdErr: true,
         errStream: process.stderr,
       });
     }

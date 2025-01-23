@@ -31952,30 +31952,37 @@ const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
-    await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
-        failOnStdErr: true,
+    const gitCloneExitCode = await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory], {
         errStream: process.stderr,
     });
+    if (gitCloneExitCode) {
+        (0,core.setFailed)("Failed during git clone");
+        return;
+    }
     await (0,exec.exec)(`cd ${directory}`, undefined, {
-        failOnStdErr: true,
         errStream: process.stderr,
     });
 }
 async function install() {
-    await (0,exec.exec)("yarn", undefined, {
-        failOnStdErr: true,
+    const exitCode = await (0,exec.exec)("yarn", undefined, {
         errStream: process.stderr,
     });
+    if (exitCode) {
+        (0,core.setFailed)("Failed during yarn install");
+        return;
+    }
 }
 async function installApiClient(apiClientPath) {
-    await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-        failOnStdErr: true,
+    const exitCode = await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         errStream: process.stderr,
     });
+    if (exitCode) {
+        (0,core.setFailed)("Failed during install api-client");
+        return;
+    }
 }
 function runChecks(command) {
     return (0,exec.exec)(command, undefined, {
-        failOnStdErr: false,
         errStream: process.stderr,
     });
 }
@@ -32002,7 +32009,6 @@ async function run() {
                 failedFrontends.push(frontendKey);
             }
             await (0,exec.exec)("cd ..", undefined, {
-                failOnStdErr: true,
                 errStream: process.stderr,
             });
         }

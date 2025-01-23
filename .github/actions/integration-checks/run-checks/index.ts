@@ -1,7 +1,7 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
 import fs from "node:fs";
-import glob from "glob";
+import * as glob from "glob";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
@@ -26,36 +26,21 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-const includePatterns = [
-  "**/node_modules/**/*", // Include all node_modules
-  ".yarn/cache/**/*", // Include yarn cache
-];
-const excludePatterns = [
-  "**/node_modules/.cache/turbo/**/*", // Exclude turbo cache
-];
+const includePatterns = ["**/node_modules", ".yarn/cache"];
 
 function copyCacheDeps(src: string, dest: string) {
   try {
-    // Process include patterns
     for (const pattern of includePatterns) {
       const matches = glob.sync(pattern, {
         cwd: src,
         dot: true,
-        nodir: true,
       });
 
       for (const match of matches) {
         const sourcePath = path.join(src, match);
         const destPath = path.join(dest, match);
 
-        // Check if the file matches any exclude pattern
-        const isExcluded = excludePatterns.some((excludePattern) =>
-          glob.sync(excludePattern, { cwd: src, dot: true }).includes(match)
-        );
-
-        if (!isExcluded) {
-          fs.cpSync(sourcePath, destPath, { recursive: true, force: true });
-        }
+        fs.cpSync(sourcePath, destPath, { recursive: true, force: true });
       }
     }
   } catch (error) {

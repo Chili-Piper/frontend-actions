@@ -28434,10 +28434,6 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// NAMESPACE OBJECT: ./node_modules/glob/dist/esm/index.js
-var glob_dist_esm_namespaceObject = {};
-__nccwpck_require__.r(glob_dist_esm_namespaceObject);
-
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(5236);
 ;// CONCATENATED MODULE: external "node:path"
@@ -40000,30 +39996,18 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
     await (0,exec.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
-const includePatterns = [
-    "**/node_modules/**/*", // Include all node_modules
-    ".yarn/cache/**/*", // Include yarn cache
-];
-const excludePatterns = [
-    "**/node_modules/.cache/turbo/**/*", // Exclude turbo cache
-];
+const includePatterns = ["**/node_modules", ".yarn/cache"];
 function copyCacheDeps(src, dest) {
     try {
-        // Process include patterns
         for (const pattern of includePatterns) {
-            const matches = glob_dist_esm_namespaceObject["default"].sync(pattern, {
+            const matches = sync(pattern, {
                 cwd: src,
                 dot: true,
-                nodir: true,
             });
             for (const match of matches) {
                 const sourcePath = external_node_path_default().join(src, match);
                 const destPath = external_node_path_default().join(dest, match);
-                // Check if the file matches any exclude pattern
-                const isExcluded = excludePatterns.some((excludePattern) => glob_dist_esm_namespaceObject["default"].sync(excludePattern, { cwd: src, dot: true }).includes(match));
-                if (!isExcluded) {
-                    external_node_fs_default().cpSync(sourcePath, destPath, { recursive: true, force: true });
-                }
+                external_node_fs_default().cpSync(sourcePath, destPath, { recursive: true, force: true });
             }
         }
     }

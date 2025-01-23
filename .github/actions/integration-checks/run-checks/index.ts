@@ -41,7 +41,7 @@ async function installApiClient({
 }) {
   const localApiClientPath = `${directory}/frontend-packages/api-client`;
   if (fs.existsSync(localApiClientPath)) {
-    fs.rmdirSync(localApiClientPath);
+    fs.rmSync(localApiClientPath, { recursive: true, force: true });
     fs.cpSync(apiClientPath, localApiClientPath);
     return;
   }

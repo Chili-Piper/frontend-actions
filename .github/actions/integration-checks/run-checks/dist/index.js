@@ -31942,7 +31942,7 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","directory":"apps/admin-concierge","command":"yarn types:app"}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"https://github.com/Chili-Piper/frontend","directory":"apps/admin-concierge","command":"yarn types:app"}}');
 ;// CONCATENATED MODULE: ./index.ts
 
 

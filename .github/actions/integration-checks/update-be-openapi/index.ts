@@ -12,25 +12,24 @@ async function run() {
     >;
 
     Object.keys(backendVersions).forEach((inputService) => {
-      let openApiJSON: string | null = null;
+      const inputValue = backendVersions[inputService];
 
-      try {
-        JSON.parse(backendVersions[inputService]);
-        openApiJSON = backendVersions[inputService];
-      } catch (error) {}
-
-      if (!openApiJSON) {
+      if (typeof inputValue !== "object") {
         return;
       }
 
+      const openApiJSON = JSON.stringify(inputValue);
       info(`Found OpenApi JSON for ${inputService}`);
+
       const docPath = path.join(
         "frontend-packages",
         "api-client",
         "docs",
         `${inputService}.json`
       );
+
       fs.writeFileSync(docPath, openApiJSON);
+
       info(`Updated OpenApi JSON for ${inputService}.json`);
     });
   } catch (error: any) {

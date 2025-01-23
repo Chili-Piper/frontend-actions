@@ -42,17 +42,8 @@ async function run() {
       }
 
       const inputVersion = backendVersions[inputService];
-      let isJson = false;
-      info(`Checking if ${inputService} is a JSON`);
-      info(inputVersion);
-      info(JSON.stringify(inputVersion));
 
-      try {
-        JSON.parse(inputVersion);
-        isJson = true;
-      } catch (error) {}
-
-      if (isJson) {
+      if (typeof inputVersion === "object") {
         info(`Skipping ${inputService} as its a JSON`);
         return;
       }

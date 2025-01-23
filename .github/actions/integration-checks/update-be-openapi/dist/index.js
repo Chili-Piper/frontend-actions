@@ -30737,15 +30737,11 @@ async function run() {
         const backendVersionsJSON = (0,core.getInput)("backend");
         const backendVersions = (load(backendVersionsJSON) ?? {});
         Object.keys(backendVersions).forEach((inputService) => {
-            let openApiJSON = null;
-            try {
-                JSON.parse(backendVersions[inputService]);
-                openApiJSON = backendVersions[inputService];
-            }
-            catch (error) { }
-            if (!openApiJSON) {
+            const inputValue = backendVersions[inputService];
+            if (typeof inputValue !== "object") {
                 return;
             }
+            const openApiJSON = JSON.stringify(inputValue);
             (0,core.info)(`Found OpenApi JSON for ${inputService}`);
             const docPath = external_node_path_default().join("frontend-packages", "api-client", "docs", `${inputService}.json`);
             external_node_fs_default().writeFileSync(docPath, openApiJSON);

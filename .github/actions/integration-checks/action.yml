@@ -50,14 +50,15 @@ runs:
       id: get-api-client-path
       working-directory: api-client-source
       run: |
-        FULL_PATH=$(realpath frontend-packages/api-client)
+        FULL_PATH=$(realpath .)
         echo "Full path: $FULL_PATH"
 
-        echo "::set-output name=api_client_path::$FULL_PATH"
+        echo "api_client_repo_path=$FULL_PATH" > $GITHUB_OUTPUT
       shell: bash
     - name: Run Checks
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-checks
       with:
         frontend: ${{ inputs.frontend }}
-        api_client_path: ${{ steps.get-api-client-path.outputs.api_client_path }}
+        api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}
+        api_client_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}/frontend-packages/api-client
         checkout_token: ${{ inputs.checkout_token }}

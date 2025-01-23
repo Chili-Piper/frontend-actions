@@ -1,6 +1,7 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
 import fs from "node:fs";
+import glob from "glob";
 import { info, getInput, setFailed } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
@@ -25,7 +26,55 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-async function install(directory: string) {
+const includePatterns = [
+  "**/node_modules/**/*", // Include all node_modules
+  ".yarn/cache/**/*", // Include yarn cache
+];
+const excludePatterns = [
+  "**/node_modules/.cache/turbo/**/*", // Exclude turbo cache
+];
+
+function copyCacheDeps(src: string, dest: string) {
+  try {
+    // Process include patterns
+    for (const pattern of includePatterns) {
+      const matches = glob.sync(pattern, {
+        cwd: src,
+        dot: true,
+        nodir: true,
+      });
+
+      for (const match of matches) {
+        const sourcePath = path.join(src, match);
+        const destPath = path.join(dest, match);
+
+        // Check if the file matches any exclude pattern
+        const isExcluded = excludePatterns.some((excludePattern) =>
+          glob.sync(excludePattern, { cwd: src, dot: true }).includes(match)
+        );
+
+        if (!isExcluded) {
+          fs.cpSync(sourcePath, destPath, { recursive: true, force: true });
+        }
+      }
+    }
+  } catch (error) {
+    setFailed(`Error during copy operation: ${error}`);
+  }
+}
+
+async function install({
+  directory,
+  apiClientRepoPath,
+}: {
+  apiClientRepoPath: string;
+  directory: string;
+}) {
+  const localApiClientPath = `${directory}/frontend-packages/api-client`;
+  if (fs.existsSync(localApiClientPath)) {
+    copyCacheDeps(apiClientRepoPath, directory);
+  }
+
   await exec("yarn", undefined, {
     cwd: directory,
     failOnStdErr: true,
@@ -71,6 +120,7 @@ async function run() {
       string
     >;
     const checkoutToken = getInput("checkout_token");
+    const apiClientRepoPath = getInput("api_client_repo_path");
     const apiClientPath = getInput("api_client_path");
     const frontendsKeys = Object.keys(frontendsConfig) as Array<
       keyof typeof frontendsConfig
@@ -86,7 +136,7 @@ async function run() {
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
-      await install(frontendKey);
+      await install({ directory: frontendKey, apiClientRepoPath });
       await installApiClient({ apiClientPath, directory: frontendKey });
       const exitCode = await runChecks({
         command: frontend.command,

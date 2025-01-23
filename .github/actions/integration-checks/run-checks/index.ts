@@ -50,7 +50,6 @@ async function installApiClient({
   info(`Linking api-client ${apiClientPath}`);
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
-    failOnStdErr: true,
   });
 }
 
@@ -64,7 +63,6 @@ function runChecks({
   info(`Running type checks with command ${command}`);
   return exec(command, undefined, {
     cwd: directory,
-    failOnStdErr: false,
     ignoreReturnCode: true,
   });
 }

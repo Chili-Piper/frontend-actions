@@ -32009,14 +32009,12 @@ async function installApiClient({ apiClientPath, directory, }) {
     (0,core.info)(`Linking api-client ${apiClientPath}`);
     await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
-        failOnStdErr: true,
     });
 }
 function runChecks({ command, directory, }) {
     (0,core.info)(`Running type checks with command ${command}`);
     return (0,exec.exec)(command, undefined, {
         cwd: directory,
-        failOnStdErr: false,
         ignoreReturnCode: true,
     });
 }

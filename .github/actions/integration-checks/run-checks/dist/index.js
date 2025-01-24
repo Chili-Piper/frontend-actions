@@ -32016,9 +32016,9 @@ async function installApiClient({ apiClientPath, directory, }) {
     }
     (0,core.info)(`Linking api-client ${apiClientPath}`);
     setApiClientResolution({ directory, apiClientPath });
-    await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-        cwd: directory,
-    });
+    // await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+    //   cwd: directory,
+    // });
 }
 function runChecks({ command, directory, }) {
     (0,core.info)(`Running type checks with command ${command}`);

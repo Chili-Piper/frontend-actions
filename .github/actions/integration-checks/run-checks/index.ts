@@ -69,9 +69,9 @@ async function installApiClient({
   }
   info(`Linking api-client ${apiClientPath}`);
   setApiClientResolution({ directory, apiClientPath });
-  await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-    cwd: directory,
-  });
+  // await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+  //   cwd: directory,
+  // });
 }
 
 function runChecks({

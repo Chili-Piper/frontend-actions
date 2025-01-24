@@ -95,20 +95,22 @@ function runChecks({
   });
 }
 
-function disableMocksDirCheck({ apiClientPath }: { apiClientPath: string }) {
-  info(`Disabling mocks dir on ${apiClientPath}/tsconfig.json`);
-  const tsConfig = JSON.parse(
-    fs.readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8")
-  );
-  if (!tsConfig.exclude) {
-    tsConfig.exclude = [];
+function disableMocksDirCheck(directory: string) {
+  info("Disabling TS check for api-client mocks dir");
+  const files = fs.readdirSync(directory);
+
+  for (const file of files) {
+    const filePath = path.join(directory, file);
+    const stats = fs.statSync(filePath);
+
+    if (stats.isDirectory()) {
+      disableMocksDirCheck(filePath);
+    } else {
+      const content = fs.readFileSync(filePath, "utf8");
+      const updatedContent = `// @ts-nocheck\n\n${content}`;
+      fs.writeFileSync(filePath, updatedContent, "utf8");
+    }
   }
-  tsConfig.exclude.push("mocks");
-  info(`Writing ${JSON.stringify(tsConfig, null, 2)}`);
-  fs.writeFileSync(
-    `${apiClientPath}/tsconfig.json`,
-    JSON.stringify(tsConfig, null, 2)
-  );
 }
 
 async function run() {
@@ -126,7 +128,7 @@ async function run() {
 
     const failedFrontends = new Set<string>();
 
-    disableMocksDirCheck({ apiClientPath });
+    disableMocksDirCheck(`${apiClientPath}/mocks`);
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];

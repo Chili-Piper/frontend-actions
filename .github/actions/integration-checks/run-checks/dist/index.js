@@ -32029,15 +32029,21 @@ function runChecks({ command, directory, }) {
         ignoreReturnCode: true,
     });
 }
-function disableMocksDirCheck({ apiClientPath }) {
-    (0,core.info)(`Disabling mocks dir on ${apiClientPath}/tsconfig.json`);
-    const tsConfig = JSON.parse(external_node_fs_default().readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8"));
-    if (!tsConfig.exclude) {
-        tsConfig.exclude = [];
+function disableMocksDirCheck(directory) {
+    (0,core.info)("Disabling TS check for api-client mocks dir");
+    const files = external_node_fs_default().readdirSync(directory);
+    for (const file of files) {
+        const filePath = external_node_path_default().join(directory, file);
+        const stats = external_node_fs_default().statSync(filePath);
+        if (stats.isDirectory()) {
+            disableMocksDirCheck(filePath);
+        }
+        else {
+            const content = external_node_fs_default().readFileSync(filePath, "utf8");
+            const updatedContent = `// @ts-nocheck\n\n${content}`;
+            external_node_fs_default().writeFileSync(filePath, updatedContent, "utf8");
+        }
     }
-    tsConfig.exclude.push("mocks");
-    (0,core.info)(`Writing ${JSON.stringify(tsConfig, null, 2)}`);
-    external_node_fs_default().writeFileSync(`${apiClientPath}/tsconfig.json`, JSON.stringify(tsConfig, null, 2));
 }
 async function run() {
     try {
@@ -32047,7 +32053,7 @@ async function run() {
         const apiClientPath = (0,core.getInput)("api_client_path");
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
-        disableMocksDirCheck({ apiClientPath });
+        disableMocksDirCheck(`${apiClientPath}/mocks`);
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
             await checkout({

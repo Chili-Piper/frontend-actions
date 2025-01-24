@@ -165,7 +165,7 @@ async function run() {
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
     // of CI runtime
     info("Reusing monorepo clone from parent action");
-    const apiClientPath = `api-client/${apiClientSubDir}`;
+    const apiClientPath = `/api-client-directory/${apiClientSubDir}`;
     fs.cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
       recursive: true,
     });

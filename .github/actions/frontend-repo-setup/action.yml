@@ -20,6 +20,10 @@ inputs:
   checkout_path:
     description: "Relative path under $GITHUB_WORKSPACE to place the repository"
     required: false
+    default: "."
+  checkout_token:
+    description: "Github Token for when checking out a different repository"
+    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"
@@ -40,10 +44,10 @@ runs:
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.ref }}
-        token: ${{ env.GITHUB_TOKEN }}
+        token: ${{ inputs.checkout_token || env.GITHUB_TOKEN }}
         fetch-depth: ${{ inputs.fetch-depth }}
         repository: ${{ inputs.checkout_repo }}
-        path: ${{ inputs.checkout-path }}
+        path: ${{ inputs.checkout_path }}
 
     - name: Cache node_modules
       uses: actions/cache@v4
@@ -53,12 +57,12 @@ runs:
         cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
-          **/node_modules
+          ${{ inputs.checkout_path }}/**/node_modules
           !**/node_modules/.cache/turbo
-          .yarn/cache
+          ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress
-        key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
-        restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
+        key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-${{ env.cache-fingerprint }}
+        restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-
 
     - name: NPM auth
       if: ${{ inputs.npm_token }}
@@ -76,6 +80,7 @@ runs:
 
     - name: Install dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      working-directory: ${{ inputs.checkout_path }}
       run: yarn --immutable
       shell: bash
 

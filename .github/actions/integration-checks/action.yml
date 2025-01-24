@@ -1,0 +1,72 @@
+name: "Integration Checks"
+description: "Checks for FE <-> BE Integration"
+inputs:
+  frontend:
+    description: "Frontend apps versions"
+    required: false
+  backend:
+    description: "Backend services versions"
+    required: false
+  gcloud_credentials_json:
+    description: "GCLOUD credentials"
+    required: true
+  checkout_token:
+    description: "Github Token"
+    required: true
+  npm_token:
+    description: "NPM Token"
+    required: true
+outputs:
+  failed_frontends:
+    description: "If it fails, outputs list of failed frontends"
+    value: ${{ steps.run-checks.outputs.failed_frontends }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
+      with:
+        checkout_path: api-client-source
+        checkout_repo: Chili-Piper/frontend
+        checkout_token: ${{ inputs.checkout_token }}
+        npm_token: ${{ inputs.npm_token }}
+    - name: Authenticate to CPCLOUD
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.gcloud_credentials_json }}
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    - name: Update api-client services.json
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-services@main
+      with:
+        api_client_source_path: api-client-source
+        backend: ${{ inputs.backend }}
+    - name: Load Open API Docs
+      shell: bash
+      working-directory: api-client-source
+      run: yarn workspace @chilipiper/api-client load-docs
+    - name: Update api-client docs json
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-openapi@main
+      with:
+        api_client_source_path: api-client-source
+        backend: ${{ inputs.backend }}
+    - name: Build API code
+      shell: bash
+      working-directory: api-client-source
+      run: yarn workspace @chilipiper/api-client generate-code
+    - name: Get api-client path
+      id: get-api-client-path
+      working-directory: api-client-source
+      run: |
+        FULL_PATH=$(realpath .)
+        echo "Full path: $FULL_PATH"
+
+        echo "api_client_repo_path=$FULL_PATH" > $GITHUB_OUTPUT
+      shell: bash
+    - name: Run Checks
+      id: run-checks
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@main
+      with:
+        frontend: ${{ inputs.frontend }}
+        api_client_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}/frontend-packages/api-client
+        checkout_token: ${{ inputs.checkout_token }}

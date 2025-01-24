@@ -1,0 +1,12 @@
+{
+  "admin-concierge": {
+    "repository": "Chili-Piper/frontend",
+    "directory": "apps/admin-concierge",
+    "command": "yarn types:app"
+  },
+  "chilical": {
+    "repository": "Chili-Piper/chilical",
+    "directory": ".",
+    "command": "yarn tsc"
+  }
+}

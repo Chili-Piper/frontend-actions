@@ -1,0 +1,18 @@
+{
+  "name": "set-be-openapi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "ncc build index.ts"
+  },
+  "dependencies": {
+    "@actions/core": "1.10.0",
+    "js-yaml": "4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "@types/node": "22.10.7",
+    "@vercel/ncc": "0.38.2",
+    "typescript": "5.7.3"
+  }
+}

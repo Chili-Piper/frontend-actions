@@ -1,0 +1,12 @@
+name: "Set api-client BE services versions"
+description: "Creates an api-client version with specified BE services versions"
+inputs:
+  api_client_source_path:
+    description: "path to api-client source repo"
+    required: true
+  backend:
+    description: "Backend services versions"
+    required: false
+runs:
+  using: "node20"
+  main: "dist/index.js"

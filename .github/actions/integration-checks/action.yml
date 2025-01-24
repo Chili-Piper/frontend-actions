@@ -68,5 +68,5 @@ runs:
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@main
       with:
         frontend: ${{ inputs.frontend }}
-        api_client_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}/frontend-packages/api-client
+        api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}
         checkout_token: ${{ inputs.checkout_token }}

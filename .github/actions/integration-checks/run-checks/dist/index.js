@@ -31998,7 +31998,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
         await (0,exec.exec)("git", ["clean", "-fdx", "--quiet"], {
             cwd: apiClientDir,
         });
-        await (0,exec.exec)("git", ["fetch", " --no-tags", "origin", "tag", `v${version}`, "--quiet"], {
+        await (0,exec.exec)("git", ["fetch", "--no-tags", "origin", "tag", `v${version}`, "--quiet"], {
             cwd: directory,
         });
         await (0,exec.exec)("git", ["checkout", `v${version}`], {
@@ -32064,19 +32064,25 @@ function disableMocksDirCheck(directory) {
         }
     }
 }
+function prepareMonorepo(apiClientRepoPath, monoRepoPath) {
+    external_node_fs_default().cpSync(apiClientRepoPath, monoRepoPath, { recursive: true });
+}
 async function run() {
     try {
         const frontendVersionsJSON = (0,core.getInput)("frontend");
         const frontendVersions = (load(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,core.getInput)("checkout_token");
-        const apiClientPath = (0,core.getInput)("api_client_path");
+        const apiClientRepoPath = (0,core.getInput)("api_client_repo_path");
+        const apiClientPath = `${apiClientRepoPath}/frontend-packages/api-client`;
+        const monoRepoPath = "monorepo";
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
         disableMocksDirCheck(`${apiClientPath}/mocks`);
+        prepareMonorepo(apiClientRepoPath, monoRepoPath);
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
             const isMonoRepo = frontend.repository === "Chili-Piper/frontend";
-            const directory = isMonoRepo ? "monorepo" : frontendKey;
+            const directory = isMonoRepo ? monoRepoPath : frontendKey;
             await checkout({
                 checkoutToken,
                 directory,

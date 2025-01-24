@@ -4,8 +4,8 @@ inputs:
   checkout_token:
     description: "GH token used for checking out repositories"
     required: true
-  api_client_path:
-    description: "Absolute path to api-client with specific BE services versions"
+  api_client_repo_path:
+    description: "Absolute path to api-client repo with specific BE services versions"
     required: true
   frontend:
     description: "frontend apps versions"

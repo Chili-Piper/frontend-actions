@@ -24,7 +24,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@integration-checks
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
@@ -37,7 +37,7 @@ runs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
     - name: Update api-client services.json
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-services@integration-checks
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-services@main
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
@@ -46,7 +46,7 @@ runs:
       working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs
     - name: Update api-client docs json
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-openapi@integration-checks
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-openapi@main
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
@@ -65,7 +65,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-checks
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@main
       with:
         frontend: ${{ inputs.frontend }}
         api_client_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}/frontend-packages/api-client

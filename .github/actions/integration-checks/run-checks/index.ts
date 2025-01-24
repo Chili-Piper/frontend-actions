@@ -29,9 +29,13 @@ async function checkout({
     await exec("git", ["clean", "-fdx", "--quiet"], {
       cwd: apiClientDir,
     });
-    await exec("git", ["fetch", "origin", "tag", `v${version}`, "--quiet"], {
-      cwd: directory,
-    });
+    await exec(
+      "git",
+      ["fetch", " --no-tags", "origin", "tag", `v${version}`, "--quiet"],
+      {
+        cwd: directory,
+      }
+    );
     await exec("git", ["checkout", `v${version}`], {
       cwd: directory,
     });

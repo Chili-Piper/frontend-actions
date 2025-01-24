@@ -31998,7 +31998,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
         await (0,exec.exec)("git", ["clean", "-fdx", "--quiet"], {
             cwd: apiClientDir,
         });
-        await (0,exec.exec)("git", ["fetch", "origin", "tag", `v${version}`, "--quiet"], {
+        await (0,exec.exec)("git", ["fetch", " --no-tags", "origin", "tag", `v${version}`, "--quiet"], {
             cwd: directory,
         });
         await (0,exec.exec)("git", ["checkout", `v${version}`], {

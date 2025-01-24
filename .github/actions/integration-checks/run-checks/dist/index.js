@@ -31977,7 +31977,7 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn lib:types","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn lib:types","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn lib:types","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-distribution"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
 ;// CONCATENATED MODULE: ./index.ts
 
 

@@ -1,12 +1,16 @@
 {
   "admin-concierge": {
     "repository": "Chili-Piper/frontend",
-    "directory": "apps/admin-concierge",
-    "command": "yarn types:app"
+    "commands": [
+      {
+        "exec": "yarn exec turbo run lib:types --affected",
+        "directory": "."
+      },
+      { "exec": "yarn types:app", "directory": "apps/admin-concierge" }
+    ]
   },
   "chilical": {
     "repository": "Chili-Piper/chilical",
-    "directory": ".",
-    "command": "yarn tsc"
+    "commands": [{ "exec": "yarn tsc", "directory": "." }]
   }
 }

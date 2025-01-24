@@ -56,12 +56,14 @@ function setApiClientResolution({
 async function installApiClient({
   apiClientPath,
   directory,
+  isMonoRepo,
 }: {
   directory: string;
   apiClientPath: string;
+  isMonoRepo: boolean;
 }) {
-  const localApiClientPath = `${directory}/frontend-packages/api-client`;
-  if (fs.existsSync(localApiClientPath)) {
+  if (isMonoRepo) {
+    const localApiClientPath = `${directory}/frontend-packages/api-client`;
     info(`Copying api-client from ${apiClientPath}`);
     const packageJson = fs.readFileSync(
       `${localApiClientPath}/package.json`,
@@ -93,6 +95,20 @@ function runChecks({
   });
 }
 
+function disableMocksDirCheck({ apiClientPath }: { apiClientPath: string }) {
+  const tsConfig = JSON.parse(
+    fs.readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8")
+  );
+  if (!tsConfig.exclude) {
+    tsConfig.exclude = [];
+  }
+  tsConfig.exclude.push("mocks");
+  fs.writeFileSync(
+    `${apiClientPath}/tsconfig.json`,
+    JSON.stringify(tsConfig, null, 2)
+  );
+}
+
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -106,7 +122,9 @@ async function run() {
       keyof typeof frontendsConfig
     >;
 
-    const failedFrontends: Array<string> = [];
+    const failedFrontends = new Set<string>();
+
+    await disableMocksDirCheck({ apiClientPath });
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
@@ -116,24 +134,33 @@ async function run() {
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
-      await installApiClient({ apiClientPath, directory: frontendKey });
+      await installApiClient({
+        apiClientPath,
+        directory: frontendKey,
+        isMonoRepo: frontend.repository === "Chili-Piper/frontend",
+      });
       await install({ directory: frontendKey });
 
-      info(`::group::${frontendKey}`);
-      const exitCode = await runChecks({
-        command: frontend.command,
-        directory: path.join(frontendKey, frontend.directory),
-      });
-      info("::endgroup::");
+      for (const command of frontend.commands) {
+        const exitCode = await runChecks({
+          command: command.exec,
+          directory: command.directory,
+        });
 
-      if (exitCode !== 0) {
-        failedFrontends.push(frontendKey);
+        if (exitCode !== 0) {
+          failedFrontends.add(frontendKey);
+        }
       }
     }
 
-    if (failedFrontends.length > 0) {
-      setOutput("failed_frontends", JSON.stringify(failedFrontends));
-      setFailed(`Failed frontends: [${failedFrontends.join(", ")}]`);
+    if (failedFrontends.size > 0) {
+      setOutput(
+        "failed_frontends",
+        JSON.stringify(Array.from(failedFrontends))
+      );
+      setFailed(
+        `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`
+      );
       return;
     }
   } catch (error: any) {

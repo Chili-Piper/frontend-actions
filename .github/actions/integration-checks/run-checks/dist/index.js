@@ -28115,9 +28115,6 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(5236);
-;// CONCATENATED MODULE: external "node:path"
-const external_node_path_namespaceObject = require("node:path");
-var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 var external_node_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_node_fs_namespaceObject);
@@ -31977,9 +31974,8 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","directory":"apps/admin-concierge","command":"yarn types:app"},"chilical":{"repository":"Chili-Piper/chilical","directory":".","command":"yarn tsc"}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn exec turbo run lib:types --affected","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
 ;// CONCATENATED MODULE: ./index.ts
-
 
 
 
@@ -32006,9 +32002,9 @@ function setApiClientResolution({ apiClientPath, directory, }) {
     packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
     external_node_fs_default().writeFileSync(`${directory}/package.json`, JSON.stringify(packageJson, null, 2));
 }
-async function installApiClient({ apiClientPath, directory, }) {
-    const localApiClientPath = `${directory}/frontend-packages/api-client`;
-    if (external_node_fs_default().existsSync(localApiClientPath)) {
+async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
+    if (isMonoRepo) {
+        const localApiClientPath = `${directory}/frontend-packages/api-client`;
         (0,core.info)(`Copying api-client from ${apiClientPath}`);
         const packageJson = external_node_fs_default().readFileSync(`${localApiClientPath}/package.json`, "utf-8");
         external_node_fs_default().rmSync(localApiClientPath, { recursive: true, force: true });
@@ -32029,6 +32025,14 @@ function runChecks({ command, directory, }) {
         ignoreReturnCode: true,
     });
 }
+function disableMocksDirCheck({ apiClientPath }) {
+    const tsConfig = JSON.parse(external_node_fs_default().readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8"));
+    if (!tsConfig.exclude) {
+        tsConfig.exclude = [];
+    }
+    tsConfig.exclude.push("mocks");
+    external_node_fs_default().writeFileSync(`${apiClientPath}/tsconfig.json`, JSON.stringify(tsConfig, null, 2));
+}
 async function run() {
     try {
         const frontendVersionsJSON = (0,core.getInput)("frontend");
@@ -32036,7 +32040,8 @@ async function run() {
         const checkoutToken = (0,core.getInput)("checkout_token");
         const apiClientPath = (0,core.getInput)("api_client_path");
         const frontendsKeys = Object.keys(frontends_namespaceObject);
-        const failedFrontends = [];
+        const failedFrontends = new Set();
+        await disableMocksDirCheck({ apiClientPath });
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
             await checkout({
@@ -32045,21 +32050,25 @@ async function run() {
                 repository: frontend.repository,
                 version: frontendVersions[frontendKey],
             });
-            await installApiClient({ apiClientPath, directory: frontendKey });
-            await install({ directory: frontendKey });
-            (0,core.info)(`::group::${frontendKey}`);
-            const exitCode = await runChecks({
-                command: frontend.command,
-                directory: external_node_path_default().join(frontendKey, frontend.directory),
+            await installApiClient({
+                apiClientPath,
+                directory: frontendKey,
+                isMonoRepo: frontend.repository === "Chili-Piper/frontend",
             });
-            (0,core.info)("::endgroup::");
-            if (exitCode !== 0) {
-                failedFrontends.push(frontendKey);
+            await install({ directory: frontendKey });
+            for (const command of frontend.commands) {
+                const exitCode = await runChecks({
+                    command: command.exec,
+                    directory: command.directory,
+                });
+                if (exitCode !== 0) {
+                    failedFrontends.add(frontendKey);
+                }
             }
         }
-        if (failedFrontends.length > 0) {
-            (0,core.setOutput)("failed_frontends", JSON.stringify(failedFrontends));
-            (0,core.setFailed)(`Failed frontends: [${failedFrontends.join(", ")}]`);
+        if (failedFrontends.size > 0) {
+            (0,core.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
+            (0,core.setFailed)(`Failed frontends: [${Array.from(failedFrontends).join(", ")}]`);
             return;
         }
     }

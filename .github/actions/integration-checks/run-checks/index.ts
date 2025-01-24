@@ -18,6 +18,19 @@ async function checkout({
   version: string;
   directory: string;
 }) {
+  if (fs.existsSync(directory)) {
+    await exec("git", ["checkout", "."], {
+      cwd: directory,
+    });
+    await exec("git", ["fetch", "origin", `v${version}`], {
+      cwd: directory,
+    });
+    await exec("git", ["checkout", `v${version}`], {
+      cwd: directory,
+    });
+    return;
+  }
+
   const tagArgs = version ? [`--branch=v${version}`] : [];
 
   const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
@@ -132,23 +145,25 @@ async function run() {
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
+      const isMonoRepo = frontend.repository === "Chili-Piper/frontend";
+      const directory = isMonoRepo ? "monorepo" : frontendKey;
       await checkout({
         checkoutToken,
-        directory: frontendKey,
+        directory,
         repository: frontend.repository,
         version: frontendVersions[frontendKey],
       });
       await installApiClient({
         apiClientPath,
-        directory: frontendKey,
-        isMonoRepo: frontend.repository === "Chili-Piper/frontend",
+        directory,
+        isMonoRepo,
       });
-      await install({ directory: frontendKey });
+      await install({ directory });
 
       for (const command of frontend.commands) {
         const exitCode = await runChecks({
           command: command.exec,
-          directory: path.join(frontendKey, command.directory),
+          directory: path.join(directory, command.directory),
         });
 
         if (exitCode !== 0) {

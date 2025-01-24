@@ -31987,6 +31987,18 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"re
 
 const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
+    if (external_node_fs_default().existsSync(directory)) {
+        await (0,exec.exec)("git", ["checkout", "."], {
+            cwd: directory,
+        });
+        await (0,exec.exec)("git", ["fetch", "origin", `v${version}`], {
+            cwd: directory,
+        });
+        await (0,exec.exec)("git", ["checkout", `v${version}`], {
+            cwd: directory,
+        });
+        return;
+    }
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
     (0,core.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
@@ -32056,22 +32068,24 @@ async function run() {
         disableMocksDirCheck(`${apiClientPath}/mocks`);
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
+            const isMonoRepo = frontend.repository === "Chili-Piper/frontend";
+            const directory = isMonoRepo ? "monorepo" : frontendKey;
             await checkout({
                 checkoutToken,
-                directory: frontendKey,
+                directory,
                 repository: frontend.repository,
                 version: frontendVersions[frontendKey],
             });
             await installApiClient({
                 apiClientPath,
-                directory: frontendKey,
-                isMonoRepo: frontend.repository === "Chili-Piper/frontend",
+                directory,
+                isMonoRepo,
             });
-            await install({ directory: frontendKey });
+            await install({ directory });
             for (const command of frontend.commands) {
                 const exitCode = await runChecks({
                     command: command.exec,
-                    directory: external_node_path_default().join(frontendKey, command.directory),
+                    directory: external_node_path_default().join(directory, command.directory),
                 });
                 if (exitCode !== 0) {
                     failedFrontends.add(frontendKey);

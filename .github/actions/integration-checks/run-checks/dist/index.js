@@ -32010,8 +32010,10 @@ async function installApiClient({ apiClientPath, directory, }) {
     const localApiClientPath = `${directory}/frontend-packages/api-client`;
     if (external_node_fs_default().existsSync(localApiClientPath)) {
         (0,core.info)(`Copying api-client from ${apiClientPath}`);
+        const packageJson = external_node_fs_default().readFileSync(`${localApiClientPath}/package.json`, "utf-8");
         external_node_fs_default().rmSync(localApiClientPath, { recursive: true, force: true });
         external_node_fs_default().cpSync(apiClientPath, localApiClientPath, { recursive: true });
+        external_node_fs_default().writeFileSync(`${localApiClientPath}/package.json`, packageJson);
         return;
     }
     (0,core.info)(`Linking api-client ${apiClientPath}`);

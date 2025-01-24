@@ -19,7 +19,7 @@ async function checkout({
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
-    await exec("git", ["reset"], {
+    await exec("git", ["reset", "--quiet"], {
       cwd: directory,
     });
     await exec("git", ["checkout", "."], {
@@ -47,7 +47,7 @@ async function checkout({
 
 async function install({ directory }: { directory: string }) {
   info("Installing deps...");
-  await exec("yarn", undefined, {
+  await exec("yarn --silent", undefined, {
     cwd: directory,
   });
 }

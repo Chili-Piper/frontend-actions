@@ -2,44 +2,44 @@
   "admin-billing": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-billing" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-billing" }
     ]
   },
   "admin-branding": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-branding" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-branding" }
     ]
   },
   "admin-center": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-center" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-center" }
     ]
   },
   "admin-chat": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-chat" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-chat" }
     ]
   },
   "admin-chilical": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-chilical" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-chilical" }
     ]
   },
   "admin-concierge": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-concierge" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-concierge" }
     ]
   },
   "admin-distribution": {
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn types:app --noEmit",
+        "exec": "yarn tsc --noEmit",
         "directory": "apps/admin-distribution"
       }
     ]
@@ -47,14 +47,14 @@
   "admin-distro": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-distro" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-distro" }
     ]
   },
   "admin-integrations": {
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn types:app --noEmit",
+        "exec": "yarn tsc --noEmit",
         "directory": "apps/admin-integrations"
       }
     ]
@@ -63,7 +63,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn types:app --noEmit",
+        "exec": "yarn tsc --noEmit",
         "directory": "apps/admin-notifications"
       }
     ]
@@ -72,7 +72,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn types:app --noEmit",
+        "exec": "yarn tsc --noEmit",
         "directory": "apps/admin-platform-assets"
       }
     ]
@@ -80,20 +80,20 @@
   "admin-users": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/admin-users" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/admin-users" }
     ]
   },
   "chili-chat": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      { "exec": "yarn types:app --noEmit", "directory": "apps/chili-chat" }
+      { "exec": "yarn tsc --noEmit", "directory": "apps/chili-chat" }
     ]
   },
   "conciergejs-fire": {
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn types:app --noEmit",
+        "exec": "yarn tsc --noEmit",
         "directory": "apps/conciergejs-fire"
       }
     ]

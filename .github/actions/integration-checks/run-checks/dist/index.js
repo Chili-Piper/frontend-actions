@@ -31991,7 +31991,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
         await (0,exec.exec)("git", ["checkout", "."], {
             cwd: directory,
         });
-        await (0,exec.exec)("git", ["fetch", "origin", `v${version}`], {
+        await (0,exec.exec)("git", ["fetch", "origin", "tag", `v${version}`], {
             cwd: directory,
         });
         await (0,exec.exec)("git", ["checkout", `v${version}`], {

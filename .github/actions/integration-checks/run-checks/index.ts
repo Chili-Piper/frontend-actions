@@ -22,7 +22,7 @@ async function checkout({
     await exec("git", ["checkout", "."], {
       cwd: directory,
     });
-    await exec("git", ["fetch", "origin", `v${version}`], {
+    await exec("git", ["fetch", "origin", "tag", `v${version}`], {
       cwd: directory,
     });
     await exec("git", ["checkout", `v${version}`], {

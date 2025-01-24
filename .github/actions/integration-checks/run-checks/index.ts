@@ -19,7 +19,13 @@ async function checkout({
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
+    await exec("git", ["reset"], {
+      cwd: directory,
+    });
     await exec("git", ["checkout", "."], {
+      cwd: directory,
+    });
+    await exec("git", ["clean", "-fdx"], {
       cwd: directory,
     });
     await exec("git", ["fetch", "origin", "tag", `v${version}`], {

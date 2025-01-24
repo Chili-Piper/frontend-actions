@@ -31988,7 +31988,13 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"re
 const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     if (external_node_fs_default().existsSync(directory)) {
+        await (0,exec.exec)("git", ["reset"], {
+            cwd: directory,
+        });
         await (0,exec.exec)("git", ["checkout", "."], {
+            cwd: directory,
+        });
+        await (0,exec.exec)("git", ["clean", "-fdx"], {
             cwd: directory,
         });
         await (0,exec.exec)("git", ["fetch", "origin", "tag", `v${version}`], {

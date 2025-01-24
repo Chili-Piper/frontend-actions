@@ -104,7 +104,6 @@ async function run() {
     const failedFrontends: Array<string> = [];
 
     for (const frontendKey of frontendsKeys) {
-      info(`::group::${frontendKey}`);
       const frontend = frontendsConfig[frontendKey];
       await checkout({
         checkoutToken,
@@ -114,15 +113,17 @@ async function run() {
       });
       await installApiClient({ apiClientPath, directory: frontendKey });
       await install({ directory: frontendKey });
+
+      info(`::group::${frontendKey}`);
       const exitCode = await runChecks({
         command: frontend.command,
         directory: path.join(frontendKey, frontend.directory),
       });
+      info("::endgroup::");
 
       if (exitCode !== 0) {
         failedFrontends.push(frontendKey);
       }
-      info("::endgroup::");
     }
 
     if (failedFrontends.length > 0) {

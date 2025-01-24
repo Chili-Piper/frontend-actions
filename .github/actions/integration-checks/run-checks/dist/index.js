@@ -32036,7 +32036,6 @@ async function run() {
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = [];
         for (const frontendKey of frontendsKeys) {
-            (0,core.info)(`::group::${frontendKey}`);
             const frontend = frontends_namespaceObject[frontendKey];
             await checkout({
                 checkoutToken,
@@ -32046,14 +32045,15 @@ async function run() {
             });
             await installApiClient({ apiClientPath, directory: frontendKey });
             await install({ directory: frontendKey });
+            (0,core.info)(`::group::${frontendKey}`);
             const exitCode = await runChecks({
                 command: frontend.command,
                 directory: external_node_path_default().join(frontendKey, frontend.directory),
             });
+            (0,core.info)("::endgroup::");
             if (exitCode !== 0) {
                 failedFrontends.push(frontendKey);
             }
-            (0,core.info)("::endgroup::");
         }
         if (failedFrontends.length > 0) {
             (0,core.setOutput)("failed_frontends", JSON.stringify(failedFrontends));

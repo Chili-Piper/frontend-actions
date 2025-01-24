@@ -2,20 +2,12 @@
   "admin-concierge": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      {
-        "exec": "yarn lib:types",
-        "directory": "."
-      },
       { "exec": "yarn types:app", "directory": "apps/admin-concierge" }
     ]
   },
   "admin-distribution": {
     "repository": "Chili-Piper/frontend",
     "commands": [
-      {
-        "exec": "yarn lib:types",
-        "directory": "."
-      },
       { "exec": "yarn types:app", "directory": "apps/admin-distribution" }
     ]
   },

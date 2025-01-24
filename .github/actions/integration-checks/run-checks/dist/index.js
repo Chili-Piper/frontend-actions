@@ -28115,6 +28115,9 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(5236);
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = require("node:path");
+var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = require("node:fs");
 var external_node_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_node_fs_namespaceObject);
@@ -31974,8 +31977,9 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn exec turbo run lib:types --affected","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn lib:types","directory":"."},{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
 ;// CONCATENATED MODULE: ./index.ts
+
 
 
 
@@ -32059,7 +32063,7 @@ async function run() {
             for (const command of frontend.commands) {
                 const exitCode = await runChecks({
                     command: command.exec,
-                    directory: command.directory,
+                    directory: external_node_path_default().join(frontendKey, command.directory),
                 });
                 if (exitCode !== 0) {
                     failedFrontends.add(frontendKey);

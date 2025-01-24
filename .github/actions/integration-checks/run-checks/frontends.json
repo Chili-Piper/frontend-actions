@@ -3,7 +3,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn exec turbo run lib:types --affected",
+        "exec": "yarn lib:types",
         "directory": "."
       },
       { "exec": "yarn types:app", "directory": "apps/admin-concierge" }

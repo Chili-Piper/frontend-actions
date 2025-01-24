@@ -144,7 +144,7 @@ async function run() {
       for (const command of frontend.commands) {
         const exitCode = await runChecks({
           command: command.exec,
-          directory: command.directory,
+          directory: path.join(frontendKey, command.directory),
         });
 
         if (exitCode !== 0) {

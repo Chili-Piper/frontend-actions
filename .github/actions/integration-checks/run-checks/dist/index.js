@@ -31977,7 +31977,7 @@ var jsYaml = {
 
 
 ;// CONCATENATED MODULE: ./frontends.json
-const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-billing"}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-branding"}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-center"}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-chat"}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-chilical"}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-concierge"}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-distribution"}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-distro"}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-integrations"}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-notifications"}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-platform-assets"}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/admin-users"}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/chili-chat"}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --noEmit","directory":"apps/conciergejs-fire"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc --noEmit","directory":"."}]}}');
+const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-billing"}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-branding"}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-center"}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-chat"}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-chilical"}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-concierge"}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-distribution"}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-distro"}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-integrations"}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-notifications"}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-platform-assets"}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/admin-users"}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/chili-chat"}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn types:app","directory":"apps/conciergejs-fire"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]}}');
 ;// CONCATENATED MODULE: ./index.ts
 
 
@@ -31988,16 +31988,17 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"re
 const gitUser = "srebot";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     if (external_node_fs_default().existsSync(directory)) {
+        const apiClientDir = `${directory}/frontend-packages/api-client`;
         await (0,exec.exec)("git", ["reset", "--quiet"], {
-            cwd: directory,
+            cwd: apiClientDir,
         });
-        await (0,exec.exec)("git", ["checkout", "."], {
-            cwd: directory,
+        await (0,exec.exec)("git", ["checkout", ".", "--quiet"], {
+            cwd: apiClientDir,
         });
-        await (0,exec.exec)("git", ["clean", "-fdx"], {
-            cwd: directory,
+        await (0,exec.exec)("git", ["clean", "-fdx", "--quiet"], {
+            cwd: apiClientDir,
         });
-        await (0,exec.exec)("git", ["fetch", "origin", "tag", `v${version}`], {
+        await (0,exec.exec)("git", ["fetch", "origin", "tag", `v${version}`, "--quiet"], {
             cwd: directory,
         });
         await (0,exec.exec)("git", ["checkout", `v${version}`], {

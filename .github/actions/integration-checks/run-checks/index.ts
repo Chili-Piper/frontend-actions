@@ -19,14 +19,15 @@ async function checkout({
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
+    const apiClientDir = `${directory}/frontend-packages/api-client`;
     await exec("git", ["reset", "--quiet"], {
-      cwd: directory,
+      cwd: apiClientDir,
     });
     await exec("git", ["checkout", ".", "--quiet"], {
-      cwd: directory,
+      cwd: apiClientDir,
     });
     await exec("git", ["clean", "-fdx", "--quiet"], {
-      cwd: directory,
+      cwd: apiClientDir,
     });
     await exec("git", ["fetch", "origin", "tag", `v${version}`, "--quiet"], {
       cwd: directory,

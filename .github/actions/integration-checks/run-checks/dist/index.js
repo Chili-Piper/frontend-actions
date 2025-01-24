@@ -32080,6 +32080,8 @@ async function run() {
         const frontendVersions = (load(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,core.getInput)("checkout_token");
         const apiClientRepoPath = (0,core.getInput)("api_client_repo_path");
+        (0,core.info)("Disabling TS check for api-client mocks dir");
+        disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         (0,core.info)("Reusing monorepo clone from parent action");
@@ -32090,12 +32092,14 @@ async function run() {
         const monoRepoPath = apiClientRepoPath;
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
-        (0,core.info)("Disabling TS check for api-client mocks dir");
-        disableMocksDirCheck(`${apiClientPath}/mocks`);
         (0,core.info)("Preparing monorepo lib types");
+        const nullStream = external_node_fs_default().createWriteStream("/dev/null");
         await (0,exec.exec)("yarn lib:types", undefined, {
             cwd: monoRepoPath,
             ignoreReturnCode: true,
+            silent: true,
+            outStream: nullStream,
+            errStream: nullStream,
         });
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];

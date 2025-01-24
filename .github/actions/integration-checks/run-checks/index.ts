@@ -159,6 +159,9 @@ async function run() {
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
 
+    info("Disabling TS check for api-client mocks dir");
+    disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
+
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
     // of CI runtime
     info("Reusing monorepo clone from parent action");
@@ -174,12 +177,14 @@ async function run() {
 
     const failedFrontends = new Set<string>();
 
-    info("Disabling TS check for api-client mocks dir");
-    disableMocksDirCheck(`${apiClientPath}/mocks`);
     info("Preparing monorepo lib types");
+    const nullStream = fs.createWriteStream("/dev/null");
     await exec("yarn lib:types", undefined, {
       cwd: monoRepoPath,
       ignoreReturnCode: true,
+      silent: true,
+      outStream: nullStream,
+      errStream: nullStream,
     });
 
     for (const frontendKey of frontendsKeys) {

@@ -15,7 +15,7 @@ async function checkout({
 }: {
   checkoutToken: string;
   repository: string;
-  version: string;
+  version?: string;
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
@@ -29,14 +29,25 @@ async function checkout({
     await exec("git", ["clean", "-fdx", "--quiet"], {
       cwd: apiClientDir,
     });
-    await exec(
-      "git",
-      ["fetch", "--no-tags", "origin", "tag", `v${version}`, "--quiet"],
-      {
+
+    if (version) {
+      await exec(
+        "git",
+        ["fetch", "--no-tags", "origin", "tag", `v${version}`, "--quiet"],
+        {
+          cwd: directory,
+        }
+      );
+      await exec("git", ["checkout", `v${version}`], {
         cwd: directory,
-      }
-    );
-    await exec("git", ["checkout", `v${version}`], {
+      });
+      return;
+    }
+
+    await exec("git", ["fetch", "--no-tags", "origin", "master", "--quiet"], {
+      cwd: directory,
+    });
+    await exec("git", ["checkout", "master"], {
       cwd: directory,
     });
     return;
@@ -120,7 +131,6 @@ function runChecks({
 }
 
 function disableMocksDirCheck(directory: string) {
-  info("Disabling TS check for api-client mocks dir");
   const files = fs.readdirSync(directory);
 
   for (const file of files) {
@@ -137,10 +147,6 @@ function disableMocksDirCheck(directory: string) {
   }
 }
 
-function prepareMonorepo(apiClientRepoPath: string, monoRepoPath: string) {
-  fs.cpSync(apiClientRepoPath, monoRepoPath, { recursive: true });
-}
-
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -148,6 +154,7 @@ async function run() {
       string,
       string
     >;
+    const monoRepo = "Chili-Piper/frontend";
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
     const apiClientPath = `${apiClientRepoPath}/frontend-packages/api-client`;
@@ -158,8 +165,19 @@ async function run() {
 
     const failedFrontends = new Set<string>();
 
+    info("Disabling TS check for api-client mocks dir");
     disableMocksDirCheck(`${apiClientPath}/mocks`);
-    prepareMonorepo(apiClientRepoPath, monoRepoPath);
+    info("Preparing monorepo");
+    await checkout({
+      checkoutToken,
+      directory: monoRepoPath,
+      repository: monoRepo,
+    });
+    await install({ directory: monoRepoPath });
+    await exec("yarn lib:types", undefined, {
+      cwd: monoRepoPath,
+      ignoreReturnCode: true,
+    });
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];

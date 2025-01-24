@@ -22,13 +22,13 @@ async function checkout({
     await exec("git", ["reset", "--quiet"], {
       cwd: directory,
     });
-    await exec("git", ["checkout", "."], {
+    await exec("git", ["checkout", ".", "--quiet"], {
       cwd: directory,
     });
-    await exec("git", ["clean", "-fdx"], {
+    await exec("git", ["clean", "-fdx", "--quiet"], {
       cwd: directory,
     });
-    await exec("git", ["fetch", "origin", "tag", `v${version}`], {
+    await exec("git", ["fetch", "origin", "tag", `v${version}`, "--quiet"], {
       cwd: directory,
     });
     await exec("git", ["checkout", `v${version}`], {

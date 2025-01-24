@@ -32079,19 +32079,17 @@ async function run() {
         const monoRepo = "Chili-Piper/frontend";
         const checkoutToken = (0,core.getInput)("checkout_token");
         const apiClientRepoPath = (0,core.getInput)("api_client_repo_path");
-        const apiClientPath = `${apiClientRepoPath}/frontend-packages/api-client`;
-        const monoRepoPath = "monorepo";
+        // Moving api-client to a separate folder and reusing its repo saves around 30/40s
+        // of CI runtime
+        (0,core.info)("Reusing monorepo clone from parent action");
+        const apiClientPath = `api-client/frontend-packages/api-client`;
+        (0,external_node_fs_namespaceObject.cpSync)(`${apiClientRepoPath}/frontend-packages/api-client`, apiClientPath);
+        const monoRepoPath = apiClientRepoPath;
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
         (0,core.info)("Disabling TS check for api-client mocks dir");
         disableMocksDirCheck(`${apiClientPath}/mocks`);
-        (0,core.info)("Preparing monorepo");
-        await checkout({
-            checkoutToken,
-            directory: monoRepoPath,
-            repository: monoRepo,
-        });
-        await install({ directory: monoRepoPath });
+        (0,core.info)("Preparing monorepo lib types");
         await (0,exec.exec)("yarn lib:types", undefined, {
             cwd: monoRepoPath,
             ignoreReturnCode: true,

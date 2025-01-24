@@ -1,11 +1,13 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
-import fs, { cpSync } from "node:fs";
+import fs from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
 
 const gitUser = "srebot";
+const apiClientSubDir = "frontend-packages/api-client";
+const monoRepo = "Chili-Piper/frontend";
 
 async function checkout({
   checkoutToken,
@@ -19,7 +21,7 @@ async function checkout({
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
-    const apiClientDir = `${directory}/frontend-packages/api-client`;
+    const apiClientDir = `${directory}/${apiClientSubDir}`;
     await exec("git", ["reset", "--quiet"], {
       cwd: apiClientDir,
     });
@@ -98,7 +100,7 @@ async function installApiClient({
   isMonoRepo: boolean;
 }) {
   if (isMonoRepo) {
-    const localApiClientPath = `${directory}/frontend-packages/api-client`;
+    const localApiClientPath = `${directory}/${apiClientSubDir}`;
     info(`Copying api-client from ${apiClientPath}`);
     const packageJson = fs.readFileSync(
       `${localApiClientPath}/package.json`,
@@ -154,15 +156,16 @@ async function run() {
       string,
       string
     >;
-    const monoRepo = "Chili-Piper/frontend";
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
 
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
     // of CI runtime
     info("Reusing monorepo clone from parent action");
-    const apiClientPath = `api-client/frontend-packages/api-client`;
-    cpSync(`${apiClientRepoPath}/frontend-packages/api-client`, apiClientPath);
+    const apiClientPath = `api-client/${apiClientSubDir}`;
+    fs.cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
+      recursive: true,
+    });
     const monoRepoPath = apiClientRepoPath;
 
     const frontendsKeys = Object.keys(frontendsConfig) as Array<
@@ -181,7 +184,7 @@ async function run() {
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
-      const isMonoRepo = frontend.repository === "Chili-Piper/frontend";
+      const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;
       await checkout({
         checkoutToken,

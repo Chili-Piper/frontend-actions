@@ -31986,9 +31986,11 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"re
 
 
 const gitUser = "srebot";
+const apiClientSubDir = "frontend-packages/api-client";
+const monoRepo = "Chili-Piper/frontend";
 async function checkout({ checkoutToken, repository, version, directory, }) {
     if (external_node_fs_default().existsSync(directory)) {
-        const apiClientDir = `${directory}/frontend-packages/api-client`;
+        const apiClientDir = `${directory}/${apiClientSubDir}`;
         await (0,exec.exec)("git", ["reset", "--quiet"], {
             cwd: apiClientDir,
         });
@@ -32036,7 +32038,7 @@ function setApiClientResolution({ apiClientPath, directory, }) {
 }
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
-        const localApiClientPath = `${directory}/frontend-packages/api-client`;
+        const localApiClientPath = `${directory}/${apiClientSubDir}`;
         (0,core.info)(`Copying api-client from ${apiClientPath}`);
         const packageJson = external_node_fs_default().readFileSync(`${localApiClientPath}/package.json`, "utf-8");
         external_node_fs_default().rmSync(localApiClientPath, { recursive: true, force: true });
@@ -32076,14 +32078,15 @@ async function run() {
     try {
         const frontendVersionsJSON = (0,core.getInput)("frontend");
         const frontendVersions = (load(frontendVersionsJSON) ?? {});
-        const monoRepo = "Chili-Piper/frontend";
         const checkoutToken = (0,core.getInput)("checkout_token");
         const apiClientRepoPath = (0,core.getInput)("api_client_repo_path");
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         (0,core.info)("Reusing monorepo clone from parent action");
-        const apiClientPath = `api-client/frontend-packages/api-client`;
-        (0,external_node_fs_namespaceObject.cpSync)(`${apiClientRepoPath}/frontend-packages/api-client`, apiClientPath);
+        const apiClientPath = `api-client/${apiClientSubDir}`;
+        external_node_fs_default().cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
+            recursive: true,
+        });
         const monoRepoPath = apiClientRepoPath;
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
@@ -32096,7 +32099,7 @@ async function run() {
         });
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
-            const isMonoRepo = frontend.repository === "Chili-Piper/frontend";
+            const isMonoRepo = frontend.repository === monoRepo;
             const directory = isMonoRepo ? monoRepoPath : frontendKey;
             await checkout({
                 checkoutToken,

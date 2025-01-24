@@ -96,6 +96,7 @@ function runChecks({
 }
 
 function disableMocksDirCheck({ apiClientPath }: { apiClientPath: string }) {
+  info(`Disabling mocks dir on ${apiClientPath}/tsconfig.json`);
   const tsConfig = JSON.parse(
     fs.readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8")
   );
@@ -103,6 +104,7 @@ function disableMocksDirCheck({ apiClientPath }: { apiClientPath: string }) {
     tsConfig.exclude = [];
   }
   tsConfig.exclude.push("mocks");
+  info(`Writing ${JSON.stringify(tsConfig, null, 2)}`);
   fs.writeFileSync(
     `${apiClientPath}/tsconfig.json`,
     JSON.stringify(tsConfig, null, 2)
@@ -124,7 +126,7 @@ async function run() {
 
     const failedFrontends = new Set<string>();
 
-    await disableMocksDirCheck({ apiClientPath });
+    disableMocksDirCheck({ apiClientPath });
 
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];

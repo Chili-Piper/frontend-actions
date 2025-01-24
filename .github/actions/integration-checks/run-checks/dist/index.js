@@ -32030,11 +32030,13 @@ function runChecks({ command, directory, }) {
     });
 }
 function disableMocksDirCheck({ apiClientPath }) {
+    (0,core.info)(`Disabling mocks dir on ${apiClientPath}/tsconfig.json`);
     const tsConfig = JSON.parse(external_node_fs_default().readFileSync(`${apiClientPath}/tsconfig.json`, "utf-8"));
     if (!tsConfig.exclude) {
         tsConfig.exclude = [];
     }
     tsConfig.exclude.push("mocks");
+    (0,core.info)(`Writing ${JSON.stringify(tsConfig, null, 2)}`);
     external_node_fs_default().writeFileSync(`${apiClientPath}/tsconfig.json`, JSON.stringify(tsConfig, null, 2));
 }
 async function run() {
@@ -32045,7 +32047,7 @@ async function run() {
         const apiClientPath = (0,core.getInput)("api_client_path");
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
-        await disableMocksDirCheck({ apiClientPath });
+        disableMocksDirCheck({ apiClientPath });
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
             await checkout({

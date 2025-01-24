@@ -1,4 +1,30 @@
 {
+  "admin-billing": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-billing" }
+    ]
+  },
+  "admin-branding": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-branding" }
+    ]
+  },
+  "admin-center": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [{ "exec": "yarn types:app", "directory": "apps/admin-center" }]
+  },
+  "admin-chat": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [{ "exec": "yarn types:app", "directory": "apps/admin-chat" }]
+  },
+  "admin-chilical": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-chilical" }
+    ]
+  },
   "admin-concierge": {
     "repository": "Chili-Piper/frontend",
     "commands": [
@@ -9,6 +35,42 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       { "exec": "yarn types:app", "directory": "apps/admin-distribution" }
+    ]
+  },
+  "admin-distro": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [{ "exec": "yarn types:app", "directory": "apps/admin-distro" }]
+  },
+  "admin-integrations": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-integrations" }
+    ]
+  },
+  "admin-notifications": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-notifications" }
+    ]
+  },
+  "admin-platform-assets": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/admin-platform-assets" }
+    ]
+  },
+  "admin-users": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [{ "exec": "yarn types:app", "directory": "apps/admin-users" }]
+  },
+  "chili-chat": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [{ "exec": "yarn types:app", "directory": "apps/chili-chat" }]
+  },
+  "conciergejs-fire": {
+    "repository": "Chili-Piper/frontend",
+    "commands": [
+      { "exec": "yarn types:app", "directory": "apps/conciergejs-fire" }
     ]
   },
   "chilical": {

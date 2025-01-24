@@ -16,6 +16,10 @@ inputs:
   npm_token:
     description: "NPM Token"
     required: true
+outputs:
+  failed_frontends:
+    description: "If it fails, outputs list of failed frontends"
+    value: ${{ steps.run-checks.outputs.failed_frontends }}
 runs:
   using: "composite"
   steps:
@@ -60,6 +64,7 @@ runs:
         echo "api_client_repo_path=$FULL_PATH" > $GITHUB_OUTPUT
       shell: bash
     - name: Run Checks
+      id: run-checks
       uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-checks
       with:
         frontend: ${{ inputs.frontend }}

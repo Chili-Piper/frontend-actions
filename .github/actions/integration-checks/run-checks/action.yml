@@ -10,6 +10,9 @@ inputs:
   frontend:
     description: "frontend apps versions"
     required: false
+outputs:
+  failed_frontends:
+    description: "If it fails, outputs list of failed frontends"
 runs:
   using: "node20"
   main: "dist/index.js"

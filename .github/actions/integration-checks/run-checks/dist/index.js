@@ -32016,9 +32016,9 @@ async function installApiClient({ apiClientPath, directory, }) {
     }
     (0,core.info)(`Linking api-client ${apiClientPath}`);
     setApiClientResolution({ directory, apiClientPath });
-    // await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-    //   cwd: directory,
-    // });
+    await (0,exec.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+        cwd: directory,
+    });
 }
 function runChecks({ command, directory, }) {
     (0,core.info)(`Running type checks with command ${command}`);
@@ -32036,6 +32036,7 @@ async function run() {
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = [];
         for (const frontendKey of frontendsKeys) {
+            (0,core.info)(`::group::${frontendKey}`);
             const frontend = frontends_namespaceObject[frontendKey];
             await checkout({
                 checkoutToken,
@@ -32052,8 +32053,10 @@ async function run() {
             if (exitCode !== 0) {
                 failedFrontends.push(frontendKey);
             }
+            (0,core.info)("::endgroup::");
         }
         if (failedFrontends.length > 0) {
+            (0,core.setOutput)("failed_frontends", JSON.stringify(failedFrontends));
             (0,core.setFailed)(`Failed frontends: [${failedFrontends.join(", ")}]`);
             return;
         }

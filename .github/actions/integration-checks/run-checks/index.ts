@@ -1,7 +1,7 @@
 import { exec } from "@actions/exec";
 import path from "node:path";
 import fs from "node:fs";
-import { info, getInput, setFailed } from "@actions/core";
+import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
 import frontendsConfig from "./frontends.json";
 
@@ -69,9 +69,9 @@ async function installApiClient({
   }
   info(`Linking api-client ${apiClientPath}`);
   setApiClientResolution({ directory, apiClientPath });
-  // await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-  //   cwd: directory,
-  // });
+  await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+    cwd: directory,
+  });
 }
 
 function runChecks({
@@ -104,6 +104,7 @@ async function run() {
     const failedFrontends: Array<string> = [];
 
     for (const frontendKey of frontendsKeys) {
+      info(`::group::${frontendKey}`);
       const frontend = frontendsConfig[frontendKey];
       await checkout({
         checkoutToken,
@@ -121,9 +122,11 @@ async function run() {
       if (exitCode !== 0) {
         failedFrontends.push(frontendKey);
       }
+      info("::endgroup::");
     }
 
     if (failedFrontends.length > 0) {
+      setOutput("failed_frontends", JSON.stringify(failedFrontends));
       setFailed(`Failed frontends: [${failedFrontends.join(", ")}]`);
       return;
     }

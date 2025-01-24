@@ -63,8 +63,13 @@ async function installApiClient({
   const localApiClientPath = `${directory}/frontend-packages/api-client`;
   if (fs.existsSync(localApiClientPath)) {
     info(`Copying api-client from ${apiClientPath}`);
+    const packageJson = fs.readFileSync(
+      `${localApiClientPath}/package.json`,
+      "utf-8"
+    );
     fs.rmSync(localApiClientPath, { recursive: true, force: true });
     fs.cpSync(apiClientPath, localApiClientPath, { recursive: true });
+    fs.writeFileSync(`${localApiClientPath}/package.json`, packageJson);
     return;
   }
   info(`Linking api-client ${apiClientPath}`);

@@ -16,7 +16,8 @@ async function prefetchMonoRepoTags({
   versions: string[];
   directory: string;
 }) {
-  const tags = versions.flatMap((version) => ["tag", `v${version}`]);
+  const dedupedVersions = [...new Set(versions)];
+  const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
   await exec("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
     cwd: directory,
   });

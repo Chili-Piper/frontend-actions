@@ -31989,7 +31989,8 @@ const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
 async function prefetchMonoRepoTags({ versions, directory, }) {
-    const tags = versions.flatMap((version) => ["tag", `v${version}`]);
+    const dedupedVersions = [...new Set(versions)];
+    const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
     await (0,exec.exec)("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
         cwd: directory,
     });

@@ -31988,6 +31988,12 @@ const frontends_namespaceObject = /*#__PURE__*/JSON.parse('{"admin-billing":{"re
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
+async function prefetchMonoRepoTags({ versions, directory, }) {
+    const tags = versions.flatMap((version) => ["tag", `v${version}`]);
+    await (0,exec.exec)("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
+        cwd: directory,
+    });
+}
 async function checkout({ checkoutToken, repository, version, directory, }) {
     if (external_node_fs_default().existsSync(directory)) {
         const apiClientDir = `${directory}/${apiClientSubDir}`;
@@ -32001,17 +32007,11 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
             cwd: apiClientDir,
         });
         if (version) {
-            await (0,exec.exec)("git", ["fetch", "--no-tags", "origin", "tag", `v${version}`, "--quiet"], {
-                cwd: directory,
-            });
             await (0,exec.exec)("git", ["checkout", `v${version}`], {
                 cwd: directory,
             });
             return;
         }
-        await (0,exec.exec)("git", ["fetch", "--no-tags", "origin", "master", "--quiet"], {
-            cwd: directory,
-        });
         await (0,exec.exec)("git", ["checkout", "master"], {
             cwd: directory,
         });
@@ -32085,13 +32085,21 @@ async function run() {
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         (0,core.info)("Reusing monorepo clone from parent action");
-        const apiClientPath = external_node_path_default().resolve('api-client-directory', apiClientSubDir);
+        const apiClientPath = external_node_path_default().resolve("api-client-directory", apiClientSubDir);
         external_node_fs_default().cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
             recursive: true,
         });
         const monoRepoPath = apiClientRepoPath;
         const frontendsKeys = Object.keys(frontends_namespaceObject);
         const failedFrontends = new Set();
+        (0,core.info)("Prefetching monorepo tags");
+        await prefetchMonoRepoTags({
+            directory: monoRepoPath,
+            versions: frontendsKeys
+                .filter((key) => frontends_namespaceObject[key].repository === monoRepo)
+                .map((key) => frontendVersions[key])
+                .filter((item) => item),
+        });
         (0,core.info)("Preparing monorepo lib types");
         const nullStream = external_node_fs_default().createWriteStream("/dev/null");
         await (0,exec.exec)("yarn lib:types", undefined, {

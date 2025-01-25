@@ -9,6 +9,19 @@ const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
 
+async function prefetchMonoRepoTags({
+  versions,
+  directory,
+}: {
+  versions: string[];
+  directory: string;
+}) {
+  const tags = versions.flatMap((version) => ["tag", `v${version}`]);
+  await exec("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
+    cwd: directory,
+  });
+}
+
 async function checkout({
   checkoutToken,
   repository,
@@ -33,22 +46,12 @@ async function checkout({
     });
 
     if (version) {
-      await exec(
-        "git",
-        ["fetch", "--no-tags", "origin", "tag", `v${version}`, "--quiet"],
-        {
-          cwd: directory,
-        }
-      );
       await exec("git", ["checkout", `v${version}`], {
         cwd: directory,
       });
       return;
     }
 
-    await exec("git", ["fetch", "--no-tags", "origin", "master", "--quiet"], {
-      cwd: directory,
-    });
     await exec("git", ["checkout", "master"], {
       cwd: directory,
     });
@@ -165,7 +168,7 @@ async function run() {
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
     // of CI runtime
     info("Reusing monorepo clone from parent action");
-    const apiClientPath = path.resolve('api-client-directory', apiClientSubDir);
+    const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
     fs.cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
       recursive: true,
     });
@@ -176,6 +179,15 @@ async function run() {
     >;
 
     const failedFrontends = new Set<string>();
+
+    info("Prefetching monorepo tags");
+    await prefetchMonoRepoTags({
+      directory: monoRepoPath,
+      versions: frontendsKeys
+        .filter((key) => frontendsConfig[key].repository === monoRepo)
+        .map((key) => frontendVersions[key])
+        .filter((item) => item),
+    });
 
     info("Preparing monorepo lib types");
     const nullStream = fs.createWriteStream("/dev/null");

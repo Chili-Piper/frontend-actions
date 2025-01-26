@@ -14,6 +14,7 @@ const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
 const turboTeam = getInput("turbo_team");
 const turboToken = getInput("turbo_token");
+const TURBO_REMOTE_CACHE_SIGNATURE_KEY = "api-client-integration-checks";
 
 async function prefetchMonoRepoTags({
   versions,
@@ -80,6 +81,14 @@ async function install({ directory }: { directory: string }) {
   });
 }
 
+function editJSON(path: string, cb: (data: any) => any) {
+  const data = JSON.parse(fs.readFileSync(path, "utf-8"));
+
+  const result = cb(data);
+
+  fs.writeFileSync(path, JSON.stringify(result, null, 2));
+}
+
 function setApiClientResolution({
   apiClientPath,
   directory,
@@ -87,17 +96,34 @@ function setApiClientResolution({
   directory: string;
   apiClientPath: string;
 }) {
-  const packageJson = JSON.parse(
-    fs.readFileSync(`${directory}/package.json`, "utf-8")
-  );
-  if (!packageJson.resolutions) {
-    packageJson.resolutions = {};
-  }
-  packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
-  fs.writeFileSync(
-    `${directory}/package.json`,
-    JSON.stringify(packageJson, null, 2)
-  );
+  editJSON(`${directory}/package.json`, (packageJson) => {
+    if (!packageJson.resolutions) {
+      packageJson.resolutions = {};
+    }
+    packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
+  });
+}
+
+// Supress lib:types error so its cached even on error
+// we want it because since we want to collect fails across projects
+// its useful to cache failed actions so we avoid running it multiple times
+function supressTSLibChecksError({ directory }: { directory: string }) {
+  editJSON(`${directory}/package.json`, (packageJson) => {
+    packageJson.scripts[
+      "lib:types"
+    ] = `${packageJson.scripts["lib:types"]}>/dev/null & echo & echo Ignoring libs errors so command is cached...`;
+  });
+}
+
+// Create separate cache for action so it doesnt get mixed with frontend repo caches
+function isolateActionTurboCache({ directory }: { directory: string }) {
+  editJSON(`${directory}/turbo.json`, (turboJson) => {
+    if (!turboJson.remoteCache) {
+      turboJson.remoteCache = {};
+    }
+
+    turboJson.remoteCache.signature = true;
+  });
 }
 
 async function installApiClient({
@@ -141,6 +167,7 @@ function runChecks({
     ignoreReturnCode: true,
     env: {
       ...process.env,
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY,
       TURBO_TOKEN: turboToken,
       TURBO_TEAM: turboTeam,
     },
@@ -273,6 +300,8 @@ async function run() {
       directory: monoRepoPath,
       isMonoRepo: true,
     });
+    supressTSLibChecksError({ directory: monoRepoPath });
+    isolateActionTurboCache({ directory: monoRepoPath });
     await exec("yarn turbo run lib:types", undefined, {
       cwd: monoRepoPath,
       ignoreReturnCode: true,
@@ -281,6 +310,7 @@ async function run() {
       errStream: nullStream,
       env: {
         ...process.env,
+        TURBO_REMOTE_CACHE_SIGNATURE_KEY,
         TURBO_TOKEN: turboToken,
         TURBO_TEAM: turboTeam,
       },
@@ -335,6 +365,8 @@ async function run() {
             directory,
             isMonoRepo,
           });
+          supressTSLibChecksError({ directory: monoRepoPath });
+          isolateActionTurboCache({ directory: monoRepoPath });
         } else {
           info(
             `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`

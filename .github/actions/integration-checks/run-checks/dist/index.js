@@ -90058,6 +90058,7 @@ const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
 const turboTeam = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_team");
 const turboToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_token");
+const TURBO_REMOTE_CACHE_SIGNATURE_KEY = "api-client-integration-checks";
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
@@ -90099,13 +90100,35 @@ async function install({ directory }) {
         cwd: directory,
     });
 }
+function editJSON(path, cb) {
+    const data = JSON.parse(node_fs__WEBPACK_IMPORTED_MODULE_2___default().readFileSync(path, "utf-8"));
+    const result = cb(data);
+    node_fs__WEBPACK_IMPORTED_MODULE_2___default().writeFileSync(path, JSON.stringify(result, null, 2));
+}
 function setApiClientResolution({ apiClientPath, directory, }) {
-    const packageJson = JSON.parse(node_fs__WEBPACK_IMPORTED_MODULE_2___default().readFileSync(`${directory}/package.json`, "utf-8"));
-    if (!packageJson.resolutions) {
-        packageJson.resolutions = {};
-    }
-    packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
-    node_fs__WEBPACK_IMPORTED_MODULE_2___default().writeFileSync(`${directory}/package.json`, JSON.stringify(packageJson, null, 2));
+    editJSON(`${directory}/package.json`, (packageJson) => {
+        if (!packageJson.resolutions) {
+            packageJson.resolutions = {};
+        }
+        packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
+    });
+}
+// Supress lib:types error so its cached even on error
+// we want it because since we want to collect fails across projects
+// its useful to cache failed actions so we avoid running it multiple times
+function supressTSLibChecksError({ directory }) {
+    editJSON(`${directory}/package.json`, (packageJson) => {
+        packageJson.scripts["lib:types"] = `${packageJson.scripts["lib:types"]}>/dev/null & echo & echo Ignoring libs errors so command is cached...`;
+    });
+}
+// Create separate cache for action so it doesnt get mixed with frontend repo caches
+function isolateActionTurboCache({ directory }) {
+    editJSON(`${directory}/turbo.json`, (turboJson) => {
+        if (!turboJson.remoteCache) {
+            turboJson.remoteCache = {};
+        }
+        turboJson.remoteCache.signature = true;
+    });
 }
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
@@ -90130,6 +90153,7 @@ function runChecks({ command, directory, }) {
         ignoreReturnCode: true,
         env: {
             ...process.env,
+            TURBO_REMOTE_CACHE_SIGNATURE_KEY,
             TURBO_TOKEN: turboToken,
             TURBO_TEAM: turboTeam,
         },
@@ -90219,6 +90243,8 @@ async function run() {
             directory: monoRepoPath,
             isMonoRepo: true,
         });
+        supressTSLibChecksError({ directory: monoRepoPath });
+        isolateActionTurboCache({ directory: monoRepoPath });
         await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn turbo run lib:types", undefined, {
             cwd: monoRepoPath,
             ignoreReturnCode: true,
@@ -90227,6 +90253,7 @@ async function run() {
             errStream: nullStream,
             env: {
                 ...process.env,
+                TURBO_REMOTE_CACHE_SIGNATURE_KEY,
                 TURBO_TOKEN: turboToken,
                 TURBO_TEAM: turboTeam,
             },
@@ -90276,6 +90303,8 @@ async function run() {
                         directory,
                         isMonoRepo,
                     });
+                    supressTSLibChecksError({ directory: monoRepoPath });
+                    isolateActionTurboCache({ directory: monoRepoPath });
                 }
                 else {
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);

@@ -262,7 +262,13 @@ async function run() {
           isMonoRepo,
         });
         await install({ directory });
+      } else {
+        info(
+          `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
+        );
       }
+
+      info(`Running check commands for ${frontendKey}`);
 
       for (const command of frontend.commands) {
         const exitCode = await runChecks({

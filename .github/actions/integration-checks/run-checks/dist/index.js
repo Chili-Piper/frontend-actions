@@ -49464,6 +49464,10 @@ async function run() {
                 });
                 await install({ directory });
             }
+            else {
+                (0,core.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);
+            }
+            (0,core.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
                 const exitCode = await runChecks({
                     command: command.exec,

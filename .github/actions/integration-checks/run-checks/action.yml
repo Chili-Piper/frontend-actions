@@ -4,6 +4,12 @@ inputs:
   checkout_token:
     description: "GH token used for checking out repositories"
     required: true
+  turbo_team:
+    description: "TurboRepo Team. Used to cache/speed up frontend monorepo checks"
+    required: false
+  turbo_token:
+    description: "TurboRepo Token. Used to cache/speed up frontend monorepo checks"
+    required: false
   api_client_repo_path:
     description: "Absolute path to api-client repo with specific BE services versions"
     required: true

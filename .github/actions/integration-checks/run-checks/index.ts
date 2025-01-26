@@ -12,6 +12,8 @@ import frontendsConfig from "./frontends.json";
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
+const turboTeam = getInput("turbo_team");
+const turboToken = getInput("turbo_token");
 
 async function prefetchMonoRepoTags({
   versions,
@@ -137,6 +139,10 @@ function runChecks({
   return exec(command, undefined, {
     cwd: directory,
     ignoreReturnCode: true,
+    env: {
+      TURBO_TOKEN: turboToken,
+      TURBO_TEAM: turboTeam,
+    },
   });
 }
 
@@ -272,6 +278,10 @@ async function run() {
       silent: true,
       outStream: nullStream,
       errStream: nullStream,
+      env: {
+        TURBO_TOKEN: turboToken,
+        TURBO_TEAM: turboTeam,
+      },
     });
 
     // force first iteration to have last version as undefined (fallback to master)

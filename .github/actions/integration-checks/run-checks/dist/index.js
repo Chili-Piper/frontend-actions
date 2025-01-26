@@ -90056,6 +90056,8 @@ hasha__WEBPACK_IMPORTED_MODULE_9__ = (__webpack_async_dependencies__.then ? (awa
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
+const turboTeam = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_team");
+const turboToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_token");
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
@@ -90126,6 +90128,10 @@ function runChecks({ command, directory, }) {
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(command, undefined, {
         cwd: directory,
         ignoreReturnCode: true,
+        env: {
+            TURBO_TOKEN: turboToken,
+            TURBO_TEAM: turboTeam,
+        },
     });
 }
 function disableMocksDirCheck(directory) {
@@ -90218,6 +90224,10 @@ async function run() {
             silent: true,
             outStream: nullStream,
             errStream: nullStream,
+            env: {
+                TURBO_TOKEN: turboToken,
+                TURBO_TEAM: turboTeam,
+            },
         });
         // force first iteration to have last version as undefined (fallback to master)
         // so we skip checkout if first frontend version is master branch

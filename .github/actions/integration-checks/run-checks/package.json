@@ -1,15 +1,17 @@
 {
-  "name": "update-be-openapi",
+  "name": "run-checks",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "build": "ncc build index.ts"
   },
   "dependencies": {
+    "@actions/cache": "4.0.0",
     "@actions/core": "1.10.0",
     "@actions/exec": "1.1.1",
     "@types/lodash": "4.17.14",
     "glob": "11.0.1",
+    "hasha": "^6.0.0",
     "js-yaml": "4.1.0",
     "lodash": "4.17.21"
   },

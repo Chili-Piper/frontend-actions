@@ -1,7 +1,9 @@
 import { exec } from "@actions/exec";
+import { hashFileSync } from "hasha";
 import path from "node:path";
 import fs from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
+import cache from "@actions/cache";
 import * as yaml from "js-yaml";
 import { partition, sortBy } from "lodash";
 import { shardFrontends } from "./shardFrontends";
@@ -192,6 +194,27 @@ function pickShardedFrontends(frontendVersions: Record<string, string>) {
   );
 }
 
+function getCacheKey(directory: string) {
+  const fingerPrint = hashFileSync(`${directory}/yarn.lock`);
+  return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
+}
+
+function getCachePaths(directory: string) {
+  return [`${directory}/**/node_modules`, `${{ directory }}/.yarn/cache`];
+}
+
+async function restoreNonMonoRepoCache(directory: string) {
+  const key = await cache.restoreCache(
+    getCachePaths(directory),
+    getCacheKey(directory)
+  );
+  return Boolean(key);
+}
+
+async function saveNonMonoRepoCache(directory: string) {
+  await cache.saveCache(getCachePaths(directory), getCacheKey(directory));
+}
+
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -237,35 +260,60 @@ async function run() {
       errStream: nullStream,
     });
 
-    let lastFrontendKey;
+    // force first iteration to have last version as undefined (fallback to master)
+    // so we skip checkout if first frontend version is master branch
+    let lastFrontendKey = "";
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;
 
-      const isSameAsLastVersion =
-        isMonoRepo &&
-        lastFrontendKey &&
-        frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
-
-      // If is same version as last, no need to checkout & reinstall. Reuse configuration.
-      if (!isSameAsLastVersion) {
+      if (!isMonoRepo) {
         await checkout({
           checkoutToken,
           directory,
           repository: frontend.repository,
           version: frontendVersions[frontendKey],
         });
+        const cacheHit = await restoreNonMonoRepoCache(directory);
+        if (!cacheHit) {
+          await install({ directory });
+          await saveNonMonoRepoCache(directory);
+        } else {
+          info(`Cache hit for ${frontendKey}. Skipping install`);
+        }
         await installApiClient({
           apiClientPath,
           directory,
           isMonoRepo,
         });
-        await install({ directory });
-      } else {
-        info(
-          `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
-        );
+      }
+
+      if (isMonoRepo) {
+        const isSameAsLastVersion =
+          frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
+
+        // If is same version as last, no need to checkout & reinstall. Reuse configuration.
+        // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
+        if (!isSameAsLastVersion) {
+          await checkout({
+            checkoutToken,
+            directory,
+            repository: frontend.repository,
+            version: frontendVersions[frontendKey],
+          });
+
+          await install({ directory });
+          await installApiClient({
+            apiClientPath,
+            directory,
+            isMonoRepo,
+          });
+        } else {
+          info(
+            `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
+          );
+        }
       }
 
       info(`Running check commands for ${frontendKey}`);

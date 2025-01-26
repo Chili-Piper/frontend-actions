@@ -3,7 +3,7 @@ import { hashFileSync } from "hasha";
 import path from "node:path";
 import fs from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
-import cache from "@actions/cache";
+import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";
 import { partition, sortBy } from "lodash";
 import { shardFrontends } from "./shardFrontends";
@@ -212,7 +212,7 @@ function getCachePaths(directory: string) {
 }
 
 async function restoreNonMonoRepoCache(directory: string) {
-  const key = await cache.restoreCache(
+  const key = await restoreCache(
     getCachePaths(directory),
     getCacheKey({ directory }),
     [getCacheKey({ directory, addFingerPrint: true })]
@@ -221,7 +221,7 @@ async function restoreNonMonoRepoCache(directory: string) {
 }
 
 async function saveNonMonoRepoCache(directory: string) {
-  await cache.saveCache(getCachePaths(directory), getCacheKey({ directory }));
+  await saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
 
 async function run() {

@@ -90058,7 +90058,8 @@ const apiClientSubDir = "frontend-packages/api-client";
 const monoRepo = "Chili-Piper/frontend";
 const turboTeam = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_team");
 const turboToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("turbo_token");
-const TURBO_REMOTE_CACHE_SIGNATURE_KEY = "api-client-integration-checks";
+// hardcoded. we are not using it for security reasons but instead for cache isolation
+const TURBO_REMOTE_CACHE_SIGNATURE_KEY = "b6d61a99d783570abb966e86694217da9ba00901b47dfcf531c2b4e6eb8efced";
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);

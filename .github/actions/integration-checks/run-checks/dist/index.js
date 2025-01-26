@@ -90192,7 +90192,7 @@ function getCacheKey({ directory, addFingerPrint, }) {
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
-    return [`${directory}/**/node_modules`, `${{ directory }}/.yarn/cache`];
+    return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
 }
 async function restoreNonMonoRepoCache(directory) {
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_4__.restoreCache)(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);

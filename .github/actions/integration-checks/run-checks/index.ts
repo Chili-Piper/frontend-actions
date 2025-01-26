@@ -232,7 +232,7 @@ function getCacheKey({
 }
 
 function getCachePaths(directory: string) {
-  return [`${directory}/**/node_modules`, `${{ directory }}/.yarn/cache`];
+  return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
 }
 
 async function restoreNonMonoRepoCache(directory: string) {

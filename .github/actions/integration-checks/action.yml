@@ -16,6 +16,9 @@ inputs:
   npm_token:
     description: "NPM Token"
     required: true
+  shard:
+    description: "Defines a fraction of checks to run. For example, setting it to 1/3 will execute one-third of the total checks, allowing for distributed or partial test execution"
+    required: false
 outputs:
   failed_frontends:
     description: "If it fails, outputs list of failed frontends"
@@ -70,3 +73,4 @@ runs:
         frontend: ${{ inputs.frontend }}
         api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}
         checkout_token: ${{ inputs.checkout_token }}
+        shard: ${{ inputs.shard }}

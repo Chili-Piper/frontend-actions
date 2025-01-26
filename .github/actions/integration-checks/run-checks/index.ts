@@ -3,6 +3,8 @@ import path from "node:path";
 import fs from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
+import { partition, sortBy } from "lodash";
+import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
 
 const gitUser = "srebot";
@@ -153,6 +155,43 @@ function disableMocksDirCheck(directory: string) {
   }
 }
 
+function pickShardedFrontends(frontendVersions: Record<string, string>) {
+  const shardConfig = getInput("shard");
+
+  // Step 1: Partition frontends into mono-repo and other frontends
+  // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
+  // from previous runs, making them lighter and faster to process.
+  // Other frontends, on the other hand, are heavier to run since they cannot
+  // benefit from the mono-repo configuration reuse. By partitioning them,
+  // we can handle their distribution separately and optimize overall execution.
+  const frontendsKeys = Object.keys(frontendsConfig) as Array<
+    keyof typeof frontendsConfig
+  >;
+  const [monoRepoFrontends, otherFrontends] = partition(
+    frontendsKeys,
+    (key) => frontendsConfig[key].repository === monoRepo
+  );
+
+  // Step 2: Sort mono-repo frontends by their tags
+  // Sorting ensures that frontends with the same version are grouped together in order.
+  // This optimization allows tools like `yarn link` to reuse their cache during runs.
+  // For example:
+  // - Without sorting: ["A@1.0", "B@2.0", "C@1.0"] would require `yarn link` to run 3 times.
+  // - With sorting:    ["A@1.0", "C@1.0", "B@2.0"] would run `yarn link` only 2 times,
+  //   as it can reuse the cache for items with the same version consecutively.
+  const tagOrderedMonoRepoFrontends = sortBy(
+    monoRepoFrontends,
+    (key) => frontendVersions[key]
+  );
+
+  return shardFrontends(
+    tagOrderedMonoRepoFrontends,
+    otherFrontends,
+    frontendVersions,
+    shardConfig
+  );
+}
+
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -175,9 +214,7 @@ async function run() {
     });
     const monoRepoPath = apiClientRepoPath;
 
-    const frontendsKeys = Object.keys(frontendsConfig) as Array<
-      keyof typeof frontendsConfig
-    >;
+    const frontendsKeys = pickShardedFrontends(frontendVersions);
 
     const failedFrontends = new Set<string>();
 

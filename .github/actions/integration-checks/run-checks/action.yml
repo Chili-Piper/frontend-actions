@@ -10,6 +10,10 @@ inputs:
   frontend:
     description: "frontend apps versions"
     required: false
+  shard:
+    description: "Defines a fraction of checks to run. For example, setting it to 1/3 will execute one-third of the total checks, allowing for distributed or partial test execution"
+    required: false
+    default: 1/1
 outputs:
   failed_frontends:
     description: "If it fails, outputs list of failed frontends"

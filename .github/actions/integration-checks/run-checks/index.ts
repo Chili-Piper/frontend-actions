@@ -261,7 +261,12 @@ async function run() {
 
     info("Preparing monorepo lib types");
     const nullStream = fs.createWriteStream("/dev/null");
-    await exec("yarn lib:types", undefined, {
+    await installApiClient({
+      apiClientPath,
+      directory: monoRepoPath,
+      isMonoRepo: true,
+    });
+    await exec("yarn turbo run lib:types", undefined, {
       cwd: monoRepoPath,
       ignoreReturnCode: true,
       silent: true,

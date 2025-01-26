@@ -90103,8 +90103,8 @@ async function install({ directory }) {
 }
 function editJSON(path, cb) {
     const data = JSON.parse(node_fs__WEBPACK_IMPORTED_MODULE_2___default().readFileSync(path, "utf-8"));
-    const result = cb(data);
-    node_fs__WEBPACK_IMPORTED_MODULE_2___default().writeFileSync(path, JSON.stringify(result, null, 2));
+    cb(data);
+    node_fs__WEBPACK_IMPORTED_MODULE_2___default().writeFileSync(path, JSON.stringify(data, null, 2));
 }
 function setApiClientResolution({ apiClientPath, directory, }) {
     editJSON(`${directory}/package.json`, (packageJson) => {

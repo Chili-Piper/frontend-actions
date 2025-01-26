@@ -84,12 +84,10 @@ async function install({ directory }: { directory: string }) {
   });
 }
 
-function editJSON(path: string, cb: (data: any) => any) {
+function editJSON(path: string, cb: (data: any) => void) {
   const data = JSON.parse(fs.readFileSync(path, "utf-8"));
-
-  const result = cb(data);
-
-  fs.writeFileSync(path, JSON.stringify(result, null, 2));
+  cb(data);
+  fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
 function setApiClientResolution({

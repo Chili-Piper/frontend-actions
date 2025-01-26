@@ -79,13 +79,14 @@ runs:
       shell: bash
 
     - name: Install dependencies
+      id: install-dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       working-directory: ${{ inputs.checkout_path }}
       run: yarn --immutable
       shell: bash
 
     - name: Cache node_modules
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      if: steps.install-dependencies.outcome == 'success'
       uses: actions/cache/save@v4
       id: node-modules-cache
       env:

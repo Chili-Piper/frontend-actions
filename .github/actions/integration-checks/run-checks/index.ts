@@ -237,7 +237,7 @@ async function run() {
       errStream: nullStream,
     });
 
-    let lastFrontendKey = null;
+    let lastFrontendKey;
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;

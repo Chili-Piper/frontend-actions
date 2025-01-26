@@ -49441,7 +49441,7 @@ async function run() {
             outStream: nullStream,
             errStream: nullStream,
         });
-        let lastFrontendKey = null;
+        let lastFrontendKey;
         for (const frontendKey of frontendsKeys) {
             const frontend = frontends_namespaceObject[frontendKey];
             const isMonoRepo = frontend.repository === monoRepo;

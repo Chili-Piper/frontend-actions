@@ -16,6 +16,7 @@ inputs:
   npm_token:
     description: "NPM Token"
     required: true
+    default: 1/1
   shard:
     description: "Defines a fraction of checks to run. For example, setting it to 1/3 will execute one-third of the total checks, allowing for distributed or partial test execution"
     required: false

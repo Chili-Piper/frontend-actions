@@ -194,8 +194,16 @@ function pickShardedFrontends(frontendVersions: Record<string, string>) {
   );
 }
 
-function getCacheKey(directory: string) {
-  const fingerPrint = hashFileSync(`${directory}/yarn.lock`);
+function getCacheKey({
+  directory,
+  addFingerPrint,
+}: {
+  directory: string;
+  addFingerPrint?: boolean;
+}) {
+  const fingerPrint = addFingerPrint
+    ? ""
+    : hashFileSync(`${directory}/yarn.lock`);
   return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 
@@ -206,13 +214,14 @@ function getCachePaths(directory: string) {
 async function restoreNonMonoRepoCache(directory: string) {
   const key = await cache.restoreCache(
     getCachePaths(directory),
-    getCacheKey(directory)
+    getCacheKey({ directory }),
+    [getCacheKey({ directory, addFingerPrint: true })]
   );
   return Boolean(key);
 }
 
 async function saveNonMonoRepoCache(directory: string) {
-  await cache.saveCache(getCachePaths(directory), getCacheKey(directory));
+  await cache.saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
 
 async function run() {

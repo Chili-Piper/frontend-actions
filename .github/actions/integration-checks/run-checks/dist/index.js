@@ -90163,19 +90163,21 @@ function pickShardedFrontends(frontendVersions) {
     const tagOrderedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_6__.sortBy)(monoRepoFrontends, (key) => frontendVersions[key]);
     return (0,_shardFrontends__WEBPACK_IMPORTED_MODULE_7__/* .shardFrontends */ .u)(tagOrderedMonoRepoFrontends, otherFrontends, frontendVersions, shardConfig);
 }
-function getCacheKey(directory) {
-    const fingerPrint = (0,hasha__WEBPACK_IMPORTED_MODULE_9__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
+function getCacheKey({ directory, addFingerPrint, }) {
+    const fingerPrint = addFingerPrint
+        ? ""
+        : (0,hasha__WEBPACK_IMPORTED_MODULE_9__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
     return [`${directory}/**/node_modules`, `${{ directory }}/.yarn/cache`];
 }
 async function restoreNonMonoRepoCache(directory) {
-    const key = await _actions_cache__WEBPACK_IMPORTED_MODULE_4___default().restoreCache(getCachePaths(directory), getCacheKey(directory));
+    const key = await _actions_cache__WEBPACK_IMPORTED_MODULE_4___default().restoreCache(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);
     return Boolean(key);
 }
 async function saveNonMonoRepoCache(directory) {
-    await _actions_cache__WEBPACK_IMPORTED_MODULE_4___default().saveCache(getCachePaths(directory), getCacheKey(directory));
+    await _actions_cache__WEBPACK_IMPORTED_MODULE_4___default().saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
 async function run() {
     try {

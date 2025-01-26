@@ -90069,23 +90069,13 @@ async function prefetchMonoRepoTags({ versions, directory, }) {
 }
 async function checkout({ checkoutToken, repository, version, directory, }) {
     if (node_fs__WEBPACK_IMPORTED_MODULE_2___default().existsSync(directory)) {
-        const apiClientDir = `${directory}/${apiClientSubDir}`;
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["reset", "--quiet"], {
-            cwd: apiClientDir,
-        });
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", ".", "--quiet"], {
-            cwd: apiClientDir,
-        });
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clean", "-fdx", "--quiet"], {
-            cwd: apiClientDir,
-        });
         if (version) {
-            await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", `v${version}`], {
+            await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "-f", `v${version}`], {
                 cwd: directory,
             });
             return;
         }
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "master"], {
+        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "-f", "master"], {
             cwd: directory,
         });
         return;

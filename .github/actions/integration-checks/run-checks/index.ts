@@ -45,25 +45,14 @@ async function checkout({
   directory: string;
 }) {
   if (fs.existsSync(directory)) {
-    const apiClientDir = `${directory}/${apiClientSubDir}`;
-    await exec("git", ["reset", "--quiet"], {
-      cwd: apiClientDir,
-    });
-    await exec("git", ["checkout", ".", "--quiet"], {
-      cwd: apiClientDir,
-    });
-    await exec("git", ["clean", "-fdx", "--quiet"], {
-      cwd: apiClientDir,
-    });
-
     if (version) {
-      await exec("git", ["checkout", `v${version}`], {
+      await exec("git", ["checkout", "-f", `v${version}`], {
         cwd: directory,
       });
       return;
     }
 
-    await exec("git", ["checkout", "master"], {
+    await exec("git", ["checkout", "-f", "master"], {
       cwd: directory,
     });
     return;

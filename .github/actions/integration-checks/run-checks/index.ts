@@ -237,22 +237,32 @@ async function run() {
       errStream: nullStream,
     });
 
+    let lastFrontendKey = null;
     for (const frontendKey of frontendsKeys) {
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;
-      await checkout({
-        checkoutToken,
-        directory,
-        repository: frontend.repository,
-        version: frontendVersions[frontendKey],
-      });
-      await installApiClient({
-        apiClientPath,
-        directory,
-        isMonoRepo,
-      });
-      await install({ directory });
+
+      const isSameAsLastVersion =
+        isMonoRepo &&
+        lastFrontendKey &&
+        frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
+
+      // If is same version as last, no need to checkout & reinstall. Reuse configuration.
+      if (!isSameAsLastVersion) {
+        await checkout({
+          checkoutToken,
+          directory,
+          repository: frontend.repository,
+          version: frontendVersions[frontendKey],
+        });
+        await installApiClient({
+          apiClientPath,
+          directory,
+          isMonoRepo,
+        });
+        await install({ directory });
+      }
 
       for (const command of frontend.commands) {
         const exitCode = await runChecks({
@@ -264,6 +274,8 @@ async function run() {
           failedFrontends.add(frontendKey);
         }
       }
+
+      lastFrontendKey = frontendKey;
     }
 
     if (failedFrontends.size > 0) {

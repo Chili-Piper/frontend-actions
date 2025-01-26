@@ -90129,6 +90129,7 @@ function runChecks({ command, directory, }) {
         cwd: directory,
         ignoreReturnCode: true,
         env: {
+            ...process.env,
             TURBO_TOKEN: turboToken,
             TURBO_TEAM: turboTeam,
         },
@@ -90225,6 +90226,7 @@ async function run() {
             outStream: nullStream,
             errStream: nullStream,
             env: {
+                ...process.env,
                 TURBO_TOKEN: turboToken,
                 TURBO_TEAM: turboTeam,
             },

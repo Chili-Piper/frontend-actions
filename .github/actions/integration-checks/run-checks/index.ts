@@ -70,6 +70,10 @@ async function install({ directory }: { directory: string }) {
   info("Installing deps...");
   await exec("yarn --silent", undefined, {
     cwd: directory,
+    env: {
+      ...process.env,
+      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+    },
   });
 }
 
@@ -141,6 +145,10 @@ async function installApiClient({
   setApiClientResolution({ directory, apiClientPath });
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
+    env: {
+      ...process.env,
+      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+    },
   });
 }
 

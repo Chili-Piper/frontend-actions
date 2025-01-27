@@ -90089,6 +90089,10 @@ async function install({ directory }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.info)("Installing deps...");
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --silent", undefined, {
         cwd: directory,
+        env: {
+            ...process.env,
+            YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_1___default().resolve(directory, ".yarn", "cache")}`,
+        },
     });
 }
 function editJSON(path, cb) {
@@ -90135,6 +90139,10 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     setApiClientResolution({ directory, apiClientPath });
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
+        env: {
+            ...process.env,
+            YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_1___default().resolve(directory, ".yarn", "cache")}`,
+        },
     });
 }
 function runChecks({ command, directory, }) {

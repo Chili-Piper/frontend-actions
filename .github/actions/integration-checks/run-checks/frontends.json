@@ -120,7 +120,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter conciergejs-fire",
+        "exec": "yarn turbo run types:app --filter @chilipiper/conciergejs-fire",
         "directory": "."
       }
     ]

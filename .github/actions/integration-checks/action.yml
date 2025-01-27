@@ -26,6 +26,10 @@ inputs:
     description: "Defines a fraction of checks to run. For example, setting it to 1/3 will execute one-third of the total checks, allowing for distributed or partial test execution"
     required: true
     default: 1/1
+  should_fail:
+    description: "Fail when integration error is found"
+    required: false
+    default: true
 outputs:
   failed_frontends:
     description: "If it fails, outputs list of failed frontends"
@@ -83,3 +87,4 @@ runs:
         turbo_team: ${{ inputs.turbo_team }}
         turbo_token: ${{ inputs.turbo_token }}
         shard: ${{ inputs.shard }}
+        should_fail: ${{ inputs.should_fail }}

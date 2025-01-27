@@ -90315,7 +90315,14 @@ async function run() {
         }
         if (failedFrontends.size > 0) {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)(`Failed frontends: [${Array.from(failedFrontends).join(", ")}]`);
+            const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("should_fail");
+            const errorMessage = `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`;
+            if (shouldFail) {
+                (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setFailed)(errorMessage);
+            }
+            else {
+                (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.info)(errorMessage);
+            }
             return;
         }
     }

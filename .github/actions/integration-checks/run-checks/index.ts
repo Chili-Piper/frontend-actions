@@ -385,9 +385,15 @@ async function run() {
         "failed_frontends",
         JSON.stringify(Array.from(failedFrontends))
       );
-      setFailed(
-        `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`
-      );
+      const shouldFail = getInput("should_fail");
+      const errorMessage = `Failed frontends: [${Array.from(
+        failedFrontends
+      ).join(", ")}]`;
+      if (shouldFail) {
+        setFailed(errorMessage);
+      } else {
+        info(errorMessage);
+      }
       return;
     }
   } catch (error: any) {

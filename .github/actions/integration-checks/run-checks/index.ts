@@ -384,7 +384,7 @@ async function run() {
       setOutput(
         "failed_frontends",
         // stringify twice to escape quotes
-        JSON.stringify(Array(JSON.stringify(Array.from(failedFrontends))))
+        JSON.stringify(JSON.stringify(Array.from(failedFrontends)))
       );
       const shouldFail = getInput("should_fail") === "true";
       const errorMessage = `Failed frontends: [${Array.from(

@@ -90316,7 +90316,7 @@ async function run() {
         if (failedFrontends.size > 0) {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.setOutput)("failed_frontends", 
             // stringify twice to escape quotes
-            JSON.stringify(Array(JSON.stringify(Array.from(failedFrontends)))));
+            JSON.stringify(JSON.stringify(Array.from(failedFrontends))));
             const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.getInput)("should_fail") === "true";
             const errorMessage = `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`;
             if (shouldFail) {

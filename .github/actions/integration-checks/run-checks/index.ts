@@ -83,7 +83,7 @@ function editJSON(path: string, cb: (data: any) => void) {
   const fileContent = fs.readFileSync(path, "utf-8");
   const data = JSON5.parse(fileContent);
   cb(data);
-  fs.writeFileSync(path, JSON5.stringify(data, null, 2));
+  fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
 function setApiClientResolution({

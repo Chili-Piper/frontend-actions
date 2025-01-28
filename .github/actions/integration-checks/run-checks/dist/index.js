@@ -91772,7 +91772,7 @@ function editJSON(path, cb) {
     const fileContent = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(path, "utf-8");
     const data = json5__WEBPACK_IMPORTED_MODULE_1___default().parse(fileContent);
     cb(data);
-    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(path, json5__WEBPACK_IMPORTED_MODULE_1___default().stringify(data, null, 2));
+    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(path, JSON.stringify(data, null, 2));
 }
 function setApiClientResolution({ apiClientPath, directory, }) {
     editJSON(`${directory}/package.json`, (packageJson) => {

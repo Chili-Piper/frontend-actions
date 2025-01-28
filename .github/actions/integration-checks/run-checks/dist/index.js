@@ -90132,7 +90132,7 @@ function excludeTestFiles({ directory }) {
         "**/fixtures/*",
         "**/*.stories.*",
     ];
-    const appsTSConfigs = node_fs__WEBPACK_IMPORTED_MODULE_2___default().globSync(`${directory}/apps/*/tsconfig.json`);
+    const appsTSConfigs = (0,node_fs__WEBPACK_IMPORTED_MODULE_2__.globSync)(`${directory}/apps/*/tsconfig.json`);
     for (const tsConfigFile of appsTSConfigs) {
         editJSON(tsConfigFile, (tsConfig) => {
             if (!tsConfig.exclude) {

@@ -1,7 +1,7 @@
 import { exec } from "@actions/exec";
 import { hashFileSync } from "hasha";
 import path from "node:path";
-import fs from "node:fs";
+import fs, { globSync } from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";
@@ -128,7 +128,7 @@ function excludeTestFiles({ directory }: { directory: string }) {
     "**/*.stories.*",
   ];
 
-  const appsTSConfigs = fs.globSync(`${directory}/apps/*/tsconfig.json`);
+  const appsTSConfigs = globSync(`${directory}/apps/*/tsconfig.json`);
 
   for (const tsConfigFile of appsTSConfigs) {
     editJSON(tsConfigFile, (tsConfig) => {

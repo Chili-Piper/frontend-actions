@@ -1,5 +1,6 @@
 import { exec } from "@actions/exec";
 import { hashFileSync } from "hasha";
+import JSON5 from "json5";
 import path from "node:path";
 import fs from "node:fs";
 import { globSync } from "glob";
@@ -80,10 +81,9 @@ async function install({ directory }: { directory: string }) {
 
 function editJSON(path: string, cb: (data: any) => void) {
   const fileContent = fs.readFileSync(path, "utf-8");
-  info(fileContent);
-  const data = JSON.parse(fileContent);
+  const data = JSON5.parse(fileContent);
   cb(data);
-  fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  fs.writeFileSync(path, JSON5.stringify(data, null, 2));
 }
 
 function setApiClientResolution({
@@ -131,11 +131,9 @@ function excludeTestFiles({ directory }: { directory: string }) {
     "**/*.stories.*",
   ];
 
-  info("Retrieving tsconfig");
   const appsTSConfigs = globSync(`${directory}/apps/*/tsconfig.json`);
 
   for (const tsConfigFile of appsTSConfigs) {
-    info(tsConfigFile);
     editJSON(tsConfigFile, (tsConfig) => {
       if (!tsConfig.exclude) {
         tsConfig.exclude = [];

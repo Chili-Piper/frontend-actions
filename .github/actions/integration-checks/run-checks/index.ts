@@ -391,8 +391,7 @@ async function run() {
     if (failedFrontends.size > 0) {
       setOutput(
         "failed_frontends",
-        // stringify twice to escape quotes
-        JSON.stringify(JSON.stringify(Array.from(failedFrontends)))
+        JSON.stringify(Array.from(failedFrontends))
       );
       const shouldFail = getInput("should_fail") === "true";
       const errorMessage = `Failed frontends: [${Array.from(

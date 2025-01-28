@@ -79,7 +79,9 @@ async function install({ directory }: { directory: string }) {
 }
 
 function editJSON(path: string, cb: (data: any) => void) {
-  const data = JSON.parse(fs.readFileSync(path, "utf-8"));
+  const fileContent = fs.readFileSync(path, "utf-8");
+  info(fileContent);
+  const data = JSON.parse(fileContent);
   cb(data);
   fs.writeFileSync(path, JSON.stringify(data, null, 2));
 }

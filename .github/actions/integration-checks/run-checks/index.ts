@@ -120,6 +120,23 @@ function isolateActionTurboCache({ directory }: { directory: string }) {
   });
 }
 
+function excludeTestFiles({ directory }: { directory: string }) {
+  const testFiles = [
+    "**/*.spec.*",
+    "**/*.test.*",
+    "**/fixtures/*",
+    "**/*.stories.*",
+  ];
+
+  editJSON(`${directory}/tsconfig.json`, (tsConfig) => {
+    if (!tsConfig.exclude) {
+      tsConfig.exclude = [];
+    }
+
+    tsConfig.exclude.push(...testFiles);
+  });
+}
+
 async function installApiClient({
   apiClientPath,
   directory,
@@ -374,6 +391,7 @@ async function run() {
 
       info(`Running check commands for ${frontendKey}`);
 
+      excludeTestFiles({ directory });
       for (const command of frontend.commands) {
         const exitCode = await runChecks({
           command: command.exec,

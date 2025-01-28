@@ -90125,6 +90125,20 @@ function isolateActionTurboCache({ directory }) {
         turboJson.remoteCache.signature = true;
     });
 }
+function excludeTestFiles({ directory }) {
+    const testFiles = [
+        "**/*.spec.*",
+        "**/*.test.*",
+        "**/fixtures/*",
+        "**/*.stories.*",
+    ];
+    editJSON(`${directory}/tsconfig.json`, (tsConfig) => {
+        if (!tsConfig.exclude) {
+            tsConfig.exclude = [];
+        }
+        tsConfig.exclude.push(...testFiles);
+    });
+}
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
@@ -90310,6 +90324,7 @@ async function run() {
                 }
             }
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_3__.info)(`Running check commands for ${frontendKey}`);
+            excludeTestFiles({ directory });
             for (const command of frontend.commands) {
                 const exitCode = await runChecks({
                     command: command.exec,

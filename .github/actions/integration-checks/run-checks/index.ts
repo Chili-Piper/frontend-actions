@@ -1,7 +1,8 @@
 import { exec } from "@actions/exec";
 import { hashFileSync } from "hasha";
 import path from "node:path";
-import fs, { globSync } from "node:fs";
+import fs from "node:fs";
+import { globSync } from "glob";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";

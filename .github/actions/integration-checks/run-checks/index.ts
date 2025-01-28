@@ -131,7 +131,9 @@ function excludeTestFiles({ directory }: { directory: string }) {
     "**/*.stories.*",
   ];
 
-  const appsTSConfigs = globSync(`${directory}/apps/*/tsconfig.json`);
+  const appsTSConfigs = globSync(
+    `${directory}/(apps|frontend-packages)/*/tsconfig.json`
+  );
 
   for (const tsConfigFile of appsTSConfigs) {
     editJSON(tsConfigFile, (tsConfig) => {

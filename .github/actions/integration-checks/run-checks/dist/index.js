@@ -91806,7 +91806,7 @@ function excludeTestFiles({ directory }) {
         "**/fixtures/*",
         "**/*.stories.*",
     ];
-    const appsTSConfigs = (0,glob__WEBPACK_IMPORTED_MODULE_4__/* .globSync */ .AZ)(`${directory}/apps/*/tsconfig.json`);
+    const appsTSConfigs = (0,glob__WEBPACK_IMPORTED_MODULE_4__/* .globSync */ .AZ)(`${directory}/(apps|frontend-packages)/*/tsconfig.json`);
     for (const tsConfigFile of appsTSConfigs) {
         editJSON(tsConfigFile, (tsConfig) => {
             if (!tsConfig.exclude) {

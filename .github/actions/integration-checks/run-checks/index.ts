@@ -3,7 +3,6 @@ import { hashFileSync } from "hasha";
 import JSON5 from "json5";
 import path from "node:path";
 import fs from "node:fs";
-import { globSync } from "glob";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";
@@ -123,29 +122,6 @@ function isolateActionTurboCache({ directory }: { directory: string }) {
   });
 }
 
-function excludeTestFiles({ directory }: { directory: string }) {
-  const testFiles = [
-    "**/*.spec.*",
-    "**/*.test.*",
-    "**/fixtures/*",
-    "**/*.stories.*",
-  ];
-
-  const appsTSConfigs = globSync(
-    `${directory}/(apps|frontend-packages)/*/tsconfig.json`
-  );
-
-  for (const tsConfigFile of appsTSConfigs) {
-    editJSON(tsConfigFile, (tsConfig) => {
-      if (!tsConfig.exclude) {
-        tsConfig.exclude = [];
-      }
-
-      tsConfig.exclude.push(...testFiles);
-    });
-  }
-}
-
 async function installApiClient({
   apiClientPath,
   directory,
@@ -191,6 +167,7 @@ function runChecks({
     ignoreReturnCode: true,
     env: {
       ...process.env,
+      NODE_OPTIONS: "--max_old_space_size=3670",
       TURBO_REMOTE_CACHE_SIGNATURE_KEY,
       TURBO_TOKEN: turboToken,
       TURBO_TEAM: turboTeam,
@@ -397,9 +374,6 @@ async function run() {
           );
         }
       }
-
-      info(`Ignoring test files for ${frontendKey}`);
-      excludeTestFiles({ directory });
 
       info(`Running check commands for ${frontendKey}`);
 

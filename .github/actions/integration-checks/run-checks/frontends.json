@@ -129,12 +129,12 @@
     "repository": "Chili-Piper/chilical",
     "commands": [{ "exec": "yarn tsc", "directory": "." }]
   },
-  "chilical-scheduler": {
-    "repository": "Chili-Piper/chilical-scheduler",
-    "commands": [{ "exec": "yarn tsc", "directory": "." }]
-  },
   "booking-app": {
     "repository": "Chili-Piper/booking-app",
+    "commands": [{ "exec": "yarn tsc", "directory": "." }]
+  },
+  "chilical-scheduler": {
+    "repository": "Chili-Piper/chilical-scheduler",
     "commands": [{ "exec": "yarn tsc", "directory": "." }]
   }
 }

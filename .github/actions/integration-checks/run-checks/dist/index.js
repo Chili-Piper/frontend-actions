@@ -90132,12 +90132,15 @@ function excludeTestFiles({ directory }) {
         "**/fixtures/*",
         "**/*.stories.*",
     ];
-    editJSON(`${directory}/tsconfig.json`, (tsConfig) => {
-        if (!tsConfig.exclude) {
-            tsConfig.exclude = [];
-        }
-        tsConfig.exclude.push(...testFiles);
-    });
+    const appsTSConfigs = node_fs__WEBPACK_IMPORTED_MODULE_2___default().globSync(`${directory}/apps/*/tsconfig.json`);
+    for (const tsConfigFile of appsTSConfigs) {
+        editJSON(tsConfigFile, (tsConfig) => {
+            if (!tsConfig.exclude) {
+                tsConfig.exclude = [];
+            }
+            tsConfig.exclude.push(...testFiles);
+        });
+    }
 }
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {

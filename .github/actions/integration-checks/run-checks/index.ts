@@ -128,13 +128,17 @@ function excludeTestFiles({ directory }: { directory: string }) {
     "**/*.stories.*",
   ];
 
-  editJSON(`${directory}/tsconfig.json`, (tsConfig) => {
-    if (!tsConfig.exclude) {
-      tsConfig.exclude = [];
-    }
+  const appsTSConfigs = fs.globSync(`${directory}/apps/*/tsconfig.json`);
 
-    tsConfig.exclude.push(...testFiles);
-  });
+  for (const tsConfigFile of appsTSConfigs) {
+    editJSON(tsConfigFile, (tsConfig) => {
+      if (!tsConfig.exclude) {
+        tsConfig.exclude = [];
+      }
+
+      tsConfig.exclude.push(...testFiles);
+    });
+  }
 }
 
 async function installApiClient({

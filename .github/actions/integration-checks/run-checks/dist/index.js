@@ -90308,7 +90308,9 @@ async function install({ directory }) {
     });
 }
 function editJSON(path, cb) {
-    const data = JSON.parse(node_fs__WEBPACK_IMPORTED_MODULE_2___default().readFileSync(path, "utf-8"));
+    const fileContent = node_fs__WEBPACK_IMPORTED_MODULE_2___default().readFileSync(path, "utf-8");
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(fileContent);
+    const data = JSON.parse(fileContent);
     cb(data);
     node_fs__WEBPACK_IMPORTED_MODULE_2___default().writeFileSync(path, JSON.stringify(data, null, 2));
 }
@@ -90344,8 +90346,10 @@ function excludeTestFiles({ directory }) {
         "**/fixtures/*",
         "**/*.stories.*",
     ];
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Retrieving tsconfig");
     const appsTSConfigs = (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .globSync */ .AZ)(`${directory}/apps/*/tsconfig.json`);
     for (const tsConfigFile of appsTSConfigs) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(tsConfigFile);
         editJSON(tsConfigFile, (tsConfig) => {
             if (!tsConfig.exclude) {
                 tsConfig.exclude = [];
@@ -90538,8 +90542,9 @@ async function run() {
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);
                 }
             }
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Ignoring test files for ${frontendKey}`);
             excludeTestFiles({ directory });
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
                 const exitCode = await runChecks({
                     command: command.exec,

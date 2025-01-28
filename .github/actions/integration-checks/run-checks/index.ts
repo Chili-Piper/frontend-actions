@@ -131,9 +131,11 @@ function excludeTestFiles({ directory }: { directory: string }) {
     "**/*.stories.*",
   ];
 
+  info("Retrieving tsconfig");
   const appsTSConfigs = globSync(`${directory}/apps/*/tsconfig.json`);
 
   for (const tsConfigFile of appsTSConfigs) {
+    info(tsConfigFile);
     editJSON(tsConfigFile, (tsConfig) => {
       if (!tsConfig.exclude) {
         tsConfig.exclude = [];
@@ -396,9 +398,11 @@ async function run() {
         }
       }
 
+      info(`Ignoring test files for ${frontendKey}`);
+      excludeTestFiles({ directory });
+
       info(`Running check commands for ${frontendKey}`);
 
-      excludeTestFiles({ directory });
       for (const command of frontend.commands) {
         const exitCode = await runChecks({
           command: command.exec,

@@ -27,4 +27,7 @@ outputs:
     description: "If it fails, outputs list of failed frontends"
 runs:
   using: "node20"
+  env:
+    # needed for chilical/scheduler typescript checks
+    NODE_OPTIONS: "--max_old_space_size=8192",
   main: "dist/index.js"

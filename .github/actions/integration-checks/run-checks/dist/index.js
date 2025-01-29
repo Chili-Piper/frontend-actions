@@ -91614,7 +91614,6 @@ function runChecks({ command, directory, }) {
         ignoreReturnCode: true,
         env: {
             ...process.env,
-            NODE_OPTIONS: "--max_old_space_size=3670",
             TURBO_REMOTE_CACHE_SIGNATURE_KEY,
             TURBO_TOKEN: turboToken,
             TURBO_TEAM: turboTeam,

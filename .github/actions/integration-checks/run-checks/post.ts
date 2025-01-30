@@ -5,8 +5,11 @@ import {
   Timer,
   saveNonMonoRepoCache,
   monoRepo,
+  saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
+
+const apiClientRepoPath = getInput("api_client_repo_path");
 
 async function run() {
   const frontendVersionsJSON = getInput("frontend");
@@ -20,11 +23,15 @@ async function run() {
     const isMonoRepo = frontend.repository === monoRepo;
 
     if (isMonoRepo) {
-      return;
+      const appPath = `${apiClientRepoPath}/apps/${frontendKey}`;
+      await saveTypescriptCache(appPath);
     }
 
     const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);
-    await saveNonMonoRepoCache(frontendKey);
+    await Promise.all([
+      saveNonMonoRepoCache(frontendKey),
+      saveTypescriptCache(frontendKey),
+    ]);
     saveCacheTimerEnd();
   });
 

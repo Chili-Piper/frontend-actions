@@ -9,6 +9,7 @@ import {
   monoRepo,
   pickShardedFrontends,
   restoreNonMonoRepoCache,
+  restoreTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
 
@@ -254,6 +255,10 @@ async function run() {
         await restoreNonMonoRepoCache(directory);
         restoreCacheTimerEnd();
 
+        const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
+        await restoreTypescriptCache(directory);
+        restoreTSCacheTimerEnd();
+
         const apiClientInstallTimerEnd = Timer.start(
           `Installing api-client for ${frontendKey}`
         );
@@ -282,6 +287,12 @@ async function run() {
             version: frontendVersions[frontendKey],
           });
           checkoutTimerEnd();
+
+          const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
+          const appPath = `${monoRepoPath}/apps/${frontendKey}`;
+          await restoreTypescriptCache(appPath);
+          restoreTSCacheTimerEnd();
+
           const apiClientInstallTimerEnd = Timer.start(
             `Installing api-client for ${frontendKey}`
           );

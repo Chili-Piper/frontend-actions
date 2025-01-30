@@ -91667,6 +91667,9 @@ async function run() {
                 const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
                 await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreNonMonoRepoCache */ .$Q)(directory);
                 restoreCacheTimerEnd();
+                const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)(directory);
+                restoreTSCacheTimerEnd();
                 const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
                 await installApiClient({
                     apiClientPath,
@@ -91688,6 +91691,10 @@ async function run() {
                         version: frontendVersions[frontendKey],
                     });
                     checkoutTimerEnd();
+                    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                    const appPath = `${monoRepoPath}/apps/${frontendKey}`;
+                    await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)(appPath);
+                    restoreTSCacheTimerEnd();
                     const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
                     await installApiClient({
                         apiClientPath,
@@ -91840,9 +91847,10 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony export */   $Q: () => (/* binding */ restoreNonMonoRepoCache),
 /* harmony export */   Ae: () => (/* binding */ pickShardedFrontends),
 /* harmony export */   M4: () => (/* binding */ Timer),
+/* harmony export */   e8: () => (/* binding */ restoreTypescriptCache),
 /* harmony export */   yl: () => (/* binding */ monoRepo)
 /* harmony export */ });
-/* unused harmony export saveNonMonoRepoCache */
+/* unused harmony exports saveNonMonoRepoCache, saveTypescriptCache */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2356);
@@ -91911,6 +91919,20 @@ async function restoreNonMonoRepoCache(directory) {
 }
 async function saveNonMonoRepoCache(directory) {
     await saveCache(getCachePaths(directory), getCacheKey({ directory }));
+}
+// tsconfig.tsbuildinfo
+function getTSCachePaths(directory) {
+    return [`${directory}/tsconfig.tsbuildinfo`];
+}
+function getTSCacheKey(directory) {
+    return `v1-integration-checks-typescript-${directory}`;
+}
+async function saveTypescriptCache(directory) {
+    await saveCache(getTSCachePaths(directory), getTSCacheKey(directory));
+}
+async function restoreTypescriptCache(directory) {
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_2__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(directory), [getTSCacheKey(directory)]);
+    return Boolean(key);
 }
 
 __webpack_async_result__();

@@ -93,3 +93,25 @@ export async function restoreNonMonoRepoCache(directory: string) {
 export async function saveNonMonoRepoCache(directory: string) {
   await saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
+
+// tsconfig.tsbuildinfo
+function getTSCachePaths(directory: string) {
+  return [`${directory}/tsconfig.tsbuildinfo`];
+}
+
+function getTSCacheKey(directory: string) {
+  return `v1-integration-checks-typescript-${directory}`;
+}
+
+export async function saveTypescriptCache(directory: string) {
+  await saveCache(getTSCachePaths(directory), getTSCacheKey(directory));
+}
+
+export async function restoreTypescriptCache(directory: string) {
+  const key = await restoreCache(
+    getTSCachePaths(directory),
+    getTSCacheKey(directory),
+    [getTSCacheKey(directory)]
+  );
+  return Boolean(key);
+}

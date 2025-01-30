@@ -90045,12 +90045,21 @@ async function run() {
         const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_3__[frontendKey];
         const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_2__/* .monoRepo */ .yl;
         if (isMonoRepo) {
-            return await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(apiClientRepoPath);
+            const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_2__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
+            await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)({
+                directory: apiClientRepoPath,
+                app: frontendKey,
+            });
+            saveCacheTimerEnd();
+            return;
         }
         const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_2__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
         await Promise.all([
             (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveNonMonoRepoCache */ ._l)(frontendKey),
-            (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(frontendKey),
+            (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)({
+                directory: frontendKey,
+                app: frontendKey,
+            }),
         ]);
         saveCacheTimerEnd();
     });
@@ -90240,14 +90249,14 @@ async function saveNonMonoRepoCache(directory) {
 function getTSCachePaths(directory) {
     return [`${directory}/**/tsconfig.tsbuildinfo`];
 }
-function getTSCacheKey(directory) {
-    return `v1-integration-checks-typescript-${directory}`;
+function getTSCacheKey(app) {
+    return `v1-integration-checks-typescript-${app}`;
 }
-async function saveTypescriptCache(directory) {
-    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_2__.saveCache)(getTSCachePaths(directory), getTSCacheKey(directory));
+async function saveTypescriptCache({ directory, app, }) {
+    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_2__.saveCache)(getTSCachePaths(directory), getTSCacheKey(app));
 }
-async function restoreTypescriptCache(directory) {
-    const key = await restoreCache(getTSCachePaths(directory), getTSCacheKey(directory), [getTSCacheKey(directory)]);
+async function restoreTypescriptCache({ directory, app, }) {
+    const key = await restoreCache(getTSCachePaths(directory), getTSCacheKey(app), [getTSCacheKey(app)]);
     return Boolean(key);
 }
 

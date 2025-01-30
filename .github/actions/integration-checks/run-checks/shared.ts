@@ -99,19 +99,31 @@ function getTSCachePaths(directory: string) {
   return [`${directory}/**/tsconfig.tsbuildinfo`];
 }
 
-function getTSCacheKey(directory: string) {
-  return `v1-integration-checks-typescript-${directory}`;
+function getTSCacheKey(app: string) {
+  return `v1-integration-checks-typescript-${app}`;
 }
 
-export async function saveTypescriptCache(directory: string) {
-  await saveCache(getTSCachePaths(directory), getTSCacheKey(directory));
+export async function saveTypescriptCache({
+  directory,
+  app,
+}: {
+  directory: string;
+  app: string;
+}) {
+  await saveCache(getTSCachePaths(directory), getTSCacheKey(app));
 }
 
-export async function restoreTypescriptCache(directory: string) {
+export async function restoreTypescriptCache({
+  directory,
+  app,
+}: {
+  directory: string;
+  app: string;
+}) {
   const key = await restoreCache(
     getTSCachePaths(directory),
-    getTSCacheKey(directory),
-    [getTSCacheKey(directory)]
+    getTSCacheKey(app),
+    [getTSCacheKey(app)]
   );
   return Boolean(key);
 }

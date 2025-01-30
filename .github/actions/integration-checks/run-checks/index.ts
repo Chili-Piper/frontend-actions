@@ -255,8 +255,13 @@ async function run() {
         await restoreNonMonoRepoCache(directory);
         restoreCacheTimerEnd();
 
-        const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
-        await restoreTypescriptCache(directory);
+        const restoreTSCacheTimerEnd = Timer.start(
+          "restoring TSBuild cache..."
+        );
+        await restoreTypescriptCache({
+          directory,
+          app: frontendKey,
+        });
         restoreTSCacheTimerEnd();
 
         const apiClientInstallTimerEnd = Timer.start(
@@ -288,9 +293,13 @@ async function run() {
           });
           checkoutTimerEnd();
 
-          const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
-          const appPath = `${monoRepoPath}/apps/${frontendKey}`;
-          await restoreTypescriptCache(appPath);
+          const restoreTSCacheTimerEnd = Timer.start(
+            "restoring TSBuild cache..."
+          );
+          await restoreTypescriptCache({
+            directory,
+            app: frontendKey,
+          });
           restoreTSCacheTimerEnd();
 
           const apiClientInstallTimerEnd = Timer.start(

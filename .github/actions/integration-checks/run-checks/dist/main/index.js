@@ -91855,7 +91855,7 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony export */   e8: () => (/* binding */ restoreTypescriptCache),
 /* harmony export */   yl: () => (/* binding */ monoRepo)
 /* harmony export */ });
-/* unused harmony exports saveNonMonoRepoCache, saveTypescriptCache */
+/* unused harmony exports saveNonMonoRepoCache, saveTypescriptCache, updateTSBuildFilesTimestamp */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1421);
@@ -91944,10 +91944,12 @@ async function saveTypescriptCache({ directory, app, }) {
 // https://github.com/microsoft/TypeScript/issues/54563
 function updateTSBuildFilesTimestamp(directory) {
     const end = Timer.start("updating tsbuildinfo timestamps");
-    const cmd = `find ${node_path__WEBPACK_IMPORTED_MODULE_6___default().join(directory, "**/tsconfig.tsbuildinfo")} -type f -exec touch {} +`;
+    const resolvedDir = node_path__WEBPACK_IMPORTED_MODULE_6___default().resolve(directory);
+    const cmd = `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`;
     (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(cmd, { stdio: "inherit", shell: "/bin/bash" });
     end();
 }
+
 async function restoreTypescriptCache({ directory, app, }) {
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app), [getTSCacheKey(app)]);
     updateTSBuildFilesTimestamp(directory);

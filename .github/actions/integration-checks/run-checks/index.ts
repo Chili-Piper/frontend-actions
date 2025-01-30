@@ -8,6 +8,7 @@ import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";
 import { partition, sortBy } from "lodash";
 import { shardFrontends } from "./shardFrontends";
+import { Timer } from "./util";
 import frontendsConfig from "./frontends.json";
 
 const gitUser = "srebot";
@@ -16,7 +17,7 @@ const monoRepo = "Chili-Piper/frontend";
 const turboTeam = getInput("turbo_team");
 const turboToken = getInput("turbo_token");
 
-process.env.NODE_OPTIONS = "--max_old_space_size=8192";
+process.env.NODE_OPTIONS = "--max_old_space_size=6291";
 
 // hardcoded. we are not using it for security reasons but instead for cache isolation
 const TURBO_REMOTE_CACHE_SIGNATURE_KEY =
@@ -270,23 +271,33 @@ async function run() {
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
 
-    info("Disabling TS check for api-client mocks dir");
+    const endDisableMocksTimerEnd = Timer.start(
+      "Disabling TS check for api-client mocks dir"
+    );
     disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
+    endDisableMocksTimerEnd();
 
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
     // of CI runtime
-    info("Reusing monorepo clone from parent action");
+    const reuseMonoRepoTimerEnd = Timer.start(
+      "Reusing monorepo clone from parent action"
+    );
     const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
     fs.cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
       recursive: true,
     });
+    reuseMonoRepoTimerEnd();
     const monoRepoPath = apiClientRepoPath;
 
+    const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
     const frontendsKeys = pickShardedFrontends(frontendVersions);
+    shardedFrontendsTimerEnd();
 
     const failedFrontends = new Set<string>();
 
-    info("Prefetching monorepo tags");
+    const prefetchingMonoRepoTagsTimerEnd = Timer.start(
+      "Prefetching monorepo tags"
+    );
     await prefetchMonoRepoTags({
       directory: monoRepoPath,
       versions: frontendsKeys
@@ -294,16 +305,14 @@ async function run() {
         .map((key) => frontendVersions[key])
         .filter((item) => item),
     });
+    prefetchingMonoRepoTagsTimerEnd();
 
-    info("Preparing monorepo lib types");
     const nullStream = fs.createWriteStream("/dev/null");
-    await installApiClient({
-      apiClientPath,
-      directory: monoRepoPath,
-      isMonoRepo: true,
-    });
     supressTSLibChecksError({ directory: monoRepoPath });
     isolateActionTurboCache({ directory: monoRepoPath });
+    const preparingMonoRepoLibTypesTimerEnd = Timer.start(
+      "Preparing monorepo lib types"
+    );
     await exec("yarn turbo run lib:types", undefined, {
       cwd: monoRepoPath,
       ignoreReturnCode: true,
@@ -317,6 +326,7 @@ async function run() {
         TURBO_TEAM: turboTeam,
       },
     });
+    preparingMonoRepoLibTypesTimerEnd();
 
     // force first iteration to have last version as undefined (fallback to master)
     // so we skip checkout if first frontend version is master branch
@@ -327,24 +337,40 @@ async function run() {
       const directory = isMonoRepo ? monoRepoPath : frontendKey;
 
       if (!isMonoRepo) {
+        const checkoutTimerEnd = Timer.start(
+          `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
+        );
         await checkout({
           checkoutToken,
           directory,
           repository: frontend.repository,
           version: frontendVersions[frontendKey],
         });
+        checkoutTimerEnd();
+        const restoreCacheTimerEnd = Timer.start(
+          `Restoring cache for ${frontendKey}`
+        );
         const cacheHit = await restoreNonMonoRepoCache(directory);
+        restoreCacheTimerEnd();
         if (!cacheHit) {
           await install({ directory });
+          const saveCacheTimerEnd = Timer.start(
+            `Saving cache for ${frontendKey}`
+          );
           await saveNonMonoRepoCache(directory);
+          saveCacheTimerEnd();
         } else {
           info(`Cache hit for ${frontendKey}. Skipping install`);
         }
+        const apiClientInstallTimerEnd = Timer.start(
+          `Installing api-client for ${frontendKey}`
+        );
         await installApiClient({
           apiClientPath,
           directory,
           isMonoRepo,
         });
+        apiClientInstallTimerEnd();
       }
 
       if (isMonoRepo) {
@@ -354,19 +380,26 @@ async function run() {
         // If is same version as last, no need to checkout & reinstall. Reuse configuration.
         // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
         if (!isSameAsLastVersion) {
+          const checkoutTimerEnd = Timer.start(
+            `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
+          );
           await checkout({
             checkoutToken,
             directory,
             repository: frontend.repository,
             version: frontendVersions[frontendKey],
           });
-
+          checkoutTimerEnd();
           await install({ directory });
+          const apiClientInstallTimerEnd = Timer.start(
+            `Installing api-client for ${frontendKey}`
+          );
           await installApiClient({
             apiClientPath,
             directory,
             isMonoRepo,
           });
+          apiClientInstallTimerEnd();
           supressTSLibChecksError({ directory: monoRepoPath });
           isolateActionTurboCache({ directory: monoRepoPath });
         } else {
@@ -379,10 +412,14 @@ async function run() {
       info(`Running check commands for ${frontendKey}`);
 
       for (const command of frontend.commands) {
+        const runCheckTimerEnd = Timer.start(
+          `Running ${command} for ${frontendKey} frontendVersions[frontendKey]`
+        );
         const exitCode = await runChecks({
           command: command.exec,
           directory: path.join(directory, command.directory),
         });
+        runCheckTimerEnd();
 
         if (exitCode !== 0) {
           failedFrontends.add(frontendKey);

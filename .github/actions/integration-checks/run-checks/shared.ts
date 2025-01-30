@@ -116,7 +116,7 @@ export async function saveTypescriptCache({
 }
 
 // https://github.com/microsoft/TypeScript/issues/54563
-function updateTSBuildFilesTimestamp(directory = process.cwd()) {
+function updateTSBuildFilesTimestamp(directory: string) {
   const end = Timer.start("updating tsbuildinfo timestamps");
   const cmd = `find ${path.join(
     directory,
@@ -138,6 +138,6 @@ export async function restoreTypescriptCache({
     getTSCacheKey(app),
     [getTSCacheKey(app)]
   );
-  updateTSBuildFilesTimestamp();
+  updateTSBuildFilesTimestamp(directory);
   return Boolean(key);
 }

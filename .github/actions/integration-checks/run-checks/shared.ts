@@ -1,9 +1,11 @@
 import { getInput, info } from "@actions/core";
+import { execSync } from "node:child_process";
 import { partition, sortBy } from "lodash";
 import { hashFileSync } from "hasha";
 import { restoreCache, saveCache } from "@actions/cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
+import path from "node:path";
 
 export const monoRepo = "Chili-Piper/frontend";
 
@@ -113,6 +115,17 @@ export async function saveTypescriptCache({
   await saveCache(getTSCachePaths(directory), getTSCacheKey(app));
 }
 
+// https://github.com/microsoft/TypeScript/issues/54563
+function updateTSBuildFilesTimestamp(directory = process.cwd()) {
+  const end = Timer.start("updating tsbuildinfo timestamps");
+  const cmd = `find ${path.join(
+    directory,
+    "**/tsconfig.tsbuildinfo"
+  )} -type f -exec touch {} +`;
+  execSync(cmd, { stdio: "inherit", shell: "/bin/bash" });
+  end();
+}
+
 export async function restoreTypescriptCache({
   directory,
   app,
@@ -125,5 +138,6 @@ export async function restoreTypescriptCache({
     getTSCacheKey(app),
     [getTSCacheKey(app)]
   );
+  updateTSBuildFilesTimestamp();
   return Boolean(key);
 }

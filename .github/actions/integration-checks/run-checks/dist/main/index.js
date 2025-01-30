@@ -91858,15 +91858,21 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* unused harmony exports saveNonMonoRepoCache, saveTypescriptCache */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2356);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var hasha__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(7690);
-/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5116);
-/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_actions_cache__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _shardFrontends__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(6013);
-/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(5959);
-var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([hasha__WEBPACK_IMPORTED_MODULE_5__]);
-hasha__WEBPACK_IMPORTED_MODULE_5__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+/* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1421);
+/* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(node_child_process__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(2356);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var hasha__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(7690);
+/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(5116);
+/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_actions_cache__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _shardFrontends__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(6013);
+/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(5959);
+/* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(6760);
+/* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__nccwpck_require__.n(node_path__WEBPACK_IMPORTED_MODULE_6__);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([hasha__WEBPACK_IMPORTED_MODULE_7__]);
+hasha__WEBPACK_IMPORTED_MODULE_7__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+
+
 
 
 
@@ -91897,8 +91903,8 @@ function pickShardedFrontends(frontendVersions) {
     // Other frontends, on the other hand, are heavier to run since they cannot
     // benefit from the mono-repo configuration reuse. By partitioning them,
     // we can handle their distribution separately and optimize overall execution.
-    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_4__);
-    const [monoRepoFrontends, otherFrontends] = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.partition)(frontendsKeys, (key) => _frontends_json__WEBPACK_IMPORTED_MODULE_4__[key].repository === monoRepo);
+    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_5__);
+    const [monoRepoFrontends, otherFrontends] = (0,lodash__WEBPACK_IMPORTED_MODULE_2__.partition)(frontendsKeys, (key) => _frontends_json__WEBPACK_IMPORTED_MODULE_5__[key].repository === monoRepo);
     // Step 2: Sort mono-repo frontends by their tags
     // Sorting ensures that frontends with the same version are grouped together in order.
     // This optimization allows tools like `yarn link` to reuse their cache during runs.
@@ -91906,20 +91912,20 @@ function pickShardedFrontends(frontendVersions) {
     // - Without sorting: ["A@1.0", "B@2.0", "C@1.0"] would require `yarn link` to run 3 times.
     // - With sorting:    ["A@1.0", "C@1.0", "B@2.0"] would run `yarn link` only 2 times,
     //   as it can reuse the cache for items with the same version consecutively.
-    const tagOrderedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_1__.sortBy)(monoRepoFrontends, (key) => frontendVersions[key]);
-    return (0,_shardFrontends__WEBPACK_IMPORTED_MODULE_3__/* .shardFrontends */ .u)(tagOrderedMonoRepoFrontends, otherFrontends, frontendVersions, shardConfig);
+    const tagOrderedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_2__.sortBy)(monoRepoFrontends, (key) => frontendVersions[key]);
+    return (0,_shardFrontends__WEBPACK_IMPORTED_MODULE_4__/* .shardFrontends */ .u)(tagOrderedMonoRepoFrontends, otherFrontends, frontendVersions, shardConfig);
 }
 function getCacheKey({ directory, addFingerPrint, }) {
     const fingerPrint = addFingerPrint
         ? ""
-        : (0,hasha__WEBPACK_IMPORTED_MODULE_5__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
+        : (0,hasha__WEBPACK_IMPORTED_MODULE_7__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
     return [`${directory}/.yarn/cache`];
 }
 async function restoreNonMonoRepoCache(directory) {
-    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_2__.restoreCache)(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);
     return Boolean(key);
 }
 async function saveNonMonoRepoCache(directory) {
@@ -91935,8 +91941,16 @@ function getTSCacheKey(app) {
 async function saveTypescriptCache({ directory, app, }) {
     await saveCache(getTSCachePaths(directory), getTSCacheKey(app));
 }
+// https://github.com/microsoft/TypeScript/issues/54563
+function updateTSBuildFilesTimestamp(directory = process.cwd()) {
+    const end = Timer.start("updating tsbuildinfo timestamps");
+    const cmd = `find ${node_path__WEBPACK_IMPORTED_MODULE_6___default().join(directory, "**/tsconfig.tsbuildinfo")} -type f -exec touch {} +`;
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(cmd, { stdio: "inherit", shell: "/bin/bash" });
+    end();
+}
 async function restoreTypescriptCache({ directory, app, }) {
-    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_2__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app), [getTSCacheKey(app)]);
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app), [getTSCacheKey(app)]);
+    updateTSBuildFilesTimestamp();
     return Boolean(key);
 }
 
@@ -92054,6 +92068,14 @@ module.exports = require("https");
 
 "use strict";
 module.exports = require("net");
+
+/***/ }),
+
+/***/ 1421:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:child_process");
 
 /***/ }),
 

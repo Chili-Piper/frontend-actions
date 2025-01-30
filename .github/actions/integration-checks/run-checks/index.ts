@@ -1,19 +1,19 @@
 import { exec } from "@actions/exec";
-import { hashFileSync } from "hasha";
 import JSON5 from "json5";
 import path from "node:path";
 import fs from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
-import { restoreCache, saveCache } from "@actions/cache";
 import * as yaml from "js-yaml";
-import { partition, sortBy } from "lodash";
-import { shardFrontends } from "./shardFrontends";
-import { Timer } from "./util";
+import {
+  Timer,
+  monoRepo,
+  pickShardedFrontends,
+  restoreNonMonoRepoCache,
+} from "./shared";
 import frontendsConfig from "./frontends.json";
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-const monoRepo = "Chili-Piper/frontend";
 const turboTeam = getInput("turbo_team");
 const turboToken = getInput("turbo_token");
 
@@ -68,17 +68,6 @@ async function checkout({
 
   info(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
-}
-
-async function install({ directory }: { directory: string }) {
-  info("Installing deps...");
-  await exec("yarn --silent", undefined, {
-    cwd: directory,
-    env: {
-      ...process.env,
-      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
-    },
-  });
 }
 
 function editJSON(path: string, cb: (data: any) => void) {
@@ -194,73 +183,6 @@ function disableMocksDirCheck(directory: string) {
   }
 }
 
-function pickShardedFrontends(frontendVersions: Record<string, string>) {
-  const shardConfig = getInput("shard");
-
-  // Step 1: Partition frontends into mono-repo and other frontends
-  // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
-  // from previous runs, making them lighter and faster to process.
-  // Other frontends, on the other hand, are heavier to run since they cannot
-  // benefit from the mono-repo configuration reuse. By partitioning them,
-  // we can handle their distribution separately and optimize overall execution.
-  const frontendsKeys = Object.keys(frontendsConfig) as Array<
-    keyof typeof frontendsConfig
-  >;
-  const [monoRepoFrontends, otherFrontends] = partition(
-    frontendsKeys,
-    (key) => frontendsConfig[key].repository === monoRepo
-  );
-
-  // Step 2: Sort mono-repo frontends by their tags
-  // Sorting ensures that frontends with the same version are grouped together in order.
-  // This optimization allows tools like `yarn link` to reuse their cache during runs.
-  // For example:
-  // - Without sorting: ["A@1.0", "B@2.0", "C@1.0"] would require `yarn link` to run 3 times.
-  // - With sorting:    ["A@1.0", "C@1.0", "B@2.0"] would run `yarn link` only 2 times,
-  //   as it can reuse the cache for items with the same version consecutively.
-  const tagOrderedMonoRepoFrontends = sortBy(
-    monoRepoFrontends,
-    (key) => frontendVersions[key]
-  );
-
-  return shardFrontends(
-    tagOrderedMonoRepoFrontends,
-    otherFrontends,
-    frontendVersions,
-    shardConfig
-  );
-}
-
-function getCacheKey({
-  directory,
-  addFingerPrint,
-}: {
-  directory: string;
-  addFingerPrint?: boolean;
-}) {
-  const fingerPrint = addFingerPrint
-    ? ""
-    : hashFileSync(`${directory}/yarn.lock`);
-  return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
-}
-
-function getCachePaths(directory: string) {
-  return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
-}
-
-async function restoreNonMonoRepoCache(directory: string) {
-  const key = await restoreCache(
-    getCachePaths(directory),
-    getCacheKey({ directory }),
-    [getCacheKey({ directory, addFingerPrint: true })]
-  );
-  return Boolean(key);
-}
-
-async function saveNonMonoRepoCache(directory: string) {
-  await saveCache(getCachePaths(directory), getCacheKey({ directory }));
-}
-
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -307,27 +229,6 @@ async function run() {
     });
     prefetchingMonoRepoTagsTimerEnd();
 
-    const nullStream = fs.createWriteStream("/dev/null");
-    supressTSLibChecksError({ directory: monoRepoPath });
-    isolateActionTurboCache({ directory: monoRepoPath });
-    const preparingMonoRepoLibTypesTimerEnd = Timer.start(
-      "Preparing monorepo lib types"
-    );
-    await exec("yarn turbo run lib:types", undefined, {
-      cwd: monoRepoPath,
-      ignoreReturnCode: true,
-      silent: true,
-      outStream: nullStream,
-      errStream: nullStream,
-      env: {
-        ...process.env,
-        TURBO_REMOTE_CACHE_SIGNATURE_KEY,
-        TURBO_TOKEN: turboToken,
-        TURBO_TEAM: turboTeam,
-      },
-    });
-    preparingMonoRepoLibTypesTimerEnd();
-
     // force first iteration to have last version as undefined (fallback to master)
     // so we skip checkout if first frontend version is master branch
     let lastFrontendKey = "";
@@ -350,18 +251,9 @@ async function run() {
         const restoreCacheTimerEnd = Timer.start(
           `Restoring cache for ${frontendKey}`
         );
-        const cacheHit = await restoreNonMonoRepoCache(directory);
+        await restoreNonMonoRepoCache(directory);
         restoreCacheTimerEnd();
-        if (!cacheHit) {
-          await install({ directory });
-          const saveCacheTimerEnd = Timer.start(
-            `Saving cache for ${frontendKey}`
-          );
-          await saveNonMonoRepoCache(directory);
-          saveCacheTimerEnd();
-        } else {
-          info(`Cache hit for ${frontendKey}. Skipping install`);
-        }
+
         const apiClientInstallTimerEnd = Timer.start(
           `Installing api-client for ${frontendKey}`
         );
@@ -390,7 +282,6 @@ async function run() {
             version: frontendVersions[frontendKey],
           });
           checkoutTimerEnd();
-          await install({ directory });
           const apiClientInstallTimerEnd = Timer.start(
             `Installing api-client for ${frontendKey}`
           );
@@ -413,7 +304,7 @@ async function run() {
 
       for (const command of frontend.commands) {
         const runCheckTimerEnd = Timer.start(
-          `Running ${command} for ${frontendKey} frontendVersions[frontendKey]`
+          `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );
         const exitCode = await runChecks({
           command: command.exec,

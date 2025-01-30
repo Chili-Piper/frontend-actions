@@ -15,18 +15,20 @@ async function run() {
     string
   >;
   const frontendsKeys = pickShardedFrontends(frontendVersions);
-  for (const frontendKey of frontendsKeys) {
+  const promises = frontendsKeys.map(async (frontendKey) => {
     const frontend = frontendsConfig[frontendKey];
     const isMonoRepo = frontend.repository === monoRepo;
 
     if (isMonoRepo) {
-      continue;
+      return;
     }
 
     const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);
     await saveNonMonoRepoCache(frontendKey);
     saveCacheTimerEnd();
-  }
+  });
+
+  await Promise.all(promises);
 }
 
 run();

@@ -90045,8 +90045,7 @@ async function run() {
         const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_3__[frontendKey];
         const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_2__/* .monoRepo */ .yl;
         if (isMonoRepo) {
-            const appPath = `${apiClientRepoPath}/apps/${frontendKey}`;
-            await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(appPath);
+            await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(apiClientRepoPath);
         }
         const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_2__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
         await Promise.all([
@@ -90228,7 +90227,7 @@ function getCacheKey({ directory, addFingerPrint, }) {
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
-    return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
+    return [`${directory}/.yarn/cache`];
 }
 async function restoreNonMonoRepoCache(directory) {
     const key = await restoreCache(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);
@@ -90239,7 +90238,7 @@ async function saveNonMonoRepoCache(directory) {
 }
 // tsconfig.tsbuildinfo
 function getTSCachePaths(directory) {
-    return [`${directory}/tsconfig.tsbuildinfo`];
+    return [`${directory}/**/tsconfig.tsbuildinfo`];
 }
 function getTSCacheKey(directory) {
     return `v1-integration-checks-typescript-${directory}`;
@@ -105371,7 +105370,7 @@ var jsYaml = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-billing --only","directory":"."}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-branding --only","directory":"."}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-center-fire --only","directory":"."}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chat --only","directory":"."}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chilical --only","directory":"."}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-concierge --only","directory":"."}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distribution --only","directory":"."}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distro --only","directory":"."}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-integrations --only","directory":"."}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-notifications --only","directory":"."}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-platform-assets --only","directory":"."}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-users --only","directory":"."}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter chili-chat --only","directory":"."}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter @chilipiper/conciergejs-fire --only","directory":"."}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]},"booking-app":{"repository":"Chili-Piper/booking-app","commands":[{"exec":"yarn tsc","directory":"."}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","commands":[{"exec":"yarn tsc","directory":"."}]}}');
+module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-billing --force","directory":"."}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-branding --force","directory":"."}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-center-fire --force","directory":"."}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chat --force","directory":"."}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chilical --force","directory":"."}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-concierge --force","directory":"."}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distribution --force","directory":"."}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distro --force","directory":"."}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-integrations --force","directory":"."}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-notifications --force","directory":"."}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-platform-assets --force","directory":"."}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-users --force","directory":"."}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter chili-chat --force","directory":"."}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter @chilipiper/conciergejs-fire --force","directory":"."}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc --build","directory":"."}]},"booking-app":{"repository":"Chili-Piper/booking-app","commands":[{"exec":"yarn tsc --build","directory":"."}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","commands":[{"exec":"yarn tsc --build","directory":"."}]}}');
 
 /***/ }),
 

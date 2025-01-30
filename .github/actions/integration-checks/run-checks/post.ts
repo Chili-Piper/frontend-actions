@@ -23,7 +23,7 @@ async function run() {
     const isMonoRepo = frontend.repository === monoRepo;
 
     if (isMonoRepo) {
-      await saveTypescriptCache(apiClientRepoPath);
+      return await saveTypescriptCache(apiClientRepoPath);
     }
 
     const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);

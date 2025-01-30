@@ -90045,7 +90045,7 @@ async function run() {
         const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_3__[frontendKey];
         const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_2__/* .monoRepo */ .yl;
         if (isMonoRepo) {
-            await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(apiClientRepoPath);
+            return await (0,_shared__WEBPACK_IMPORTED_MODULE_2__/* .saveTypescriptCache */ .RN)(apiClientRepoPath);
         }
         const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_2__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
         await Promise.all([

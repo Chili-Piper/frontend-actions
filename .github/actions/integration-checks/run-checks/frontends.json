@@ -3,7 +3,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-billing",
+        "exec": "yarn turbo run types:app --filter admin-billing --only",
         "directory": "."
       }
     ]
@@ -12,7 +12,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-branding",
+        "exec": "yarn turbo run types:app --filter admin-branding --only",
         "directory": "."
       }
     ]
@@ -21,7 +21,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-center-fire",
+        "exec": "yarn turbo run types:app --filter admin-center-fire --only",
         "directory": "."
       }
     ]
@@ -30,7 +30,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-chat",
+        "exec": "yarn turbo run types:app --filter admin-chat --only",
         "directory": "."
       }
     ]
@@ -39,7 +39,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-chilical",
+        "exec": "yarn turbo run types:app --filter admin-chilical --only",
         "directory": "."
       }
     ]
@@ -48,7 +48,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-concierge",
+        "exec": "yarn turbo run types:app --filter admin-concierge --only",
         "directory": "."
       }
     ]
@@ -57,7 +57,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-distribution",
+        "exec": "yarn turbo run types:app --filter admin-distribution --only",
         "directory": "."
       }
     ]
@@ -66,7 +66,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-distro",
+        "exec": "yarn turbo run types:app --filter admin-distro --only",
         "directory": "."
       }
     ]
@@ -75,7 +75,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-integrations",
+        "exec": "yarn turbo run types:app --filter admin-integrations --only",
         "directory": "."
       }
     ]
@@ -84,7 +84,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-notifications",
+        "exec": "yarn turbo run types:app --filter admin-notifications --only",
         "directory": "."
       }
     ]
@@ -93,7 +93,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-platform-assets",
+        "exec": "yarn turbo run types:app --filter admin-platform-assets --only",
         "directory": "."
       }
     ]
@@ -102,7 +102,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter admin-users",
+        "exec": "yarn turbo run types:app --filter admin-users --only",
         "directory": "."
       }
     ]
@@ -111,7 +111,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter chili-chat",
+        "exec": "yarn turbo run types:app --filter chili-chat --only",
         "directory": "."
       }
     ]
@@ -120,7 +120,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn turbo run types:app --filter @chilipiper/conciergejs-fire",
+        "exec": "yarn turbo run types:app --filter @chilipiper/conciergejs-fire --only",
         "directory": "."
       }
     ]

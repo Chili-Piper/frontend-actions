@@ -91716,6 +91716,14 @@ async function run() {
             }
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
+                if (isMonoRepo) {
+                    const runLibCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running lib check for ${frontendKey} ${frontendVersions[frontendKey]}`);
+                    await runChecks({
+                        command: "yarn turbo run lib:types --force -- --v",
+                        directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
+                    });
+                    runLibCheckTimerEnd();
+                }
                 const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
                 const exitCode = await runChecks({
                     command: command.exec,

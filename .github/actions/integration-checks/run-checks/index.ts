@@ -323,9 +323,20 @@ async function run() {
       info(`Running check commands for ${frontendKey}`);
 
       for (const command of frontend.commands) {
+        if (isMonoRepo) {
+          const runLibCheckTimerEnd = Timer.start(
+            `Running lib check for ${frontendKey} ${frontendVersions[frontendKey]}`
+          );
+          await runChecks({
+            command: "yarn turbo run lib:types --force -- --v",
+            directory: path.join(directory, command.directory),
+          });
+          runLibCheckTimerEnd();
+        }
         const runCheckTimerEnd = Timer.start(
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );
+
         const exitCode = await runChecks({
           command: command.exec,
           directory: path.join(directory, command.directory),

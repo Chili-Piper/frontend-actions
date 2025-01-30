@@ -78,7 +78,7 @@ function getCacheKey({
 }
 
 function getCachePaths(directory: string) {
-  return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
+  return [`${directory}/.yarn/cache`];
 }
 
 export async function restoreNonMonoRepoCache(directory: string) {
@@ -96,7 +96,7 @@ export async function saveNonMonoRepoCache(directory: string) {
 
 // tsconfig.tsbuildinfo
 function getTSCachePaths(directory: string) {
-  return [`${directory}/tsconfig.tsbuildinfo`];
+  return [`${directory}/**/tsconfig.tsbuildinfo`];
 }
 
 function getTSCacheKey(directory: string) {

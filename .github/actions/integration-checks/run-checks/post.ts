@@ -23,8 +23,7 @@ async function run() {
     const isMonoRepo = frontend.repository === monoRepo;
 
     if (isMonoRepo) {
-      const appPath = `${apiClientRepoPath}/apps/${frontendKey}`;
-      await saveTypescriptCache(appPath);
+      await saveTypescriptCache(apiClientRepoPath);
     }
 
     const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);

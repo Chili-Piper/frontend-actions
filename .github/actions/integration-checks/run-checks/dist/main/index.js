@@ -91936,7 +91936,7 @@ function getCacheKey({ directory, addFingerPrint, }) {
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
-    return [`${directory}/.yarn/cache`];
+    return [`${directory}/.yarn/cache`, `${directory}/**/node_modules`];
 }
 async function restoreYarnCache(directory) {
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getCachePaths(directory), getCacheKey({ directory, addFingerPrint: true }), [getCacheKey({ directory })]);

@@ -91699,6 +91699,13 @@ async function run() {
                     apiClientInstallTimerEnd();
                 }
                 else {
+                    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                    foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
+                        directory,
+                        app: frontendKey,
+                        version: frontendVersions[frontendKey],
+                    });
+                    restoreTSCacheTimerEnd();
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);
                 }
             }
@@ -91710,13 +91717,18 @@ async function run() {
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
                 });
                 runCheckTimerEnd();
-                const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
-                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
-                    directory,
-                    app: frontendKey,
-                    version: frontendVersions[frontendKey],
-                });
-                saveTSCacheTimerEnd();
+                if (!foundTSCacheMatch) {
+                    const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
+                    await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
+                        directory,
+                        app: frontendKey,
+                        version: frontendVersions[frontendKey],
+                    });
+                    saveTSCacheTimerEnd();
+                }
+                else {
+                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping save TS cache because restore was exact match`);
+                }
                 if (exitCode !== 0) {
                     failedFrontends.add(frontendKey);
                 }

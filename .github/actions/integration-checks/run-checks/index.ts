@@ -301,6 +301,16 @@ async function run() {
           });
           apiClientInstallTimerEnd();
         } else {
+          const restoreTSCacheTimerEnd = Timer.start(
+            "restoring TSBuild cache..."
+          );
+          foundTSCacheMatch = await restoreTypescriptCache({
+            directory,
+            app: frontendKey,
+            version: frontendVersions[frontendKey],
+          });
+          restoreTSCacheTimerEnd();
+
           info(
             `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
           );
@@ -319,15 +329,19 @@ async function run() {
         });
         runCheckTimerEnd();
 
-        const saveTSCacheTimerEnd = Timer.start(
-          `Saving TS cache for ${frontendKey}`
-        );
-        await saveTypescriptCache({
-          directory,
-          app: frontendKey,
-          version: frontendVersions[frontendKey],
-        });
-        saveTSCacheTimerEnd();
+        if (!foundTSCacheMatch) {
+          const saveTSCacheTimerEnd = Timer.start(
+            `Saving TS cache for ${frontendKey}`
+          );
+          await saveTypescriptCache({
+            directory,
+            app: frontendKey,
+            version: frontendVersions[frontendKey],
+          });
+          saveTSCacheTimerEnd();
+        } else {
+          info(`Skipping save TS cache because restore was exact match`);
+        }
 
         if (exitCode !== 0) {
           failedFrontends.add(frontendKey);

@@ -91960,8 +91960,8 @@ async function saveTypescriptCache({ directory, app, }) {
 function updateTSBuildFilesTimestamp(directory) {
     const end = Timer.start("updating tsbuildinfo timestamps");
     const resolvedDir = node_path__WEBPACK_IMPORTED_MODULE_6___default().resolve(directory);
-    const cmd = `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`;
-    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(cmd, { stdio: "inherit", shell: "/bin/bash" });
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
     end();
 }
 

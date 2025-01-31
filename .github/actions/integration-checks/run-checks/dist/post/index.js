@@ -90269,8 +90269,8 @@ async function saveTypescriptCache({ directory, app, }) {
 function updateTSBuildFilesTimestamp(directory) {
     const end = Timer.start("updating tsbuildinfo timestamps");
     const resolvedDir = path.resolve(directory);
-    const cmd = `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`;
-    execSync(cmd, { stdio: "inherit", shell: "/bin/bash" });
+    execSync(`find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    execSync(`find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
     end();
 }
 

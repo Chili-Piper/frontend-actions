@@ -91941,7 +91941,11 @@ async function saveNonMonoRepoCache(directory) {
 }
 // tsconfig.tsbuildinfo
 function getTSCachePaths(directory) {
-    return [`${directory}/**/tsconfig.tsbuildinfo`];
+    return [
+        `${directory}/**/tsconfig.tsbuildinfo`,
+        `${directory}/**/lib`,
+        `!${directory}/**/node_modules`,
+    ];
 }
 function getTSCacheKey(app) {
     return `v1-integration-checks-typescript-${app}`;

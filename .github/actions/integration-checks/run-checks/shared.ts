@@ -98,7 +98,11 @@ export async function saveNonMonoRepoCache(directory: string) {
 
 // tsconfig.tsbuildinfo
 function getTSCachePaths(directory: string) {
-  return [`${directory}/**/tsconfig.tsbuildinfo`];
+  return [
+    `${directory}/**/tsconfig.tsbuildinfo`,
+    `${directory}/**/lib`,
+    `!${directory}/**/node_modules`,
+  ];
 }
 
 function getTSCacheKey(app: string) {

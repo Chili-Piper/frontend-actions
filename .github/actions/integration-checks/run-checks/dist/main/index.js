@@ -92167,9 +92167,10 @@ function updateTSBuildFilesTimestamp(directory) {
 
 async function restoreTypescriptCache({ directory, app, version, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`restoring cache to ${directory}`);
-    (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .globSync */ .AZ)(`${directory}/**/lib/.tsbuildinfo`).map((item) => (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(item));
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_4__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app, version), [getTSCacheKey(app)]);
+    (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .globSync */ .AZ)(`${directory}/**/lib/.tsbuildinfo`).map((item) => (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(item));
     updateTSBuildFilesTimestamp(directory);
+    (0,glob__WEBPACK_IMPORTED_MODULE_3__/* .globSync */ .AZ)(`${directory}/**/lib/.tsbuildinfo`).map((item) => (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(item));
     return Boolean(key === getTSCacheKey(app, version));
 }
 

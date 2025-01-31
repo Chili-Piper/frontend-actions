@@ -150,12 +150,13 @@ export async function restoreTypescriptCache({
   version: string;
 }) {
   info(`restoring cache to ${directory}`);
-  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   const key = await restoreCache(
     getTSCachePaths(directory),
     getTSCacheKey(app, version),
     [getTSCacheKey(app)]
   );
+  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   updateTSBuildFilesTimestamp(directory);
+  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   return Boolean(key === getTSCacheKey(app, version));
 }

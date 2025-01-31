@@ -283,7 +283,7 @@ async function run() {
           );
           foundTSCacheMatch = await restoreTypescriptCache({
             directory,
-            app: frontendKey,
+            app: "monorepo",
             version: frontendVersions[frontendKey],
           });
           restoreTSCacheTimerEnd();
@@ -322,7 +322,7 @@ async function run() {
           );
           await saveTypescriptCache({
             directory,
-            app: frontendKey,
+            app: "monorepo",
             version: frontendVersions[frontendKey],
           });
           saveTSCacheTimerEnd();

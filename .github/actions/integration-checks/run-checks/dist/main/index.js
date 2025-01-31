@@ -91685,7 +91685,7 @@ async function run() {
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                     foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
                         directory,
-                        app: frontendKey,
+                        app: "monorepo",
                         version: frontendVersions[frontendKey],
                     });
                     restoreTSCacheTimerEnd();
@@ -91713,7 +91713,7 @@ async function run() {
                     const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
                     await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
                         directory,
-                        app: frontendKey,
+                        app: "monorepo",
                         version: frontendVersions[frontendKey],
                     });
                     saveTSCacheTimerEnd();

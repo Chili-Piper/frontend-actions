@@ -91964,8 +91964,11 @@ function updateTSBuildFilesTimestamp(directory) {
 
 async function restoreTypescriptCache({ directory, app, version, }) {
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app, version), [getTSCacheKey(app)]);
-    updateTSBuildFilesTimestamp(directory);
-    return Boolean(key === getTSCacheKey(app, version));
+    const isFullMatch = key === getTSCacheKey(app, version);
+    if (isFullMatch) {
+        updateTSBuildFilesTimestamp(directory);
+    }
+    return isFullMatch;
 }
 
 __webpack_async_result__();

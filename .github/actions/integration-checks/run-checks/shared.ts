@@ -155,6 +155,9 @@ export async function restoreTypescriptCache({
     getTSCacheKey(app, version),
     [getTSCacheKey(app)]
   );
-  updateTSBuildFilesTimestamp(directory);
-  return Boolean(key === getTSCacheKey(app, version));
+  const isFullMatch = key === getTSCacheKey(app, version);
+  if (isFullMatch) {
+    updateTSBuildFilesTimestamp(directory);
+  }
+  return isFullMatch;
 }

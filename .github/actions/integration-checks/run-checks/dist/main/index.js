@@ -91959,6 +91959,7 @@ function getTSCacheKey(app, version) {
     return `v1-integration-checks-typescript-${app}-${version ?? ""}`;
 }
 async function saveTypescriptCache({ directory, app, version, }) {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`saving cache from ${directory}`);
     await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getTSCachePaths(directory), getTSCacheKey(app, version));
 }
 // https://github.com/microsoft/TypeScript/issues/54563
@@ -91970,6 +91971,7 @@ function updateTSBuildFilesTimestamp(directory) {
 }
 
 async function restoreTypescriptCache({ directory, app, version, }) {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`restoring cache to ${directory}`);
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app, version), [getTSCacheKey(app)]);
     updateTSBuildFilesTimestamp(directory);
     return Boolean(key === getTSCacheKey(app, version));

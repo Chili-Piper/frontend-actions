@@ -118,6 +118,7 @@ export async function saveTypescriptCache({
   app: string;
   version: string;
 }) {
+  info(`saving cache from ${directory}`);
   await saveCache(getTSCachePaths(directory), getTSCacheKey(app, version));
 }
 
@@ -145,6 +146,7 @@ export async function restoreTypescriptCache({
   app: string;
   version: string;
 }) {
+  info(`restoring cache to ${directory}`);
   const key = await restoreCache(
     getTSCachePaths(directory),
     getTSCacheKey(app, version),

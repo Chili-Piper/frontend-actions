@@ -235,16 +235,6 @@ async function run() {
         const exactMatch = await restoreYarnCache(directory);
         restoreCacheTimerEnd();
 
-        const restoreTSCacheTimerEnd = Timer.start(
-          "restoring TSBuild cache..."
-        );
-        foundTSCacheMatch = await restoreTypescriptCache({
-          directory,
-          app: frontendKey,
-          version: frontendVersions[frontendKey],
-        });
-        restoreTSCacheTimerEnd();
-
         const apiClientInstallTimerEnd = Timer.start(
           `Installing api-client for ${frontendKey}`
         );
@@ -333,7 +323,7 @@ async function run() {
         });
         runCheckTimerEnd();
 
-        if (!foundTSCacheMatch) {
+        if (!foundTSCacheMatch || !isMonoRepo) {
           const saveTSCacheTimerEnd = Timer.start(
             `Saving TS cache for ${frontendKey}`
           );
@@ -344,7 +334,9 @@ async function run() {
           });
           saveTSCacheTimerEnd();
         } else {
-          info(`Skipping save TS cache because restore was exact match`);
+          info(
+            `Skipping save TS cache because restore was exact match or repo is not monorepo`
+          );
         }
 
         if (exitCode !== 0) {

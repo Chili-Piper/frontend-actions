@@ -91651,13 +91651,6 @@ async function run() {
                 const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
                 const exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
                 restoreCacheTimerEnd();
-                const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
-                foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
-                    directory,
-                    app: frontendKey,
-                    version: frontendVersions[frontendKey],
-                });
-                restoreTSCacheTimerEnd();
                 const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
                 await installApiClient({
                     apiClientPath,
@@ -91722,7 +91715,7 @@ async function run() {
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
                 });
                 runCheckTimerEnd();
-                if (!foundTSCacheMatch) {
+                if (!foundTSCacheMatch || !isMonoRepo) {
                     const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
                     await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
                         directory,
@@ -91732,7 +91725,7 @@ async function run() {
                     saveTSCacheTimerEnd();
                 }
                 else {
-                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping save TS cache because restore was exact match`);
+                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
                 }
                 if (exitCode !== 0) {
                     failedFrontends.add(frontendKey);

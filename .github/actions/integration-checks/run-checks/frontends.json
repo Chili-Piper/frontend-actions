@@ -3,7 +3,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-billing"
       }
     ]
@@ -12,7 +12,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-branding"
       }
     ]
@@ -21,7 +21,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-center"
       }
     ]
@@ -30,7 +30,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-chat"
       }
     ]
@@ -39,7 +39,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-chilical"
       }
     ]
@@ -48,7 +48,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-concierge"
       }
     ]
@@ -57,7 +57,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-distribution"
       }
     ]
@@ -66,7 +66,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-distro"
       }
     ]
@@ -75,7 +75,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-integrations"
       }
     ]
@@ -84,7 +84,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-notifications"
       }
     ]
@@ -93,7 +93,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-platform-assets"
       }
     ]
@@ -102,7 +102,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/admin-users"
       }
     ]
@@ -111,7 +111,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/chili-chat"
       }
     ]
@@ -120,7 +120,7 @@
     "repository": "Chili-Piper/frontend",
     "commands": [
       {
-        "exec": "yarn tsc",
+        "exec": "yarn tsc --build",
         "directory": "./apps/conciergejs-fire"
       }
     ]

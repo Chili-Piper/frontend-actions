@@ -91538,6 +91538,16 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
+async function install({ directory }) {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --silent", undefined, {
+        cwd: directory,
+        env: {
+            ...process.env,
+            YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
+        },
+    });
+}
 function editJSON(path, cb) {
     const fileContent = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(path, "utf-8");
     const data = json5__WEBPACK_IMPORTED_MODULE_1___default().parse(fileContent);
@@ -91694,6 +91704,7 @@ async function run() {
                         version: frontendVersions[frontendKey],
                     });
                     checkoutTimerEnd();
+                    await install({ directory });
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                     await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
                         directory,

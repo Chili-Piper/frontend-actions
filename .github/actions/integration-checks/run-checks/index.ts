@@ -71,6 +71,17 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
+async function install({ directory }: { directory: string }) {
+  info("Installing deps...");
+  await exec("yarn --silent", undefined, {
+    cwd: directory,
+    env: {
+      ...process.env,
+      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+    },
+  });
+}
+
 function editJSON(path: string, cb: (data: any) => void) {
   const fileContent = fs.readFileSync(path, "utf-8");
   const data = JSON5.parse(fileContent);
@@ -292,6 +303,8 @@ async function run() {
             version: frontendVersions[frontendKey],
           });
           checkoutTimerEnd();
+
+          await install({ directory });
 
           const restoreTSCacheTimerEnd = Timer.start(
             "restoring TSBuild cache..."

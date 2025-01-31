@@ -311,7 +311,7 @@ async function run() {
             isMonoRepo,
           });
           apiClientInstallTimerEnd();
-          supressTSLibChecksError({ directory: monoRepoPath });
+          // supressTSLibChecksError({ directory: monoRepoPath });
           isolateActionTurboCache({ directory: monoRepoPath });
         } else {
           info(

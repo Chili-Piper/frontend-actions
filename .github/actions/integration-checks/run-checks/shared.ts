@@ -83,16 +83,16 @@ function getCachePaths(directory: string) {
   return [`${directory}/.yarn/cache`];
 }
 
-export async function restoreNonMonoRepoCache(directory: string) {
+export async function restoreYarnCache(directory: string) {
   const key = await restoreCache(
     getCachePaths(directory),
-    getCacheKey({ directory }),
-    [getCacheKey({ directory, addFingerPrint: true })]
+    getCacheKey({ directory, addFingerPrint: true }),
+    [getCacheKey({ directory })]
   );
-  return Boolean(key);
+  return key === getCacheKey({ directory, addFingerPrint: true });
 }
 
-export async function saveNonMonoRepoCache(directory: string) {
+export async function saveYarnCache(directory: string) {
   await saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
 
@@ -105,18 +105,20 @@ function getTSCachePaths(directory: string) {
   ];
 }
 
-function getTSCacheKey(app: string) {
-  return `v1-integration-checks-typescript-${app}`;
+function getTSCacheKey(app: string, version?: string) {
+  return `v1-integration-checks-typescript-${app}-${version ?? ""}`;
 }
 
 export async function saveTypescriptCache({
   directory,
   app,
+  version,
 }: {
   directory: string;
   app: string;
+  version: string;
 }) {
-  await saveCache(getTSCachePaths(directory), getTSCacheKey(app));
+  await saveCache(getTSCachePaths(directory), getTSCacheKey(app, version));
 }
 
 // https://github.com/microsoft/TypeScript/issues/54563
@@ -124,10 +126,6 @@ function updateTSBuildFilesTimestamp(directory: string) {
   const end = Timer.start("updating tsbuildinfo timestamps");
 
   const resolvedDir = path.resolve(directory);
-  execSync(
-    `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`,
-    { stdio: "inherit", shell: "/bin/bash" }
-  );
   execSync(
     `find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`,
     { stdio: "inherit", shell: "/bin/bash" }
@@ -141,15 +139,17 @@ export { updateTSBuildFilesTimestamp };
 export async function restoreTypescriptCache({
   directory,
   app,
+  version,
 }: {
   directory: string;
   app: string;
+  version: string;
 }) {
   const key = await restoreCache(
     getTSCachePaths(directory),
-    getTSCacheKey(app),
+    getTSCacheKey(app, version),
     [getTSCacheKey(app)]
   );
   updateTSBuildFilesTimestamp(directory);
-  return Boolean(key);
+  return Boolean(key === getTSCacheKey(app, version));
 }

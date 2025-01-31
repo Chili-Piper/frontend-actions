@@ -8,21 +8,17 @@ import {
   Timer,
   monoRepo,
   pickShardedFrontends,
-  restoreNonMonoRepoCache,
+  restoreYarnCache,
   restoreTypescriptCache,
+  saveYarnCache,
+  saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-const turboTeam = getInput("turbo_team");
-const turboToken = getInput("turbo_token");
 
 process.env.NODE_OPTIONS = "--max_old_space_size=6291";
-
-// hardcoded. we are not using it for security reasons but instead for cache isolation
-const TURBO_REMOTE_CACHE_SIGNATURE_KEY =
-  "b6d61a99d783570abb966e86694217da9ba00901b47dfcf531c2b4e6eb8efced";
 
 async function prefetchMonoRepoTags({
   versions,
@@ -169,12 +165,6 @@ function runChecks({
   return exec(command, undefined, {
     cwd: directory,
     ignoreReturnCode: true,
-    env: {
-      ...process.env,
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY,
-      TURBO_TOKEN: turboToken,
-      TURBO_TEAM: turboTeam,
-    },
   });
 }
 
@@ -248,6 +238,7 @@ async function run() {
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;
+      let foundTSCacheMatch = false;
 
       if (!isMonoRepo) {
         const checkoutTimerEnd = Timer.start(
@@ -263,15 +254,16 @@ async function run() {
         const restoreCacheTimerEnd = Timer.start(
           `Restoring cache for ${frontendKey}`
         );
-        await restoreNonMonoRepoCache(directory);
+        await restoreYarnCache(directory);
         restoreCacheTimerEnd();
 
         const restoreTSCacheTimerEnd = Timer.start(
           "restoring TSBuild cache..."
         );
-        await restoreTypescriptCache({
+        foundTSCacheMatch = await restoreTypescriptCache({
           directory,
           app: frontendKey,
+          version: frontendVersions[frontendKey],
         });
         restoreTSCacheTimerEnd();
 
@@ -284,6 +276,11 @@ async function run() {
           isMonoRepo,
         });
         apiClientInstallTimerEnd();
+        const saveCacheTimerEnd = Timer.start(
+          `Saving cache for ${frontendKey}`
+        );
+        await saveYarnCache(directory);
+        saveCacheTimerEnd();
       }
 
       if (isMonoRepo) {
@@ -309,9 +306,10 @@ async function run() {
           const restoreTSCacheTimerEnd = Timer.start(
             "restoring TSBuild cache..."
           );
-          await restoreTypescriptCache({
+          foundTSCacheMatch = await restoreTypescriptCache({
             directory,
             app: frontendKey,
+            version: frontendVersions[frontendKey],
           });
           restoreTSCacheTimerEnd();
 
@@ -339,12 +337,21 @@ async function run() {
         const runCheckTimerEnd = Timer.start(
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );
-
         const exitCode = await runChecks({
           command: command.exec,
           directory: path.join(directory, command.directory),
         });
         runCheckTimerEnd();
+
+        const saveTSCacheTimerEnd = Timer.start(
+          `Saving TS cache for ${frontendKey}`
+        );
+        await saveTypescriptCache({
+          directory,
+          app: frontendKey,
+          version: frontendVersions[frontendKey],
+        });
+        saveTSCacheTimerEnd();
 
         if (exitCode !== 0) {
           failedFrontends.add(frontendKey);

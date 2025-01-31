@@ -2,7 +2,6 @@ import { getInput, info } from "@actions/core";
 import { execSync } from "node:child_process";
 import { partition, sortBy } from "lodash";
 import { hashFileSync } from "hasha";
-import { globSync } from "glob";
 import { restoreCache, saveCache } from "@actions/cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
@@ -120,8 +119,6 @@ export async function saveTypescriptCache({
   app: string;
   version: string;
 }) {
-  info(`saving cache from ${directory}`);
-  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   await saveCache(getTSCachePaths(directory), getTSCacheKey(app, version));
 }
 
@@ -132,6 +129,10 @@ function updateTSBuildFilesTimestamp(directory: string) {
   const resolvedDir = path.resolve(directory);
   execSync(
     `find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`,
+    { stdio: "inherit", shell: "/bin/bash" }
+  );
+  execSync(
+    `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`,
     { stdio: "inherit", shell: "/bin/bash" }
   );
 
@@ -149,14 +150,11 @@ export async function restoreTypescriptCache({
   app: string;
   version: string;
 }) {
-  info(`restoring cache to ${directory}`);
   const key = await restoreCache(
     getTSCachePaths(directory),
     getTSCacheKey(app, version),
     [getTSCacheKey(app)]
   );
-  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   updateTSBuildFilesTimestamp(directory);
-  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   return Boolean(key === getTSCacheKey(app, version));
 }

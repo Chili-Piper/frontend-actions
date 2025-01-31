@@ -91649,7 +91649,7 @@ async function run() {
                 });
                 checkoutTimerEnd();
                 const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
-                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
+                const exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
                 restoreCacheTimerEnd();
                 const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                 foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
@@ -91665,9 +91665,14 @@ async function run() {
                     isMonoRepo,
                 });
                 apiClientInstallTimerEnd();
-                const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
-                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveYarnCache */ .kZ)(directory);
-                saveCacheTimerEnd();
+                if (!exactMatch) {
+                    const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
+                    await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveYarnCache */ .kZ)(directory);
+                    saveCacheTimerEnd();
+                }
+                else {
+                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping saving cache since it was an exact match`);
+                }
             }
             if (isMonoRepo) {
                 const isSameAsLastVersion = frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];

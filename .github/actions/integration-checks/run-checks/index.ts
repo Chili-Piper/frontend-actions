@@ -232,7 +232,7 @@ async function run() {
         const restoreCacheTimerEnd = Timer.start(
           `Restoring cache for ${frontendKey}`
         );
-        await restoreYarnCache(directory);
+        const exactMatch = await restoreYarnCache(directory);
         restoreCacheTimerEnd();
 
         const restoreTSCacheTimerEnd = Timer.start(
@@ -254,11 +254,15 @@ async function run() {
           isMonoRepo,
         });
         apiClientInstallTimerEnd();
-        const saveCacheTimerEnd = Timer.start(
-          `Saving cache for ${frontendKey}`
-        );
-        await saveYarnCache(directory);
-        saveCacheTimerEnd();
+        if (!exactMatch) {
+          const saveCacheTimerEnd = Timer.start(
+            `Saving cache for ${frontendKey}`
+          );
+          await saveYarnCache(directory);
+          saveCacheTimerEnd();
+        } else {
+          info(`Skipping saving cache since it was an exact match`);
+        }
       }
 
       if (isMonoRepo) {

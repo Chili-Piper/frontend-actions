@@ -235,15 +235,8 @@ async function run() {
         const exactMatch = await restoreYarnCache(directory);
         restoreCacheTimerEnd();
 
-        const apiClientInstallTimerEnd = Timer.start(
-          `Installing api-client for ${frontendKey}`
-        );
-        await installApiClient({
-          apiClientPath,
-          directory,
-          isMonoRepo,
-        });
-        apiClientInstallTimerEnd();
+        await install({ directory });
+
         if (!exactMatch) {
           const saveCacheTimerEnd = Timer.start(
             `Saving cache for ${frontendKey}`
@@ -253,6 +246,16 @@ async function run() {
         } else {
           info(`Skipping saving cache since it was an exact match`);
         }
+
+        const apiClientInstallTimerEnd = Timer.start(
+          `Installing api-client for ${frontendKey}`
+        );
+        await installApiClient({
+          apiClientPath,
+          directory,
+          isMonoRepo,
+        });
+        apiClientInstallTimerEnd();
       }
 
       if (isMonoRepo) {
@@ -295,16 +298,6 @@ async function run() {
           });
           apiClientInstallTimerEnd();
         } else {
-          const restoreTSCacheTimerEnd = Timer.start(
-            "restoring TSBuild cache..."
-          );
-          foundTSCacheMatch = await restoreTypescriptCache({
-            directory,
-            app: frontendKey,
-            version: frontendVersions[frontendKey],
-          });
-          restoreTSCacheTimerEnd();
-
           info(
             `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
           );

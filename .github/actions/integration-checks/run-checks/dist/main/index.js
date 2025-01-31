@@ -91651,13 +91651,7 @@ async function run() {
                 const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
                 const exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
                 restoreCacheTimerEnd();
-                const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
-                await installApiClient({
-                    apiClientPath,
-                    directory,
-                    isMonoRepo,
-                });
-                apiClientInstallTimerEnd();
+                await install({ directory });
                 if (!exactMatch) {
                     const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
                     await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveYarnCache */ .kZ)(directory);
@@ -91666,6 +91660,13 @@ async function run() {
                 else {
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping saving cache since it was an exact match`);
                 }
+                const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
+                await installApiClient({
+                    apiClientPath,
+                    directory,
+                    isMonoRepo,
+                });
+                apiClientInstallTimerEnd();
             }
             if (isMonoRepo) {
                 const isSameAsLastVersion = frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
@@ -91697,13 +91698,6 @@ async function run() {
                     apiClientInstallTimerEnd();
                 }
                 else {
-                    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
-                    foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
-                        directory,
-                        app: frontendKey,
-                        version: frontendVersions[frontendKey],
-                    });
-                    restoreTSCacheTimerEnd();
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);
                 }
             }

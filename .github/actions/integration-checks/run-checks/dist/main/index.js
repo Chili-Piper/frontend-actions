@@ -91485,7 +91485,6 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 __nccwpck_require__.r(__webpack_exports__);
 /* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(5236);
 /* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_exec__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var hasha__WEBPACK_IMPORTED_MODULE_10__ = __nccwpck_require__(7690);
 /* harmony import */ var json5__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(4841);
 /* harmony import */ var json5__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(json5__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(6760);
@@ -91494,18 +91493,11 @@ __nccwpck_require__.r(__webpack_exports__);
 /* harmony import */ var node_fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(node_fs__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(7484);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(5116);
-/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__nccwpck_require__.n(_actions_cache__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(3243);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(2356);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__nccwpck_require__.n(lodash__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _shardFrontends__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(6013);
-/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_9__ = __nccwpck_require__(5959);
-var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([hasha__WEBPACK_IMPORTED_MODULE_10__]);
-hasha__WEBPACK_IMPORTED_MODULE_10__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
-
-
-
+/* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(3243);
+/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(7861);
+/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(5959);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_6__]);
+_shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
 
 
 
@@ -91516,12 +91508,7 @@ hasha__WEBPACK_IMPORTED_MODULE_10__ = (__webpack_async_dependencies__.then ? (aw
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-const monoRepo = "Chili-Piper/frontend";
-const turboTeam = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("turbo_team");
-const turboToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("turbo_token");
-process.env.NODE_OPTIONS = "--max_old_space_size=8192";
-// hardcoded. we are not using it for security reasons but instead for cache isolation
-const TURBO_REMOTE_CACHE_SIGNATURE_KEY = "b6d61a99d783570abb966e86694217da9ba00901b47dfcf531c2b4e6eb8efced";
+process.env.NODE_OPTIONS = "--max_old_space_size=6291";
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
@@ -91571,23 +91558,6 @@ function setApiClientResolution({ apiClientPath, directory, }) {
         packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
     });
 }
-// Supress lib:types error so its cached even on error
-// we want it because since we want to collect fails across projects
-// its useful to cache failed actions so we avoid running it multiple times
-function supressTSLibChecksError({ directory }) {
-    editJSON(`${directory}/package.json`, (packageJson) => {
-        packageJson.scripts["lib:types"] = `${packageJson.scripts["lib:types"]}>/dev/null & echo & echo Ignoring libs errors so command is cached...`;
-    });
-}
-// Create separate cache for action so it doesnt get mixed with frontend repo caches
-function isolateActionTurboCache({ directory }) {
-    editJSON(`${directory}/turbo.json`, (turboJson) => {
-        if (!turboJson.remoteCache) {
-            turboJson.remoteCache = {};
-        }
-        turboJson.remoteCache.signature = true;
-    });
-}
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
@@ -91613,12 +91583,6 @@ function runChecks({ command, directory, }) {
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(command, undefined, {
         cwd: directory,
         ignoreReturnCode: true,
-        env: {
-            ...process.env,
-            TURBO_REMOTE_CACHE_SIGNATURE_KEY,
-            TURBO_TOKEN: turboToken,
-            TURBO_TEAM: turboTeam,
-        },
     });
 }
 function disableMocksDirCheck(directory) {
@@ -91636,148 +91600,135 @@ function disableMocksDirCheck(directory) {
         }
     }
 }
-function pickShardedFrontends(frontendVersions) {
-    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("shard");
-    // Step 1: Partition frontends into mono-repo and other frontends
-    // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
-    // from previous runs, making them lighter and faster to process.
-    // Other frontends, on the other hand, are heavier to run since they cannot
-    // benefit from the mono-repo configuration reuse. By partitioning them,
-    // we can handle their distribution separately and optimize overall execution.
-    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_9__);
-    const [monoRepoFrontends, otherFrontends] = (0,lodash__WEBPACK_IMPORTED_MODULE_7__.partition)(frontendsKeys, (key) => _frontends_json__WEBPACK_IMPORTED_MODULE_9__[key].repository === monoRepo);
-    // Step 2: Sort mono-repo frontends by their tags
-    // Sorting ensures that frontends with the same version are grouped together in order.
-    // This optimization allows tools like `yarn link` to reuse their cache during runs.
-    // For example:
-    // - Without sorting: ["A@1.0", "B@2.0", "C@1.0"] would require `yarn link` to run 3 times.
-    // - With sorting:    ["A@1.0", "C@1.0", "B@2.0"] would run `yarn link` only 2 times,
-    //   as it can reuse the cache for items with the same version consecutively.
-    const tagOrderedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_7__.sortBy)(monoRepoFrontends, (key) => frontendVersions[key]);
-    return (0,_shardFrontends__WEBPACK_IMPORTED_MODULE_8__/* .shardFrontends */ .u)(tagOrderedMonoRepoFrontends, otherFrontends, frontendVersions, shardConfig);
-}
-function getCacheKey({ directory, addFingerPrint, }) {
-    const fingerPrint = addFingerPrint
-        ? ""
-        : (0,hasha__WEBPACK_IMPORTED_MODULE_10__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
-    return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
-}
-function getCachePaths(directory) {
-    return [`${directory}/**/node_modules`, `${directory}/.yarn/cache`];
-}
-async function restoreNonMonoRepoCache(directory) {
-    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_5__.restoreCache)(getCachePaths(directory), getCacheKey({ directory }), [getCacheKey({ directory, addFingerPrint: true })]);
-    return Boolean(key);
-}
-async function saveNonMonoRepoCache(directory) {
-    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_5__.saveCache)(getCachePaths(directory), getCacheKey({ directory }));
-}
 async function run() {
     try {
         const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
-        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_6__/* .load */ .Hh(frontendVersionsJSON) ?? {});
+        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Disabling TS check for api-client mocks dir");
+        const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
+        endDisableMocksTimerEnd();
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Reusing monorepo clone from parent action");
+        const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
         const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
         node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
             recursive: true,
         });
+        reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
-        const frontendsKeys = pickShardedFrontends(frontendVersions);
+        const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
+        shardedFrontendsTimerEnd();
         const failedFrontends = new Set();
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Prefetching monorepo tags");
+        const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Prefetching monorepo tags");
         await prefetchMonoRepoTags({
             directory: monoRepoPath,
             versions: frontendsKeys
-                .filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_9__[key].repository === monoRepo)
+                .filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_7__[key].repository === _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl)
                 .map((key) => frontendVersions[key])
                 .filter((item) => item),
         });
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Preparing monorepo lib types");
-        const nullStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
-        await installApiClient({
-            apiClientPath,
-            directory: monoRepoPath,
-            isMonoRepo: true,
-        });
-        supressTSLibChecksError({ directory: monoRepoPath });
-        isolateActionTurboCache({ directory: monoRepoPath });
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn turbo run lib:types", undefined, {
-            cwd: monoRepoPath,
-            ignoreReturnCode: true,
-            silent: true,
-            outStream: nullStream,
-            errStream: nullStream,
-            env: {
-                ...process.env,
-                TURBO_REMOTE_CACHE_SIGNATURE_KEY,
-                TURBO_TOKEN: turboToken,
-                TURBO_TEAM: turboTeam,
-            },
-        });
+        prefetchingMonoRepoTagsTimerEnd();
         // force first iteration to have last version as undefined (fallback to master)
         // so we skip checkout if first frontend version is master branch
         let lastFrontendKey = "";
         for (const frontendKey of frontendsKeys) {
-            const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_9__[frontendKey];
-            const isMonoRepo = frontend.repository === monoRepo;
+            const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_7__[frontendKey];
+            const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl;
             const directory = isMonoRepo ? monoRepoPath : frontendKey;
+            let foundTSCacheMatch = false;
             if (!isMonoRepo) {
+                const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
                 await checkout({
                     checkoutToken,
                     directory,
                     repository: frontend.repository,
                     version: frontendVersions[frontendKey],
                 });
-                const cacheHit = await restoreNonMonoRepoCache(directory);
-                if (!cacheHit) {
-                    await install({ directory });
-                    await saveNonMonoRepoCache(directory);
-                }
-                else {
-                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Cache hit for ${frontendKey}. Skipping install`);
-                }
+                checkoutTimerEnd();
+                const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
+                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
+                restoreCacheTimerEnd();
+                const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
+                    directory,
+                    app: frontendKey,
+                    version: frontendVersions[frontendKey],
+                });
+                restoreTSCacheTimerEnd();
+                const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
                 await installApiClient({
                     apiClientPath,
                     directory,
                     isMonoRepo,
                 });
+                apiClientInstallTimerEnd();
+                const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
+                await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveYarnCache */ .kZ)(directory);
+                saveCacheTimerEnd();
             }
             if (isMonoRepo) {
                 const isSameAsLastVersion = frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
                 // If is same version as last, no need to checkout & reinstall. Reuse configuration.
                 // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
                 if (!isSameAsLastVersion) {
+                    const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
                     await checkout({
                         checkoutToken,
                         directory,
                         repository: frontend.repository,
                         version: frontendVersions[frontendKey],
                     });
+                    checkoutTimerEnd();
                     await install({ directory });
+                    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                    foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
+                        directory,
+                        app: frontendKey,
+                        version: frontendVersions[frontendKey],
+                    });
+                    restoreTSCacheTimerEnd();
+                    const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
                     await installApiClient({
                         apiClientPath,
                         directory,
                         isMonoRepo,
                     });
-                    supressTSLibChecksError({ directory: monoRepoPath });
-                    isolateActionTurboCache({ directory: monoRepoPath });
+                    apiClientInstallTimerEnd();
                 }
                 else {
+                    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
+                    foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
+                        directory,
+                        app: frontendKey,
+                        version: frontendVersions[frontendKey],
+                    });
+                    restoreTSCacheTimerEnd();
                     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`);
                 }
             }
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
+                const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
                 const exitCode = await runChecks({
                     command: command.exec,
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
                 });
+                runCheckTimerEnd();
+                if (!foundTSCacheMatch) {
+                    const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
+                    await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
+                        directory,
+                        app: frontendKey,
+                        version: frontendVersions[frontendKey],
+                    });
+                    saveTSCacheTimerEnd();
+                }
+                else {
+                    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping save TS cache because restore was exact match`);
+                }
                 if (exitCode !== 0) {
                     failedFrontends.add(frontendKey);
                 }
@@ -91899,6 +91850,131 @@ function shardFrontends(tagOrderedMonoRepoFrontends, otherFrontends, frontendVer
 
 /***/ }),
 
+/***/ 7861:
+/***/ ((module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+__nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   Ae: () => (/* binding */ pickShardedFrontends),
+/* harmony export */   M4: () => (/* binding */ Timer),
+/* harmony export */   RN: () => (/* binding */ saveTypescriptCache),
+/* harmony export */   e8: () => (/* binding */ restoreTypescriptCache),
+/* harmony export */   kZ: () => (/* binding */ saveYarnCache),
+/* harmony export */   pF: () => (/* binding */ restoreYarnCache),
+/* harmony export */   yl: () => (/* binding */ monoRepo)
+/* harmony export */ });
+/* unused harmony export updateTSBuildFilesTimestamp */
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(1421);
+/* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(node_child_process__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(2356);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(lodash__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var hasha__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(7690);
+/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(5116);
+/* harmony import */ var _actions_cache__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_actions_cache__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _shardFrontends__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(6013);
+/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(5959);
+/* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(6760);
+/* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__nccwpck_require__.n(node_path__WEBPACK_IMPORTED_MODULE_6__);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([hasha__WEBPACK_IMPORTED_MODULE_7__]);
+hasha__WEBPACK_IMPORTED_MODULE_7__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+
+
+
+
+
+
+
+
+const monoRepo = "Chili-Piper/frontend";
+const Timer = {
+    start(identifier) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`running ${identifier}...`);
+        const startTime = performance.now();
+        return () => {
+            const endTime = performance.now();
+            const durationMs = endTime - startTime;
+            // Format duration intelligently
+            const formattedDuration = durationMs < 1000
+                ? `${durationMs.toFixed(2)}ms`
+                : `${(durationMs / 1000).toFixed(2)}s`;
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`finished running ${identifier}. took ${formattedDuration}!`);
+        };
+    },
+};
+function pickShardedFrontends(frontendVersions) {
+    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("shard");
+    // Step 1: Partition frontends into mono-repo and other frontends
+    // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
+    // from previous runs, making them lighter and faster to process.
+    // Other frontends, on the other hand, are heavier to run since they cannot
+    // benefit from the mono-repo configuration reuse. By partitioning them,
+    // we can handle their distribution separately and optimize overall execution.
+    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_5__);
+    const [monoRepoFrontends, otherFrontends] = (0,lodash__WEBPACK_IMPORTED_MODULE_2__.partition)(frontendsKeys, (key) => _frontends_json__WEBPACK_IMPORTED_MODULE_5__[key].repository === monoRepo);
+    // Step 2: Sort mono-repo frontends by their tags
+    // Sorting ensures that frontends with the same version are grouped together in order.
+    // This optimization allows tools like `yarn link` to reuse their cache during runs.
+    // For example:
+    // - Without sorting: ["A@1.0", "B@2.0", "C@1.0"] would require `yarn link` to run 3 times.
+    // - With sorting:    ["A@1.0", "C@1.0", "B@2.0"] would run `yarn link` only 2 times,
+    //   as it can reuse the cache for items with the same version consecutively.
+    const tagOrderedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_2__.sortBy)(monoRepoFrontends, (key) => frontendVersions[key]);
+    return (0,_shardFrontends__WEBPACK_IMPORTED_MODULE_4__/* .shardFrontends */ .u)(tagOrderedMonoRepoFrontends, otherFrontends, frontendVersions, shardConfig);
+}
+function getCacheKey({ directory, addFingerPrint, }) {
+    const fingerPrint = addFingerPrint
+        ? ""
+        : (0,hasha__WEBPACK_IMPORTED_MODULE_7__/* .hashFileSync */ .iu)(`${directory}/yarn.lock`);
+    return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
+}
+function getCachePaths(directory) {
+    return [`${directory}/.yarn/cache`];
+}
+async function restoreYarnCache(directory) {
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getCachePaths(directory), getCacheKey({ directory, addFingerPrint: true }), [getCacheKey({ directory })]);
+    return key === getCacheKey({ directory, addFingerPrint: true });
+}
+async function saveYarnCache(directory) {
+    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getCachePaths(directory), getCacheKey({ directory }));
+}
+// tsconfig.tsbuildinfo
+function getTSCachePaths(directory) {
+    return [
+        `${directory}/**/tsconfig.tsbuildinfo`,
+        `${directory}/**/lib`,
+        `${directory}/**/lib/.tsbuildinfo`,
+        `!${directory}/**/node_modules`,
+    ];
+}
+function getTSCacheKey(app, version) {
+    return `v1-integration-checks-typescript-${app}-${version ?? ""}`;
+}
+async function saveTypescriptCache({ directory, app, version, }) {
+    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getTSCachePaths(directory), getTSCacheKey(app, version));
+}
+// https://github.com/microsoft/TypeScript/issues/54563
+function updateTSBuildFilesTimestamp(directory) {
+    const end = Timer.start("updating tsbuildinfo timestamps");
+    const resolvedDir = node_path__WEBPACK_IMPORTED_MODULE_6___default().resolve(directory);
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    end();
+}
+
+async function restoreTypescriptCache({ directory, app, version, }) {
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app, version), [getTSCacheKey(app)]);
+    updateTSBuildFilesTimestamp(directory);
+    return Boolean(key === getTSCacheKey(app, version));
+}
+
+__webpack_async_result__();
+} catch(e) { __webpack_async_result__(e); } });
+
+/***/ }),
+
 /***/ 75:
 /***/ ((module) => {
 
@@ -92008,6 +92084,14 @@ module.exports = require("https");
 
 "use strict";
 module.exports = require("net");
+
+/***/ }),
+
+/***/ 1421:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:child_process");
 
 /***/ }),
 
@@ -107021,7 +107105,7 @@ var jsYaml = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-billing","directory":"."}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-branding","directory":"."}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-center-fire","directory":"."}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chat","directory":"."}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-chilical","directory":"."}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-concierge","directory":"."}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distribution","directory":"."}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-distro","directory":"."}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-integrations","directory":"."}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-notifications","directory":"."}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-platform-assets","directory":"."}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter admin-users","directory":"."}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter chili-chat","directory":"."}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn turbo run types:app --filter @chilipiper/conciergejs-fire","directory":"."}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]},"booking-app":{"repository":"Chili-Piper/booking-app","commands":[{"exec":"yarn tsc","directory":"."}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","commands":[{"exec":"yarn tsc","directory":"."}]}}');
+module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-billing"}]},"admin-branding":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-branding"}]},"admin-center":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-center"}]},"admin-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-chat"}]},"admin-chilical":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-chilical"}]},"admin-concierge":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-concierge"}]},"admin-distribution":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-distribution"}]},"admin-distro":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-distro"}]},"admin-integrations":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-integrations"}]},"admin-notifications":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-notifications"}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-platform-assets"}]},"admin-users":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/admin-users"}]},"chili-chat":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/chili-chat"}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","commands":[{"exec":"yarn tsc --build","directory":"./apps/conciergejs-fire"}]},"chilical":{"repository":"Chili-Piper/chilical","commands":[{"exec":"yarn tsc","directory":"."}]},"booking-app":{"repository":"Chili-Piper/booking-app","commands":[{"exec":"yarn tsc","directory":"."}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","commands":[{"exec":"yarn tsc","directory":"."}]}}');
 
 /***/ }),
 

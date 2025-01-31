@@ -100,28 +100,6 @@ function setApiClientResolution({
   });
 }
 
-// Supress lib:types error so its cached even on error
-// we want it because since we want to collect fails across projects
-// its useful to cache failed actions so we avoid running it multiple times
-function supressTSLibChecksError({ directory }: { directory: string }) {
-  editJSON(`${directory}/package.json`, (packageJson) => {
-    packageJson.scripts[
-      "lib:types"
-    ] = `${packageJson.scripts["lib:types"]}>/dev/null & echo & echo Ignoring libs errors so command is cached...`;
-  });
-}
-
-// Create separate cache for action so it doesnt get mixed with frontend repo caches
-function isolateActionTurboCache({ directory }: { directory: string }) {
-  editJSON(`${directory}/turbo.json`, (turboJson) => {
-    if (!turboJson.remoteCache) {
-      turboJson.remoteCache = {};
-    }
-
-    turboJson.remoteCache.signature = true;
-  });
-}
-
 async function installApiClient({
   apiClientPath,
   directory,
@@ -322,8 +300,6 @@ async function run() {
             isMonoRepo,
           });
           apiClientInstallTimerEnd();
-          // supressTSLibChecksError({ directory: monoRepoPath });
-          isolateActionTurboCache({ directory: monoRepoPath });
         } else {
           info(
             `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`

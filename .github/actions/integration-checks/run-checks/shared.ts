@@ -2,6 +2,7 @@ import { getInput, info } from "@actions/core";
 import { execSync } from "node:child_process";
 import { partition, sortBy } from "lodash";
 import { hashFileSync } from "hasha";
+import { globSync } from "glob";
 import { restoreCache, saveCache } from "@actions/cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
@@ -101,6 +102,7 @@ function getTSCachePaths(directory: string) {
   return [
     `${directory}/**/tsconfig.tsbuildinfo`,
     `${directory}/**/lib`,
+    `${directory}/**/lib/.tsbuildinfo`,
     `!${directory}/**/node_modules`,
   ];
 }
@@ -119,6 +121,7 @@ export async function saveTypescriptCache({
   version: string;
 }) {
   info(`saving cache from ${directory}`);
+  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   await saveCache(getTSCachePaths(directory), getTSCacheKey(app, version));
 }
 
@@ -147,6 +150,7 @@ export async function restoreTypescriptCache({
   version: string;
 }) {
   info(`restoring cache to ${directory}`);
+  globSync(`${directory}/**/lib/.tsbuildinfo`).map((item) => info(item));
   const key = await restoreCache(
     getTSCachePaths(directory),
     getTSCacheKey(app, version),

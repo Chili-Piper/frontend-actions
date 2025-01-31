@@ -323,7 +323,7 @@ async function run() {
         });
         runCheckTimerEnd();
 
-        if (!foundTSCacheMatch || !isMonoRepo) {
+        if (!foundTSCacheMatch && isMonoRepo) {
           const saveTSCacheTimerEnd = Timer.start(
             `Saving TS cache for ${frontendKey}`
           );

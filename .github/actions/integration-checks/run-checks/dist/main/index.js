@@ -91715,7 +91715,7 @@ async function run() {
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
                 });
                 runCheckTimerEnd();
-                if (!foundTSCacheMatch || !isMonoRepo) {
+                if (!foundTSCacheMatch && isMonoRepo) {
                     const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
                     await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
                         directory,

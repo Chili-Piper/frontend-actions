@@ -10,10 +10,6 @@ import { globSync } from "fast-glob";
 
 export const monoRepo = "Chili-Piper/frontend";
 
-// process.env.ACTIONS_CACHE_SERVICE_V2 = 'true'
-process.env.ACTIONS_STEP_DEBUG = "true";
-process.env.RUNNER_DEBUG = "1";
-
 export const Timer = {
   start(identifier: string) {
     info(`running ${identifier}...`);

@@ -102,8 +102,8 @@ export async function saveYarnCache(directory: string) {
 
 function getTSCachePaths(directory: string) {
   return [
-    `${directory}/apps/*/tsconfig.tsbuildinfo`,
-    `${directory}/frontend-packages/*/lib`,
+    `${directory}/apps/**/tsconfig.tsbuildinfo`,
+    `${directory}/frontend-packages/**/lib`,
   ];
 }
 

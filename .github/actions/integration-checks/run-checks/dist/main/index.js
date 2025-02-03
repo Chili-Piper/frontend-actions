@@ -91937,8 +91937,8 @@ async function saveYarnCache(directory) {
 }
 function getTSCachePaths(directory) {
     return [
-        `${directory}/apps/*/tsconfig.tsbuildinfo`,
-        `${directory}/frontend-packages/*/lib`,
+        `${directory}/apps/**/tsconfig.tsbuildinfo`,
+        `${directory}/frontend-packages/**/lib`,
     ];
 }
 function getTSCacheKey(app, version) {

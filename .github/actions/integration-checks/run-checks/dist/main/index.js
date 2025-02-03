@@ -91926,7 +91926,7 @@ function getCacheKey({ directory, addFingerPrint, }) {
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
-    return [`${directory}/.yarn/cache`, `${directory}/**/node_modules`];
+    return [`${directory}/.yarn/cache`];
 }
 async function restoreYarnCache(directory) {
     const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getCachePaths(directory), getCacheKey({ directory, addFingerPrint: true }), [getCacheKey({ directory })]);
@@ -91935,11 +91935,10 @@ async function restoreYarnCache(directory) {
 async function saveYarnCache(directory) {
     await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getCachePaths(directory), getCacheKey({ directory }));
 }
-// tsconfig.tsbuildinfo
 function getTSCachePaths(directory) {
     return [
-        `${directory}/apps/**/tsconfig.tsbuildinfo`,
-        `${directory}/frontend-packages/**/lib`,
+        `${directory}/apps/*/tsconfig.tsbuildinfo`,
+        `${directory}/frontend-packages/*/lib`,
     ];
 }
 function getTSCacheKey(app, version) {

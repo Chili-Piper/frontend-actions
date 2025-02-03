@@ -6,6 +6,7 @@ import { restoreCache, saveCache } from "@actions/cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
 import path from "node:path";
+import { globSync } from "fast-glob";
 
 export const monoRepo = "Chili-Piper/frontend";
 
@@ -102,8 +103,8 @@ export async function saveYarnCache(directory: string) {
 
 function getTSCachePaths(directory: string) {
   return [
-    `${directory}/apps/**/tsconfig.tsbuildinfo`,
-    `${directory}/frontend-packages/**/lib`,
+    `${directory}/apps/*/tsconfig.tsbuildinfo`,
+    `${directory}/frontend-packages/*/lib`,
   ];
 }
 
@@ -120,7 +121,18 @@ export async function saveTypescriptCache({
   app: string;
   version: string;
 }) {
-  await saveCache(getTSCachePaths(directory), getTSCacheKey(app, version));
+  const paths = getTSCachePaths(directory);
+  const hasFilesInPaths = paths.find((pattern) => {
+    const resolvedPattern = path.resolve(directory, pattern);
+    return (
+      globSync(resolvedPattern, { onlyFiles: true, absolute: true }).length > 0
+    );
+  });
+  if (hasFilesInPaths) {
+    await saveCache(paths, getTSCacheKey(app, version));
+  } else {
+    info(`Skipped saving cache cause there is no file or directory match.`);
+  }
 }
 
 // https://github.com/microsoft/TypeScript/issues/54563

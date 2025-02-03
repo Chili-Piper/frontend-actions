@@ -84,7 +84,7 @@ function getCacheKey({
 }
 
 function getCachePaths(directory: string) {
-  return [`${directory}/.yarn/cache`, `${directory}/**/node_modules`];
+  return [`${directory}/.yarn/cache`];
 }
 
 export async function restoreYarnCache(directory: string) {
@@ -100,11 +100,10 @@ export async function saveYarnCache(directory: string) {
   await saveCache(getCachePaths(directory), getCacheKey({ directory }));
 }
 
-// tsconfig.tsbuildinfo
 function getTSCachePaths(directory: string) {
   return [
-    `${directory}/apps/**/tsconfig.tsbuildinfo`,
-    `${directory}/frontend-packages/**/lib`,
+    `${directory}/apps/*/tsconfig.tsbuildinfo`,
+    `${directory}/frontend-packages/*/lib`,
   ];
 }
 

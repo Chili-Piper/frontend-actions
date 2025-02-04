@@ -98754,8 +98754,11 @@ __nccwpck_require__.r(__webpack_exports__);
 /* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(3243);
 /* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(7861);
 /* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(5959);
+/* harmony import */ var node_stream__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(7075);
+/* harmony import */ var node_stream__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__nccwpck_require__.n(node_stream__WEBPACK_IMPORTED_MODULE_8__);
 var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_6__]);
 _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+
 
 
 
@@ -98793,9 +98796,13 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 async function install({ directory }) {
+    const nullStream = new node_stream__WEBPACK_IMPORTED_MODULE_8__.Stream.Writable({
+        write() { },
+    });
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --silent", undefined, {
         cwd: directory,
+        outStream: nullStream,
         env: {
             ...process.env,
             YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
@@ -98836,8 +98843,12 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     }
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Linking api-client ${apiClientPath}`);
     setApiClientResolution({ directory, apiClientPath });
+    const nullStream = new node_stream__WEBPACK_IMPORTED_MODULE_8__.Stream.Writable({
+        write() { },
+    });
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
+        outStream: nullStream,
         env: {
             ...process.env,
             YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,

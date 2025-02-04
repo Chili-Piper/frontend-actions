@@ -14,6 +14,8 @@ import {
   saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
+import { stdout } from "node:process";
+import { Stream } from "node:stream";
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
@@ -68,9 +70,13 @@ async function checkout({
 }
 
 async function install({ directory }: { directory: string }) {
+  const nullStream = new Stream.Writable({
+    write() {},
+  });
   info("Installing deps...");
   await exec("yarn --silent", undefined, {
     cwd: directory,
+    outStream: nullStream,
     env: {
       ...process.env,
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
@@ -139,8 +145,12 @@ async function installApiClient({
   }
   info(`Linking api-client ${apiClientPath}`);
   setApiClientResolution({ directory, apiClientPath });
+  const nullStream = new Stream.Writable({
+    write() {},
+  });
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
+    outStream: nullStream,
     env: {
       ...process.env,
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,

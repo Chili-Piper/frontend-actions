@@ -413,13 +413,15 @@ async function runSharded() {
   const newShardRepoPaths = await Promise.all(
     newShardConfigs.map(async (_, index) => {
       if (index !== 0) {
-        const path = `${apiClientRepoPath}-${index}`;
-        fs.cpSync(apiClientRepoPath, path, {
+        const resolvedPath = path.resolve(apiClientRepoPath);
+        const newPath = `${resolvedPath}-${index}`;
+        fs.cpSync(apiClientRepoPath, newPath, {
           recursive: true,
           filter: (source) => source.includes("node_modules"),
         });
-        await install({ directory: path });
-        return path;
+        info(`created path ${apiClientRepoPath} to ${newPath}`);
+        await install({ directory: newPath });
+        return newPath;
       }
 
       return apiClientRepoPath;

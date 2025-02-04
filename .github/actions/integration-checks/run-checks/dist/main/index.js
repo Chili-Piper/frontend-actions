@@ -99034,13 +99034,15 @@ async function runSharded() {
     const timerCopyRepoEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Copying repo for new shards");
     const newShardRepoPaths = await Promise.all(newShardConfigs.map(async (_, index) => {
         if (index !== 0) {
-            const path = `${apiClientRepoPath}-${index}`;
-            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, path, {
+            const resolvedPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath);
+            const newPath = `${resolvedPath}-${index}`;
+            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, newPath, {
                 recursive: true,
                 filter: (source) => source.includes("node_modules"),
             });
-            await install({ directory: path });
-            return path;
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
+            await install({ directory: newPath });
+            return newPath;
         }
         return apiClientRepoPath;
     }));

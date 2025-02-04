@@ -98816,6 +98816,14 @@ function setApiClientResolution({ apiClientPath, directory, }) {
         packageJson.resolutions["@chilipiper/api-client"] = apiClientPath;
     });
 }
+function ignoreTestFiles(directory) {
+    editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
+        if (!tsconfig.exclude) {
+            tsconfig.exclude = [];
+        }
+        tsconfig.exclude.push("**/*.stories.tsx", "**/*.stories.ts", "**/*.test.tsx", "**/*.test.ts", "**/*.spec.tsx", "**/*.spec.ts");
+    });
+}
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
@@ -98961,6 +98969,9 @@ async function run() {
             }
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
+                const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
+                ignoreTestFiles(directory);
+                ignoreTestFilesTimerEnd();
                 const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
                 const exitCode = await runChecks({
                     command: command.exec,

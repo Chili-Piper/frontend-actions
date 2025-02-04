@@ -100,6 +100,22 @@ function setApiClientResolution({
   });
 }
 
+function ignoreTestFiles(directory: string) {
+  editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
+    if (!tsconfig.exclude) {
+      tsconfig.exclude = [];
+    }
+    tsconfig.exclude.push(
+      "**/*.stories.tsx",
+      "**/*.stories.ts",
+      "**/*.test.tsx",
+      "**/*.test.ts",
+      "**/*.spec.tsx",
+      "**/*.spec.ts"
+    );
+  });
+}
+
 async function installApiClient({
   apiClientPath,
   directory,
@@ -307,6 +323,11 @@ async function run() {
       info(`Running check commands for ${frontendKey}`);
 
       for (const command of frontend.commands) {
+        const ignoreTestFilesTimerEnd = Timer.start(
+          `Ignoring test files before running tests for ${frontendKey}`
+        );
+        ignoreTestFiles(directory);
+        ignoreTestFilesTimerEnd();
         const runCheckTimerEnd = Timer.start(
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );

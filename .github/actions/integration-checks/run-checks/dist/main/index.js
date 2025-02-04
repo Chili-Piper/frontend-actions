@@ -98866,9 +98866,12 @@ function disableMocksDirCheck(directory) {
         }
     }
 }
-async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
+async function run() {
     try {
+        const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
+        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
+        const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
@@ -98882,6 +98885,7 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
         reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
         shardedFrontendsTimerEnd();
         const failedFrontends = new Set();
         const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Prefetching monorepo tags");
@@ -99009,34 +99013,10 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setFailed)(error.message);
     }
 }
-function runSharded() {
-    const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
-    const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
-    const concurrency = 2;
-    const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
-    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("shard"); // Example: "1/2" or "2/2"
-    const [currentShard, totalShards] = shardConfig.split("/").map(Number);
-    // Simulates shards with concurrency
-    const newTotalShards = totalShards * concurrency;
-    const startIndex = (currentShard - 1) * concurrency + 1;
-    const newShardConfigs = Array.from({ length: concurrency }, (_, i) => `${startIndex + i}/${newTotalShards}`);
-    const newShardRepoPaths = newShardConfigs.map((_, index) => {
-        if (index !== 0) {
-            const path = `${apiClientRepoPath}-${index}`;
-            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, path, { recursive: true });
-            return path;
-        }
-        return apiClientRepoPath;
-    });
-    return Promise.all(newShardConfigs.map((newShardConfig, index) => {
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions, newShardConfig);
-        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
-    }));
-}
-await runSharded();
+run();
 
 __webpack_async_result__();
-} catch(e) { __webpack_async_result__(e); } }, 1);
+} catch(e) { __webpack_async_result__(e); } });
 
 /***/ }),
 
@@ -99188,7 +99168,8 @@ const Timer = {
         };
     },
 };
-function pickShardedFrontends(frontendVersions, shardConfig) {
+function pickShardedFrontends(frontendVersions) {
+    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("shard");
     // Step 1: Partition frontends into mono-repo and other frontends
     // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
     // from previous runs, making them lighter and faster to process.

@@ -326,7 +326,7 @@ async function run() {
         const ignoreTestFilesTimerEnd = Timer.start(
           `Ignoring test files before running tests for ${frontendKey}`
         );
-        ignoreTestFiles(directory);
+        ignoreTestFiles(path.join(directory, command.directory));
         ignoreTestFilesTimerEnd();
         const runCheckTimerEnd = Timer.start(
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`

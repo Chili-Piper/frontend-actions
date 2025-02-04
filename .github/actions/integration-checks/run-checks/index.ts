@@ -379,7 +379,7 @@ async function run(
   }
 }
 
-function runSharded() {
+async function runSharded() {
   const apiClientRepoPath = getInput("api_client_repo_path");
   const frontendVersionsJSON = getInput("frontend");
   const concurrency = 2;
@@ -400,15 +400,21 @@ function runSharded() {
   );
 
   const timerCopyRepoEnd = Timer.start("Copying repo for new shards");
-  const newShardRepoPaths = newShardConfigs.map((_, index) => {
-    if (index !== 0) {
-      const path = `${apiClientRepoPath}-${index}`;
-      fs.cpSync(apiClientRepoPath, path, { recursive: true });
-      return path;
-    }
+  const newShardRepoPaths = await Promise.all(
+    newShardConfigs.map(async (_, index) => {
+      if (index !== 0) {
+        const path = `${apiClientRepoPath}-${index}`;
+        fs.cpSync(apiClientRepoPath, path, {
+          recursive: true,
+          filter: (source) => source.includes("node_modules"),
+        });
+        await install({ directory: path });
+        return path;
+      }
 
-    return apiClientRepoPath;
-  });
+      return apiClientRepoPath;
+    })
+  );
   timerCopyRepoEnd();
 
   return Promise.all(

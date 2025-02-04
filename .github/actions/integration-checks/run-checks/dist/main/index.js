@@ -99009,7 +99009,7 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setFailed)(error.message);
     }
 }
-function runSharded() {
+async function runSharded() {
     const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
     const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
     const concurrency = 2;
@@ -99021,14 +99021,18 @@ function runSharded() {
     const startIndex = (currentShard - 1) * concurrency + 1;
     const newShardConfigs = Array.from({ length: concurrency }, (_, i) => `${startIndex + i}/${newTotalShards}`);
     const timerCopyRepoEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Copying repo for new shards");
-    const newShardRepoPaths = newShardConfigs.map((_, index) => {
+    const newShardRepoPaths = await Promise.all(newShardConfigs.map(async (_, index) => {
         if (index !== 0) {
             const path = `${apiClientRepoPath}-${index}`;
-            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, path, { recursive: true });
+            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, path, {
+                recursive: true,
+                filter: (source) => source.includes("node_modules"),
+            });
+            await install({ directory: path });
             return path;
         }
         return apiClientRepoPath;
-    });
+    }));
     timerCopyRepoEnd();
     return Promise.all(newShardConfigs.map((newShardConfig, index) => {
         const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions, newShardConfig);

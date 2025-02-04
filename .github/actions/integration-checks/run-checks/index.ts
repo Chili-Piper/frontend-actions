@@ -18,7 +18,7 @@ import frontendsConfig from "./frontends.json";
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 
-process.env.NODE_OPTIONS = "--max_old_space_size=6291";
+process.env.NODE_OPTIONS = "--max_old_space_size=4194";
 
 async function prefetchMonoRepoTags({
   versions,

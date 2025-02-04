@@ -98766,7 +98766,7 @@ _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (a
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-process.env.NODE_OPTIONS = "--max_old_space_size=6291";
+process.env.NODE_OPTIONS = "--max_old_space_size=4194";
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);

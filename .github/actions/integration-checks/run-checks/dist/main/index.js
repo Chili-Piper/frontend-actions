@@ -99038,7 +99038,6 @@ async function runSharded() {
             const newPath = `${resolvedPath}-${index}`;
             node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientRepoPath, newPath, {
                 recursive: true,
-                filter: (source) => source.includes("node_modules"),
             });
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
             await install({ directory: newPath });

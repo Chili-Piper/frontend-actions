@@ -417,7 +417,6 @@ async function runSharded() {
         const newPath = `${resolvedPath}-${index}`;
         fs.cpSync(apiClientRepoPath, newPath, {
           recursive: true,
-          filter: (source) => source.includes("node_modules"),
         });
         info(`created path ${apiClientRepoPath} to ${newPath}`);
         await install({ directory: newPath });

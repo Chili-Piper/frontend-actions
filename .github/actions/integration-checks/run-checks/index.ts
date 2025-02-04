@@ -399,6 +399,7 @@ function runSharded() {
     (_, i) => `${startIndex + i}/${newTotalShards}`
   );
 
+  const timerCopyRepoEnd = Timer.start("Copying repo for new shards");
   const newShardRepoPaths = newShardConfigs.map((_, index) => {
     if (index !== 0) {
       const path = `${apiClientRepoPath}-${index}`;
@@ -408,6 +409,7 @@ function runSharded() {
 
     return apiClientRepoPath;
   });
+  timerCopyRepoEnd();
 
   return Promise.all(
     newShardConfigs.map((newShardConfig, index) => {
@@ -415,6 +417,7 @@ function runSharded() {
         frontendVersions,
         newShardConfig
       );
+      info(`Running checks for ${frontendsKeys.join()}`);
       return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
     })
   );

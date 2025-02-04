@@ -79,7 +79,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@main
+      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@integration-check-concurrent
       with:
         frontend: ${{ inputs.frontend }}
         api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}

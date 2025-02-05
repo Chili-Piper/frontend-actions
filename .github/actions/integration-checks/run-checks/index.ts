@@ -1,7 +1,7 @@
 import { exec } from "@actions/exec";
 import JSON5 from "json5";
 import path from "node:path";
-import fs from "node:fs";
+import fs, { cpSync } from "node:fs";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
 import {
@@ -14,6 +14,7 @@ import {
   saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
+import { cwd } from "node:process";
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
@@ -156,7 +157,8 @@ function runChecks({
   directory: string;
 }) {
   info(`Running type checks with command ${command}`);
-  return exec(command, undefined, {
+  cpSync(`${cwd}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
+  return exec("node", ["exclusiveTSC.js"], {
     cwd: directory,
     ignoreReturnCode: true,
   });

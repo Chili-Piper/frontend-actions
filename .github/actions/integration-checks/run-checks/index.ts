@@ -14,7 +14,8 @@ import {
   saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
-import { cwd } from "node:process";
+// @ts-expect-error
+import exclusiveTSC from "./exclusiveTSC.js?raw";
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
@@ -157,7 +158,7 @@ function runChecks({
   directory: string;
 }) {
   info(`Running type checks with command ${command}`);
-  fs.cpSync(`${cwd()}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
+  fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
   return exec("node", ["exclusiveTSC.js"], {
     cwd: directory,
     ignoreReturnCode: true,

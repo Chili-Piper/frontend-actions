@@ -98754,11 +98754,8 @@ __nccwpck_require__.r(__webpack_exports__);
 /* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(3243);
 /* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(7861);
 /* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(5959);
-/* harmony import */ var node_process__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(1708);
-/* harmony import */ var node_process__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__nccwpck_require__.n(node_process__WEBPACK_IMPORTED_MODULE_8__);
 var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_6__]);
 _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
-
 
 
 
@@ -98849,7 +98846,7 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
 }
 function runChecks({ command, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
-    (0,node_fs__WEBPACK_IMPORTED_MODULE_3__.cpSync)(`${node_process__WEBPACK_IMPORTED_MODULE_8__.cwd}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
+    node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("exclusiveTSC.js"), `${directory}/exclusiveTSC.js`);
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
         cwd: directory,
         ignoreReturnCode: true,

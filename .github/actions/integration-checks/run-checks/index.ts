@@ -157,7 +157,7 @@ function runChecks({
   directory: string;
 }) {
   info(`Running type checks with command ${command}`);
-  fs.cpSync(`${cwd}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
+  fs.cpSync(`${cwd()}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
   return exec("node", ["exclusiveTSC.js"], {
     cwd: directory,
     ignoreReturnCode: true,

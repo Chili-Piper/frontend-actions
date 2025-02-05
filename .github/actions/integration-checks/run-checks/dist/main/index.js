@@ -98849,7 +98849,7 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
 }
 function runChecks({ command, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
-    node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${node_process__WEBPACK_IMPORTED_MODULE_8__.cwd}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
+    node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${(0,node_process__WEBPACK_IMPORTED_MODULE_8__.cwd)()}/exclusiveTSC.js`, `${directory}/exclusiveTSC.js`);
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
         cwd: directory,
         ignoreReturnCode: true,

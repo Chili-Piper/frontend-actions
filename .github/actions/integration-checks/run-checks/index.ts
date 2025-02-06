@@ -301,8 +301,8 @@ async function run() {
 
           // temporary workaround
           editJSON(`${directory}/package.json`, (packagejson) => {
-            packagejson.devDependencies["typescript"] = "5.7.3";
-            packagejson.resolutions["typescript"] = "5.7.3";
+            packagejson.devDependencies["typescript"] = "5.6.3";
+            packagejson.resolutions["typescript"] = "5.6.3";
           });
 
           await install({ directory });

@@ -81090,7 +81090,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
 }
 async function install({ directory }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
-    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --silent", undefined, {
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
         outStream: nowhereStream,
         env: {

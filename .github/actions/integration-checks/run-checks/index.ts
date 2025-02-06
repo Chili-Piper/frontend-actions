@@ -97,7 +97,7 @@ function setApiClientResolution({
   directory: string;
   apiClientPath: string;
 }) {
-  editJSON(`${directory}/package.json`, (packageJson) => {
+  return editJSON(`${directory}/package.json`, (packageJson) => {
     if (!packageJson.resolutions) {
       packageJson.resolutions = {};
     }
@@ -106,7 +106,7 @@ function setApiClientResolution({
 }
 
 function ignoreTestFiles(directory: string) {
-  editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
+  return editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
     if (!tsconfig.exclude) {
       tsconfig.exclude = [];
     }
@@ -123,7 +123,7 @@ function ignoreTestFiles(directory: string) {
 
 // temporary fix while FE wont update to new TS version
 function disableStrictIteratorChecks(directory: string) {
-  editJSON(
+  return editJSON(
     `${directory}/frontend-packages/design-system/tsconfig.json`,
     (tsconfig) => {
       if (!tsconfig.compilerOptions) {
@@ -161,7 +161,7 @@ async function installApiClient({
     return;
   }
   info(`Linking api-client ${apiClientPath}`);
-  setApiClientResolution({ directory, apiClientPath });
+  await setApiClientResolution({ directory, apiClientPath });
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
     outStream: nowhereStream,
@@ -199,7 +199,7 @@ async function disableMocksDirCheck(directory: string) {
     const stats = await fs.promises.stat(filePath);
 
     if (stats.isDirectory()) {
-      disableMocksDirCheck(filePath);
+      await disableMocksDirCheck(filePath);
     } else {
       const content = await fs.promises.readFile(filePath, "utf8");
       const updatedContent = `// @ts-nocheck\n\n${content}`;
@@ -219,7 +219,7 @@ async function run(
     const endDisableMocksTimerEnd = Timer.start(
       "Disabling TS check for api-client mocks dir"
     );
-    disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
+    await disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
     endDisableMocksTimerEnd();
 
     // Moving api-client to a separate folder and reusing its repo saves around 30/40s
@@ -323,11 +323,11 @@ async function run(
           checkoutTimerEnd();
 
           // temporary workaround
-          editJSON(`${directory}/package.json`, (packagejson) => {
+          await editJSON(`${directory}/package.json`, (packagejson) => {
             packagejson.devDependencies["typescript"] = "5.6.3";
             packagejson.resolutions["typescript"] = "5.6.3";
           });
-          disableStrictIteratorChecks(directory);
+          await disableStrictIteratorChecks(directory);
 
           await install({ directory });
 
@@ -363,7 +363,7 @@ async function run(
         const ignoreTestFilesTimerEnd = Timer.start(
           `Ignoring test files before running tests for ${frontendKey}`
         );
-        ignoreTestFiles(path.join(directory, command.directory));
+        await ignoreTestFiles(path.join(directory, command.directory));
         ignoreTestFilesTimerEnd();
         const runCheckTimerEnd = Timer.start(
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`

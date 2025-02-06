@@ -81061,7 +81061,7 @@ _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (a
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-process.env.NODE_OPTIONS = "--max_old_space_size=4194";
+process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
@@ -81089,7 +81089,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 async function install({ directory }) {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
+    const timerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Installing deps...");
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
         outStream: nowhereStream,
@@ -81098,6 +81098,7 @@ async function install({ directory }) {
             YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
         },
     });
+    timerEnd();
 }
 function editJSON(path, cb) {
     const fileContent = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(path, "utf-8");

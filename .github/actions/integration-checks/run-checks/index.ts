@@ -20,7 +20,7 @@ import exclusiveTSC from "raw-loader!./exclusiveTSC.js";
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 
-process.env.NODE_OPTIONS = "--max_old_space_size=4194";
+process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 
 const nowhereStream = fs.createWriteStream("/dev/null");
 
@@ -72,7 +72,7 @@ async function checkout({
 }
 
 async function install({ directory }: { directory: string }) {
-  info("Installing deps...");
+  const timerEnd = Timer.start("Installing deps...");
   await exec("yarn --no-immutable", undefined, {
     cwd: directory,
     outStream: nowhereStream,
@@ -81,6 +81,7 @@ async function install({ directory }: { directory: string }) {
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
     },
   });
+  timerEnd();
 }
 
 function editJSON(path: string, cb: (data: any) => void) {

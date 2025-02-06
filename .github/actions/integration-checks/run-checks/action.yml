@@ -27,4 +27,4 @@ outputs:
     description: "If it fails, outputs list of failed frontends"
 runs:
   using: "node20"
-  main: "dist/main/index.js"
+  main: "dist/main/index.cjs"

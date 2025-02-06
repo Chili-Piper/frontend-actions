@@ -81344,8 +81344,15 @@ async function runSharded() {
         if (index !== 0) {
             const resolvedPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath);
             const newPath = `${resolvedPath}-${index}`;
-            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(apiClientRepoPath, newPath, {
+            await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", [
+                "clone",
+                "--depth=1",
+                "Chili-Piper/frontend",
+                newPath,
+            ]);
+            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/.yarn/cache`, `${newPath}/.yarn/cache`, {
                 recursive: true,
+                force: true,
             });
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
             await install({ directory: newPath });

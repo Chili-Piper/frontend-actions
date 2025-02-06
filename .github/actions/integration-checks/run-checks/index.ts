@@ -21,7 +21,7 @@ const gitUser = "srebot";
 const gitToken = getInput("checkout_token");
 const apiClientSubDir = "frontend-packages/api-client";
 
-process.env.NODE_OPTIONS = "--max_old_space_size=7340";
+process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 
 const nowhereStream = fs.createWriteStream("/dev/null");
 

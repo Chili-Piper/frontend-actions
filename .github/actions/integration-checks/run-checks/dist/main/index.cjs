@@ -81062,7 +81062,7 @@ _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (a
 const gitUser = "srebot";
 const gitToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
 const apiClientSubDir = "frontend-packages/api-client";
-process.env.NODE_OPTIONS = "--max_old_space_size=7340";
+process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];

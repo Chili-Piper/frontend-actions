@@ -73,7 +73,7 @@ async function checkout({
 
 async function install({ directory }: { directory: string }) {
   info("Installing deps...");
-  await exec("yarn --silent", undefined, {
+  await exec("yarn --no-immutable", undefined, {
     cwd: directory,
     outStream: nowhereStream,
     env: {

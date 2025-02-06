@@ -81088,9 +81088,9 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
-async function install({ directory, force, }) {
+async function install({ directory }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
-    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn --no-immutable${force ? " --force" : ""}`, undefined, {
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
         outStream: nowhereStream,
         env: {
@@ -81185,7 +81185,7 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
-        const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
+        const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath, apiClientSubDir);
         await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
             recursive: true,
         });
@@ -81345,7 +81345,7 @@ async function runSharded() {
                 recursive: true,
             });
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
-            await install({ directory: newPath, force: true });
+            await install({ directory: newPath });
             return newPath;
         }
         return apiClientRepoPath;

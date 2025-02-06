@@ -71,15 +71,9 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-async function install({
-  directory,
-  force,
-}: {
-  directory: string;
-  force?: boolean;
-}) {
+async function install({ directory }: { directory: string }) {
   info("Installing deps...");
-  await exec(`yarn --no-immutable${force ? " --force" : ""}`, undefined, {
+  await exec("yarn --no-immutable", undefined, {
     cwd: directory,
     outStream: nowhereStream,
     env: {
@@ -233,7 +227,7 @@ async function run(
     const reuseMonoRepoTimerEnd = Timer.start(
       "Reusing monorepo clone from parent action"
     );
-    const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
+    const apiClientPath = path.resolve(apiClientRepoPath, apiClientSubDir);
     await fs.promises.cp(
       `${apiClientRepoPath}/${apiClientSubDir}`,
       apiClientPath,
@@ -455,7 +449,7 @@ async function runSharded() {
           recursive: true,
         });
         info(`created path ${apiClientRepoPath} to ${newPath}`);
-        await install({ directory: newPath, force: true });
+        await install({ directory: newPath });
         return newPath;
       }
 

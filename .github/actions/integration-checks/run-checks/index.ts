@@ -18,6 +18,7 @@ import frontendsConfig from "./frontends.json";
 import exclusiveTSC from "raw-loader!./exclusiveTSC.js";
 
 const gitUser = "srebot";
+const gitToken = getInput("checkout_token");
 const apiClientSubDir = "frontend-packages/api-client";
 
 process.env.NODE_OPTIONS = "--max_old_space_size=7340";
@@ -39,12 +40,10 @@ async function prefetchMonoRepoTags({
 }
 
 async function checkout({
-  checkoutToken,
   repository,
   version,
   directory,
 }: {
-  checkoutToken: string;
   repository: string;
   version?: string;
   directory: string;
@@ -65,7 +64,7 @@ async function checkout({
 
   const tagArgs = version ? [`--branch=v${version}`] : [];
 
-  const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+  const repo = `https://${gitUser}:${gitToken}@github.com/${repository}.git`;
 
   info(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
@@ -219,8 +218,6 @@ async function run(
   shardConfig: string
 ) {
   try {
-    const checkoutToken = getInput("checkout_token");
-
     const endDisableMocksTimerEnd = Timer.start(
       "Disabling TS check for api-client mocks dir"
     );
@@ -277,7 +274,6 @@ async function run(
           `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
         );
         await checkout({
-          checkoutToken,
           directory,
           repository: frontend.repository,
           version: frontendVersions[frontendKey],
@@ -323,7 +319,6 @@ async function run(
             `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
           );
           await checkout({
-            checkoutToken,
             directory,
             repository: frontend.repository,
             version: frontendVersions[frontendKey],
@@ -454,12 +449,8 @@ async function runSharded() {
       if (index !== 0) {
         const resolvedPath = path.resolve(apiClientRepoPath);
         const newPath = `${resolvedPath}-${index}`;
-        await exec("git", [
-          "clone",
-          "--depth=1",
-          "Chili-Piper/frontend",
-          newPath,
-        ]);
+        const repo = `https://${gitUser}:${gitToken}@github.com/Chili-Piper/frontend.git`;
+        await exec("git", ["clone", "--depth=1", repo, newPath]);
         await fs.promises.cp(
           `${apiClientRepoPath}/.yarn/cache`,
           `${newPath}/.yarn/cache`,

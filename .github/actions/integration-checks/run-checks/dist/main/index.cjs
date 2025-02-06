@@ -81060,6 +81060,7 @@ _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (a
 // @ts-expect-error
 
 const gitUser = "srebot";
+const gitToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
 const apiClientSubDir = "frontend-packages/api-client";
 process.env.NODE_OPTIONS = "--max_old_space_size=7340";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
@@ -81070,7 +81071,7 @@ async function prefetchMonoRepoTags({ versions, directory, }) {
         cwd: directory,
     });
 }
-async function checkout({ checkoutToken, repository, version, directory, }) {
+async function checkout({ repository, version, directory, }) {
     if (node_fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync(directory)) {
         if (version) {
             await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "-f", `v${version}`], {
@@ -81084,7 +81085,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
         return;
     }
     const tagArgs = version ? [`--branch=v${version}`] : [];
-    const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
+    const repo = `https://${gitUser}:${gitToken}@github.com/${repository}.git`;
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
@@ -81178,7 +81179,6 @@ async function disableMocksDirCheck(directory) {
 }
 async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConfig) {
     try {
-        const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         await disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
@@ -81216,7 +81216,6 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConf
             if (!isMonoRepo) {
                 const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
                 await checkout({
-                    checkoutToken,
                     directory,
                     repository: frontend.repository,
                     version: frontendVersions[frontendKey],
@@ -81249,7 +81248,6 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConf
                 if (!isSameAsLastVersion) {
                     const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
                     await checkout({
-                        checkoutToken,
                         directory,
                         repository: frontend.repository,
                         version: frontendVersions[frontendKey],
@@ -81344,12 +81342,8 @@ async function runSharded() {
         if (index !== 0) {
             const resolvedPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath);
             const newPath = `${resolvedPath}-${index}`;
-            await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", [
-                "clone",
-                "--depth=1",
-                "Chili-Piper/frontend",
-                newPath,
-            ]);
+            const repo = `https://${gitUser}:${gitToken}@github.com/Chili-Piper/frontend.git`;
+            await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", repo, newPath]);
             await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/.yarn/cache`, `${newPath}/.yarn/cache`, {
                 recursive: true,
                 force: true,

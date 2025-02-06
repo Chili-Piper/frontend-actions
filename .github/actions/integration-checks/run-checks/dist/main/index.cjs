@@ -81090,9 +81090,9 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
 }
 async function install({ directory }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
-    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --silent", undefined, {
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
-        outStream: nowhereStream,
+        // outStream: nowhereStream,
         env: {
             ...process.env,
             YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
@@ -81246,7 +81246,6 @@ async function run() {
                         version: frontendVersions[frontendKey],
                     });
                     checkoutTimerEnd();
-                    await install({ directory });
                     // temporary workaround
                     editJSON(`${directory}/package.json`, (packagejson) => {
                         packagejson.devDependencies["typescript"] = "5.7.3";

@@ -81061,7 +81061,7 @@ _shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (a
 
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
-process.env.NODE_OPTIONS = "--max_old_space_size=4194";
+process.env.NODE_OPTIONS = "--max_old_space_size=7340";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
@@ -81153,8 +81153,8 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
         },
     });
 }
-async function runChecks({ command, directory, }) {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
+async function runChecks({ command, directory, shardConfig, }) {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`[Virtual Shard ${shardConfig}]: Running type checks with command ${command}`);
     await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.writeFile(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
         cwd: directory,
@@ -81176,7 +81176,7 @@ async function disableMocksDirCheck(directory) {
         }
     }
 }
-async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
+async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConfig) {
     try {
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
@@ -81290,6 +81290,7 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
                 const exitCode = await runChecks({
                     command: command.exec,
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
+                    shardConfig,
                 });
                 runCheckTimerEnd();
                 if (!foundTSCacheMatch && isMonoRepo) {
@@ -81356,7 +81357,7 @@ async function runSharded() {
     return Promise.all(newShardConfigs.map((newShardConfig, index) => {
         const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions, newShardConfig);
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running checks for ${frontendsKeys.join()}`);
-        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
+        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index], newShardConfig);
     }));
 }
 runSharded();

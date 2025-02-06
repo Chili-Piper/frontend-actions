@@ -20,7 +20,7 @@ import exclusiveTSC from "raw-loader!./exclusiveTSC.js";
 const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 
-process.env.NODE_OPTIONS = "--max_old_space_size=4194";
+process.env.NODE_OPTIONS = "--max_old_space_size=7340";
 
 const nowhereStream = fs.createWriteStream("/dev/null");
 
@@ -175,11 +175,15 @@ async function installApiClient({
 async function runChecks({
   command,
   directory,
+  shardConfig,
 }: {
   command: string;
   directory: string;
+  shardConfig: string;
 }) {
-  info(`Running type checks with command ${command}`);
+  info(
+    `[Virtual Shard ${shardConfig}]: Running type checks with command ${command}`
+  );
   await fs.promises.writeFile(
     `${directory}/exclusiveTSC.js`,
     exclusiveTSC,
@@ -211,7 +215,8 @@ async function disableMocksDirCheck(directory: string) {
 async function run(
   frontendsKeys: Array<keyof typeof frontendsConfig>,
   frontendVersions: Record<string, string>,
-  apiClientRepoPath: string
+  apiClientRepoPath: string,
+  shardConfig: string
 ) {
   try {
     const checkoutToken = getInput("checkout_token");
@@ -374,6 +379,7 @@ async function run(
         const exitCode = await runChecks({
           command: command.exec,
           directory: path.join(directory, command.directory),
+          shardConfig,
         });
         runCheckTimerEnd();
 
@@ -468,7 +474,12 @@ async function runSharded() {
         newShardConfig
       );
       info(`Running checks for ${frontendsKeys.join()}`);
-      return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
+      return run(
+        frontendsKeys,
+        frontendVersions,
+        newShardRepoPaths[index],
+        newShardConfig
+      );
     })
   );
 }

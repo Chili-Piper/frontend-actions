@@ -72,7 +72,7 @@ async function checkout({
 }
 
 async function install({ directory }: { directory: string }) {
-  const timerEnd = Timer.start("Installing deps...");
+  const timerEnd = Timer.start("Installing deps");
   await exec("yarn --no-immutable", undefined, {
     cwd: directory,
     outStream: nowhereStream,
@@ -266,11 +266,16 @@ async function run() {
           version: frontendVersions[frontendKey],
         });
         checkoutTimerEnd();
-        const restoreCacheTimerEnd = Timer.start(
-          `Restoring cache for ${frontendKey}`
-        );
-        const exactMatch = await restoreYarnCache(directory);
-        restoreCacheTimerEnd();
+
+        // booking-app cache is too big. its better to not save it
+        let exactMatch = true;
+        if (frontendKey !== "booking-app") {
+          const restoreCacheTimerEnd = Timer.start(
+            `Restoring cache for ${frontendKey}`
+          );
+          exactMatch = await restoreYarnCache(directory);
+          restoreCacheTimerEnd();
+        }
 
         await install({ directory });
 

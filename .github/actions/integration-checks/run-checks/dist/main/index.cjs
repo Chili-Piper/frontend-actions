@@ -81089,7 +81089,7 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 async function install({ directory }) {
-    const timerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Installing deps...");
+    const timerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Installing deps");
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
         outStream: nowhereStream,
@@ -81223,9 +81223,13 @@ async function run() {
                     version: frontendVersions[frontendKey],
                 });
                 checkoutTimerEnd();
-                const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
-                const exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
-                restoreCacheTimerEnd();
+                // booking-app cache is too big. its better to not save it
+                let exactMatch = true;
+                if (frontendKey !== "booking-app") {
+                    const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
+                    exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
+                    restoreCacheTimerEnd();
+                }
                 await install({ directory });
                 if (!exactMatch) {
                     const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);

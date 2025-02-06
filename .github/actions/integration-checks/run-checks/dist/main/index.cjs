@@ -81248,8 +81248,8 @@ async function run() {
                     checkoutTimerEnd();
                     // temporary workaround
                     editJSON(`${directory}/package.json`, (packagejson) => {
-                        packagejson.devDependencies["typescript"] = "5.7.3";
-                        packagejson.resolutions["typescript"] = "5.7.3";
+                        packagejson.devDependencies["typescript"] = "5.6.3";
+                        packagejson.resolutions["typescript"] = "5.6.3";
                     });
                     await install({ directory });
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");

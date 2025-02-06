@@ -81088,9 +81088,9 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
-async function install({ directory }) {
+async function install({ directory, force, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("Installing deps...");
-    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn --no-immutable${force ? " --force" : ""}`, undefined, {
         cwd: directory,
         outStream: nowhereStream,
         env: {
@@ -81345,7 +81345,7 @@ async function runSharded() {
                 recursive: true,
             });
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
-            await install({ directory: newPath });
+            await install({ directory: newPath, force: true });
             return newPath;
         }
         return apiClientRepoPath;

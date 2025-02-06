@@ -71,9 +71,15 @@ async function checkout({
   await exec("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 
-async function install({ directory }: { directory: string }) {
+async function install({
+  directory,
+  force,
+}: {
+  directory: string;
+  force?: boolean;
+}) {
   info("Installing deps...");
-  await exec("yarn --no-immutable", undefined, {
+  await exec(`yarn --no-immutable${force ? " --force" : ""}`, undefined, {
     cwd: directory,
     outStream: nowhereStream,
     env: {
@@ -449,7 +455,7 @@ async function runSharded() {
           recursive: true,
         });
         info(`created path ${apiClientRepoPath} to ${newPath}`);
-        await install({ directory: newPath });
+        await install({ directory: newPath, force: true });
         return newPath;
       }
 

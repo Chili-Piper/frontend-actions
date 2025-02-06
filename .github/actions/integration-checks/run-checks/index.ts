@@ -22,6 +22,8 @@ const apiClientSubDir = "frontend-packages/api-client";
 
 process.env.NODE_OPTIONS = "--max_old_space_size=4194";
 
+const nowhereStream = fs.createWriteStream("/dev/null");
+
 async function prefetchMonoRepoTags({
   versions,
   directory,
@@ -73,6 +75,7 @@ async function install({ directory }: { directory: string }) {
   info("Installing deps...");
   await exec("yarn --silent", undefined, {
     cwd: directory,
+    outStream: nowhereStream,
     env: {
       ...process.env,
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
@@ -143,6 +146,7 @@ async function installApiClient({
   setApiClientResolution({ directory, apiClientPath });
   await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
     cwd: directory,
+    outStream: nowhereStream,
     env: {
       ...process.env,
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
@@ -150,13 +154,27 @@ async function installApiClient({
   });
 }
 
-function runChecks({
+async function runChecks({
   command,
   directory,
+  isMonoRepo,
 }: {
   command: string;
   directory: string;
+  isMonoRepo: boolean;
 }) {
+  if (isMonoRepo) {
+    // Temporary workaround for new TS version
+    await exec(`yarn add -D typescript@5.7.3`, undefined, {
+      cwd: directory,
+      outStream: nowhereStream,
+      env: {
+        ...process.env,
+        YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+      },
+    });
+  }
+
   info(`Running type checks with command ${command}`);
   fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
   return exec("node", ["exclusiveTSC.js"], {
@@ -335,6 +353,7 @@ async function run() {
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );
         const exitCode = await runChecks({
+          isMonoRepo,
           command: command.exec,
           directory: path.join(directory, command.directory),
         });

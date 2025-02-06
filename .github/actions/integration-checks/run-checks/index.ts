@@ -49,7 +49,7 @@ async function checkout({
   version?: string;
   directory: string;
 }) {
-  if (fs.existsSync(directory)) {
+  if (await fs.promises.stat(directory).catch(() => false)) {
     if (version) {
       await exec("git", ["checkout", "-f", `v${version}`], {
         cwd: directory,
@@ -83,11 +83,11 @@ async function install({ directory }: { directory: string }) {
   });
 }
 
-function editJSON(path: string, cb: (data: any) => void) {
-  const fileContent = fs.readFileSync(path, "utf-8");
+async function editJSON(path: string, cb: (data: any) => void) {
+  const fileContent = await fs.promises.readFile(path, "utf-8");
   const data = JSON5.parse(fileContent);
   cb(data);
-  fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  await fs.promises.writeFile(path, JSON.stringify(data, null, 2));
 }
 
 function setApiClientResolution({
@@ -146,13 +146,18 @@ async function installApiClient({
   if (isMonoRepo) {
     const localApiClientPath = `${directory}/${apiClientSubDir}`;
     info(`Copying api-client from ${apiClientPath}`);
-    const packageJson = fs.readFileSync(
+    const packageJson = await fs.promises.readFile(
       `${localApiClientPath}/package.json`,
       "utf-8"
     );
-    fs.rmSync(localApiClientPath, { recursive: true, force: true });
-    fs.cpSync(apiClientPath, localApiClientPath, { recursive: true });
-    fs.writeFileSync(`${localApiClientPath}/package.json`, packageJson);
+    await fs.promises.rm(localApiClientPath, { recursive: true, force: true });
+    await fs.promises.cp(apiClientPath, localApiClientPath, {
+      recursive: true,
+    });
+    await fs.promises.writeFile(
+      `${localApiClientPath}/package.json`,
+      packageJson
+    );
     return;
   }
   info(`Linking api-client ${apiClientPath}`);
@@ -175,26 +180,30 @@ async function runChecks({
   directory: string;
 }) {
   info(`Running type checks with command ${command}`);
-  fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
+  await fs.promises.writeFile(
+    `${directory}/exclusiveTSC.js`,
+    exclusiveTSC,
+    "utf-8"
+  );
   return exec("node", ["exclusiveTSC.js"], {
     cwd: directory,
     ignoreReturnCode: true,
   });
 }
 
-function disableMocksDirCheck(directory: string) {
-  const files = fs.readdirSync(directory);
+async function disableMocksDirCheck(directory: string) {
+  const files = await fs.promises.readdir(directory);
 
   for (const file of files) {
     const filePath = path.join(directory, file);
-    const stats = fs.statSync(filePath);
+    const stats = await fs.promises.stat(filePath);
 
     if (stats.isDirectory()) {
       disableMocksDirCheck(filePath);
     } else {
-      const content = fs.readFileSync(filePath, "utf8");
+      const content = await fs.promises.readFile(filePath, "utf8");
       const updatedContent = `// @ts-nocheck\n\n${content}`;
-      fs.writeFileSync(filePath, updatedContent, "utf8");
+      await fs.promises.writeFile(filePath, updatedContent, "utf8");
     }
   }
 }
@@ -219,9 +228,13 @@ async function run(
       "Reusing monorepo clone from parent action"
     );
     const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
-    fs.cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
-      recursive: true,
-    });
+    await fs.promises.cp(
+      `${apiClientRepoPath}/${apiClientSubDir}`,
+      apiClientPath,
+      {
+        recursive: true,
+      }
+    );
     reuseMonoRepoTimerEnd();
     const monoRepoPath = apiClientRepoPath;
 
@@ -432,7 +445,7 @@ async function runSharded() {
       if (index !== 0) {
         const resolvedPath = path.resolve(apiClientRepoPath);
         const newPath = `${resolvedPath}-${index}`;
-        fs.cpSync(apiClientRepoPath, newPath, {
+        await fs.promises.cp(apiClientRepoPath, newPath, {
           recursive: true,
         });
         info(`created path ${apiClientRepoPath} to ${newPath}`);

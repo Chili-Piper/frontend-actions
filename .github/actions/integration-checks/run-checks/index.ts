@@ -75,7 +75,7 @@ async function install({ directory }: { directory: string }) {
   info("Installing deps...");
   await exec("yarn --silent", undefined, {
     cwd: directory,
-    // outStream: nowhereStream,
+    outStream: nowhereStream,
     env: {
       ...process.env,
       YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
@@ -298,6 +298,8 @@ async function run() {
             version: frontendVersions[frontendKey],
           });
           checkoutTimerEnd();
+
+          await install({ directory });
 
           // temporary workaround
           editJSON(`${directory}/package.json`, (packagejson) => {

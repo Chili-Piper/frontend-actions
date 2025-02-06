@@ -227,14 +227,17 @@ async function run(
     const reuseMonoRepoTimerEnd = Timer.start(
       "Reusing monorepo clone from parent action"
     );
-    const apiClientPath = path.resolve(apiClientRepoPath, apiClientSubDir);
-    await fs.promises.cp(
-      `${apiClientRepoPath}/${apiClientSubDir}`,
-      apiClientPath,
-      {
-        recursive: true,
-      }
-    );
+    const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
+    if (!(await fs.promises.stat(apiClientPath).catch(() => false))) {
+      await fs.promises.cp(
+        `${apiClientRepoPath}/${apiClientSubDir}`,
+        apiClientPath,
+        {
+          recursive: true,
+        }
+      );
+    }
+
     reuseMonoRepoTimerEnd();
     const monoRepoPath = apiClientRepoPath;
 

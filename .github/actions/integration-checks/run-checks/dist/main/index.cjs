@@ -81185,10 +81185,12 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
-        const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath, apiClientSubDir);
-        await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
-            recursive: true,
-        });
+        const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
+        if (!(await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.stat(apiClientPath).catch(() => false))) {
+            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
+                recursive: true,
+            });
+        }
         reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");

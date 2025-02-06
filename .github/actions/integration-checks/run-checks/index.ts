@@ -215,6 +215,7 @@ async function run(
   frontendsKeys: Array<keyof typeof frontendsConfig>,
   frontendVersions: Record<string, string>,
   apiClientRepoPath: string,
+  apiClientPath: string,
   shardConfig: string
 ) {
   try {
@@ -224,23 +225,6 @@ async function run(
     await disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
     endDisableMocksTimerEnd();
 
-    // Moving api-client to a separate folder and reusing its repo saves around 30/40s
-    // of CI runtime
-    const reuseMonoRepoTimerEnd = Timer.start(
-      "Reusing monorepo clone from parent action"
-    );
-    const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
-    if (!fs.existsSync(apiClientPath)) {
-      await fs.promises.cp(
-        `${apiClientRepoPath}/${apiClientSubDir}`,
-        apiClientPath,
-        {
-          recursive: true,
-        }
-      );
-    }
-
-    reuseMonoRepoTimerEnd();
     const monoRepoPath = apiClientRepoPath;
 
     const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
@@ -469,6 +453,22 @@ async function runSharded() {
   );
   timerCopyRepoEnd();
 
+  // Moving api-client to a separate folder and reusing its repo saves around 30/40s
+  // of CI runtime
+  const reuseMonoRepoTimerEnd = Timer.start(
+    "Reusing monorepo clone from parent action"
+  );
+  const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
+  await fs.promises.cp(
+    `${apiClientRepoPath}/${apiClientSubDir}`,
+    apiClientPath,
+    {
+      recursive: true,
+    }
+  );
+
+  reuseMonoRepoTimerEnd();
+
   return Promise.all(
     newShardConfigs.map((newShardConfig, index) => {
       const frontendsKeys = pickShardedFrontends(
@@ -480,6 +480,7 @@ async function runSharded() {
         frontendsKeys,
         frontendVersions,
         newShardRepoPaths[index],
+        apiClientPath,
         newShardConfig
       );
     })

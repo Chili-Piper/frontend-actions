@@ -81177,21 +81177,11 @@ async function disableMocksDirCheck(directory) {
         }
     }
 }
-async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConfig) {
+async function run(frontendsKeys, frontendVersions, apiClientRepoPath, apiClientPath, shardConfig) {
     try {
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         await disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
-        // Moving api-client to a separate folder and reusing its repo saves around 30/40s
-        // of CI runtime
-        const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
-        const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
-        if (!node_fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync(apiClientPath)) {
-            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
-                recursive: true,
-            });
-        }
-        reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
         shardedFrontendsTimerEnd();
@@ -81355,10 +81345,18 @@ async function runSharded() {
         return apiClientRepoPath;
     }));
     timerCopyRepoEnd();
+    // Moving api-client to a separate folder and reusing its repo saves around 30/40s
+    // of CI runtime
+    const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
+    const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
+    await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
+        recursive: true,
+    });
+    reuseMonoRepoTimerEnd();
     return Promise.all(newShardConfigs.map((newShardConfig, index) => {
         const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions, newShardConfig);
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running checks for ${frontendsKeys.join()}`);
-        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index], newShardConfig);
+        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index], apiClientPath, newShardConfig);
     }));
 }
 runSharded();

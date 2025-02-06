@@ -157,24 +157,10 @@ async function installApiClient({
 async function runChecks({
   command,
   directory,
-  isMonoRepo,
 }: {
   command: string;
   directory: string;
-  isMonoRepo: boolean;
 }) {
-  if (isMonoRepo) {
-    // Temporary workaround for new TS version
-    await exec(`yarn add -D typescript@5.7.3`, undefined, {
-      cwd: directory,
-      outStream: nowhereStream,
-      env: {
-        ...process.env,
-        YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
-      },
-    });
-  }
-
   info(`Running type checks with command ${command}`);
   fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
   return exec("node", ["exclusiveTSC.js"], {
@@ -313,6 +299,12 @@ async function run() {
           });
           checkoutTimerEnd();
 
+          // temporary workaround
+          editJSON(`${directory}/package.json`, (packagejson) => {
+            packagejson.devDependencies["typescript"] = "5.7.3";
+            packagejson.resolutions["typescript"] = "5.7.3";
+          });
+
           await install({ directory });
 
           const restoreTSCacheTimerEnd = Timer.start(
@@ -353,7 +345,6 @@ async function run() {
           `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
         );
         const exitCode = await runChecks({
-          isMonoRepo,
           command: command.exec,
           directory: path.join(directory, command.directory),
         });

@@ -150,13 +150,21 @@ async function installApiClient({
   });
 }
 
-function runChecks({
+async function runChecks({
   command,
   directory,
 }: {
   command: string;
   directory: string;
 }) {
+  // Temporary workaround for new TS version
+  await exec(`yarn add -D typescript@5.7.3`, undefined, {
+    cwd: directory,
+    env: {
+      ...process.env,
+      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+    },
+  });
   info(`Running type checks with command ${command}`);
   fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
   return exec("node", ["exclusiveTSC.js"], {

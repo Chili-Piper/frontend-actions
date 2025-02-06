@@ -81139,7 +81139,15 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
         },
     });
 }
-function runChecks({ command, directory, }) {
+async function runChecks({ command, directory, }) {
+    // Temporary workaround for new TS version
+    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add -D typescript@5.7.3`, undefined, {
+        cwd: directory,
+        env: {
+            ...process.env,
+            YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
+        },
+    });
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
     node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {

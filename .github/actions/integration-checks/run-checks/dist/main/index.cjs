@@ -81071,7 +81071,7 @@ async function prefetchMonoRepoTags({ versions, directory, }) {
     });
 }
 async function checkout({ checkoutToken, repository, version, directory, }) {
-    if (node_fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync(directory)) {
+    if (await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.stat(directory).catch(() => false)) {
         if (version) {
             await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "-f", `v${version}`], {
                 cwd: directory,
@@ -81099,14 +81099,14 @@ async function install({ directory }) {
         },
     });
 }
-function editJSON(path, cb) {
-    const fileContent = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(path, "utf-8");
+async function editJSON(path, cb) {
+    const fileContent = await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.readFile(path, "utf-8");
     const data = json5__WEBPACK_IMPORTED_MODULE_1__/* ["default"] */ .A.parse(fileContent);
     cb(data);
-    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(path, JSON.stringify(data, null, 2));
+    await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.writeFile(path, JSON.stringify(data, null, 2));
 }
 function setApiClientResolution({ apiClientPath, directory, }) {
-    editJSON(`${directory}/package.json`, (packageJson) => {
+    return editJSON(`${directory}/package.json`, (packageJson) => {
         if (!packageJson.resolutions) {
             packageJson.resolutions = {};
         }
@@ -81114,7 +81114,7 @@ function setApiClientResolution({ apiClientPath, directory, }) {
     });
 }
 function ignoreTestFiles(directory) {
-    editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
+    return editJSON(`${directory}/tsconfig.json`, (tsconfig) => {
         if (!tsconfig.exclude) {
             tsconfig.exclude = [];
         }
@@ -81123,7 +81123,7 @@ function ignoreTestFiles(directory) {
 }
 // temporary fix while FE wont update to new TS version
 function disableStrictIteratorChecks(directory) {
-    editJSON(`${directory}/frontend-packages/design-system/tsconfig.json`, (tsconfig) => {
+    return editJSON(`${directory}/frontend-packages/design-system/tsconfig.json`, (tsconfig) => {
         if (!tsconfig.compilerOptions) {
             tsconfig.compilerOptions = {};
         }
@@ -81134,14 +81134,16 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Copying api-client from ${apiClientPath}`);
-        const packageJson = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(`${localApiClientPath}/package.json`, "utf-8");
-        node_fs__WEBPACK_IMPORTED_MODULE_3___default().rmSync(localApiClientPath, { recursive: true, force: true });
-        node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientPath, localApiClientPath, { recursive: true });
-        node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${localApiClientPath}/package.json`, packageJson);
+        const packageJson = await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.readFile(`${localApiClientPath}/package.json`, "utf-8");
+        await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.rm(localApiClientPath, { recursive: true, force: true });
+        await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(apiClientPath, localApiClientPath, {
+            recursive: true,
+        });
+        await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.writeFile(`${localApiClientPath}/package.json`, packageJson);
         return;
     }
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Linking api-client ${apiClientPath}`);
-    setApiClientResolution({ directory, apiClientPath });
+    await setApiClientResolution({ directory, apiClientPath });
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
         cwd: directory,
         outStream: nowhereStream,
@@ -81153,47 +81155,43 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
 }
 async function runChecks({ command, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
-    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
+    await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.writeFile(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
         cwd: directory,
         ignoreReturnCode: true,
     });
 }
-function disableMocksDirCheck(directory) {
-    const files = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readdirSync(directory);
+async function disableMocksDirCheck(directory) {
+    const files = await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.readdir(directory);
     for (const file of files) {
         const filePath = node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, file);
-        const stats = node_fs__WEBPACK_IMPORTED_MODULE_3___default().statSync(filePath);
+        const stats = await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.stat(filePath);
         if (stats.isDirectory()) {
-            disableMocksDirCheck(filePath);
+            await disableMocksDirCheck(filePath);
         }
         else {
-            const content = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(filePath, "utf8");
+            const content = await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.readFile(filePath, "utf8");
             const updatedContent = `// @ts-nocheck\n\n${content}`;
-            node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(filePath, updatedContent, "utf8");
+            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.writeFile(filePath, updatedContent, "utf8");
         }
     }
 }
-async function run() {
+async function run(frontendsKeys, frontendVersions, apiClientRepoPath) {
     try {
-        const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
-        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
-        const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
-        disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
+        await disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
         const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
         const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
-        node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
+        await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
             recursive: true,
         });
         reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
         shardedFrontendsTimerEnd();
         const failedFrontends = new Set();
         const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Prefetching monorepo tags");
@@ -81256,11 +81254,11 @@ async function run() {
                     });
                     checkoutTimerEnd();
                     // temporary workaround
-                    editJSON(`${directory}/package.json`, (packagejson) => {
+                    await editJSON(`${directory}/package.json`, (packagejson) => {
                         packagejson.devDependencies["typescript"] = "5.6.3";
                         packagejson.resolutions["typescript"] = "5.6.3";
                     });
-                    disableStrictIteratorChecks(directory);
+                    await disableStrictIteratorChecks(directory);
                     await install({ directory });
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                     foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
@@ -81284,7 +81282,7 @@ async function run() {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
             for (const command of frontend.commands) {
                 const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
-                ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory));
+                await ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory));
                 ignoreTestFilesTimerEnd();
                 const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
                 const exitCode = await runChecks({
@@ -81327,7 +81325,39 @@ async function run() {
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setFailed)(error.message);
     }
 }
-run();
+async function runSharded() {
+    const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
+    const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
+    const concurrency = 2;
+    const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
+    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("shard"); // Example: "1/2" or "2/2"
+    const [currentShard, totalShards] = shardConfig.split("/").map(Number);
+    // Simulates shards with concurrency
+    const newTotalShards = totalShards * concurrency;
+    const startIndex = (currentShard - 1) * concurrency + 1;
+    const newShardConfigs = Array.from({ length: concurrency }, (_, i) => `${startIndex + i}/${newTotalShards}`);
+    const timerCopyRepoEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Copying repo for new shards");
+    const newShardRepoPaths = await Promise.all(newShardConfigs.map(async (_, index) => {
+        if (index !== 0) {
+            const resolvedPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(apiClientRepoPath);
+            const newPath = `${resolvedPath}-${index}`;
+            await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(apiClientRepoPath, newPath, {
+                recursive: true,
+            });
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`created path ${apiClientRepoPath} to ${newPath}`);
+            await install({ directory: newPath });
+            return newPath;
+        }
+        return apiClientRepoPath;
+    }));
+    timerCopyRepoEnd();
+    return Promise.all(newShardConfigs.map((newShardConfig, index) => {
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions, newShardConfig);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running checks for ${frontendsKeys.join()}`);
+        return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
+    }));
+}
+runSharded();
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } });
@@ -81482,8 +81512,7 @@ const Timer = {
         };
     },
 };
-function pickShardedFrontends(frontendVersions) {
-    const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("shard");
+function pickShardedFrontends(frontendVersions, shardConfig) {
     // Step 1: Partition frontends into mono-repo and other frontends
     // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
     // from previous runs, making them lighter and faster to process.

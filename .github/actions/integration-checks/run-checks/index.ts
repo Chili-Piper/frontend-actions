@@ -121,6 +121,19 @@ function ignoreTestFiles(directory: string) {
   });
 }
 
+// temporary fix while FE wont update to new TS version
+function disableStrictIteratorChecks(directory: string) {
+  editJSON(
+    `${directory}/frontend-packages/design-system/tsconfig.json`,
+    (tsconfig) => {
+      if (!tsconfig.compilerOptions) {
+        tsconfig.compilerOptions = {};
+      }
+      tsconfig.compilerOptions.strictBuiltinIteratorReturn = false;
+    }
+  );
+}
+
 async function installApiClient({
   apiClientPath,
   directory,
@@ -304,6 +317,7 @@ async function run() {
             packagejson.devDependencies["typescript"] = "5.6.3";
             packagejson.resolutions["typescript"] = "5.6.3";
           });
+          disableStrictIteratorChecks(directory);
 
           await install({ directory });
 

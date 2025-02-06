@@ -81121,6 +81121,15 @@ function ignoreTestFiles(directory) {
         tsconfig.exclude.push("**/*.stories.tsx", "**/*.stories.ts", "**/*.test.tsx", "**/*.test.ts", "**/*.spec.tsx", "**/*.spec.ts");
     });
 }
+// temporary fix while FE wont update to new TS version
+function disableStrictIteratorChecks(directory) {
+    editJSON(`${directory}/frontend-packages/design-system/tsconfig.json`, (tsconfig) => {
+        if (!tsconfig.compilerOptions) {
+            tsconfig.compilerOptions = {};
+        }
+        tsconfig.compilerOptions.strictBuiltinIteratorReturn = false;
+    });
+}
 async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
@@ -81251,6 +81260,7 @@ async function run() {
                         packagejson.devDependencies["typescript"] = "5.6.3";
                         packagejson.resolutions["typescript"] = "5.6.3";
                     });
+                    disableStrictIteratorChecks(directory);
                     await install({ directory });
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                     foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({

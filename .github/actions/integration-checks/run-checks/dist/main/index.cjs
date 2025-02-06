@@ -81142,18 +81142,7 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
         },
     });
 }
-async function runChecks({ command, directory, isMonoRepo, }) {
-    if (isMonoRepo) {
-        // Temporary workaround for new TS version
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add -D typescript@5.7.3`, undefined, {
-            cwd: directory,
-            outStream: nowhereStream,
-            env: {
-                ...process.env,
-                YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
-            },
-        });
-    }
+async function runChecks({ command, directory, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running type checks with command ${command}`);
     node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
     return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
@@ -81257,6 +81246,11 @@ async function run() {
                         version: frontendVersions[frontendKey],
                     });
                     checkoutTimerEnd();
+                    // temporary workaround
+                    editJSON(`${directory}/package.json`, (packagejson) => {
+                        packagejson.devDependencies["typescript"] = "5.7.3";
+                        packagejson.resolutions["typescript"] = "5.7.3";
+                    });
                     await install({ directory });
                     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("restoring TSBuild cache...");
                     foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreTypescriptCache */ .e8)({
@@ -81284,7 +81278,6 @@ async function run() {
                 ignoreTestFilesTimerEnd();
                 const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
                 const exitCode = await runChecks({
-                    isMonoRepo,
                     command: command.exec,
                     directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, command.directory),
                 });

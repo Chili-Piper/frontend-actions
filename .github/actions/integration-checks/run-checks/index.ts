@@ -49,7 +49,7 @@ async function checkout({
   version?: string;
   directory: string;
 }) {
-  if (await fs.promises.stat(directory).catch(() => false)) {
+  if (fs.existsSync(directory)) {
     if (version) {
       await exec("git", ["checkout", "-f", `v${version}`], {
         cwd: directory,
@@ -233,7 +233,7 @@ async function run(
       "Reusing monorepo clone from parent action"
     );
     const apiClientPath = path.resolve("api-client-directory", apiClientSubDir);
-    if (!(await fs.promises.stat(apiClientPath).catch(() => false))) {
+    if (!fs.existsSync(apiClientPath)) {
       await fs.promises.cp(
         `${apiClientRepoPath}/${apiClientSubDir}`,
         apiClientPath,

@@ -81071,7 +81071,7 @@ async function prefetchMonoRepoTags({ versions, directory, }) {
     });
 }
 async function checkout({ checkoutToken, repository, version, directory, }) {
-    if (await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.stat(directory).catch(() => false)) {
+    if (node_fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync(directory)) {
         if (version) {
             await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["checkout", "-f", `v${version}`], {
                 cwd: directory,
@@ -81186,7 +81186,7 @@ async function run(frontendsKeys, frontendVersions, apiClientRepoPath, shardConf
         // of CI runtime
         const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
         const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
-        if (!(await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.stat(apiClientPath).catch(() => false))) {
+        if (!node_fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync(apiClientPath)) {
             await node_fs__WEBPACK_IMPORTED_MODULE_3___default().promises.cp(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
                 recursive: true,
             });

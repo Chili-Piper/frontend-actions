@@ -30,9 +30,10 @@ export const Timer = {
   },
 };
 
-export function pickShardedFrontends(frontendVersions: Record<string, string>) {
-  const shardConfig = getInput("shard");
-
+export function pickShardedFrontends(
+  frontendVersions: Record<string, string>,
+  shardConfig: string
+) {
   // Step 1: Partition frontends into mono-repo and other frontends
   // Mono-repo frontends can often reuse configuration (e.g., yarn link cache)
   // from previous runs, making them lighter and faster to process.

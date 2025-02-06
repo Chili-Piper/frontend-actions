@@ -199,15 +199,13 @@ function disableMocksDirCheck(directory: string) {
   }
 }
 
-async function run() {
+async function run(
+  frontendsKeys: Array<keyof typeof frontendsConfig>,
+  frontendVersions: Record<string, string>,
+  apiClientRepoPath: string
+) {
   try {
-    const frontendVersionsJSON = getInput("frontend");
-    const frontendVersions = (yaml.load(frontendVersionsJSON) ?? {}) as Record<
-      string,
-      string
-    >;
     const checkoutToken = getInput("checkout_token");
-    const apiClientRepoPath = getInput("api_client_repo_path");
 
     const endDisableMocksTimerEnd = Timer.start(
       "Disabling TS check for api-client mocks dir"
@@ -228,7 +226,6 @@ async function run() {
     const monoRepoPath = apiClientRepoPath;
 
     const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
-    const frontendsKeys = pickShardedFrontends(frontendVersions);
     shardedFrontendsTimerEnd();
 
     const failedFrontends = new Set<string>();
@@ -409,4 +406,55 @@ async function run() {
   }
 }
 
-run();
+async function runSharded() {
+  const apiClientRepoPath = getInput("api_client_repo_path");
+  const frontendVersionsJSON = getInput("frontend");
+  const concurrency = 2;
+  const frontendVersions = (yaml.load(frontendVersionsJSON) ?? {}) as Record<
+    string,
+    string
+  >;
+  const shardConfig = getInput("shard"); // Example: "1/2" or "2/2"
+
+  const [currentShard, totalShards] = shardConfig.split("/").map(Number);
+
+  // Simulates shards with concurrency
+  const newTotalShards = totalShards * concurrency;
+  const startIndex = (currentShard - 1) * concurrency + 1;
+  const newShardConfigs = Array.from(
+    { length: concurrency },
+    (_, i) => `${startIndex + i}/${newTotalShards}`
+  );
+
+  const timerCopyRepoEnd = Timer.start("Copying repo for new shards");
+  const newShardRepoPaths = await Promise.all(
+    newShardConfigs.map(async (_, index) => {
+      if (index !== 0) {
+        const resolvedPath = path.resolve(apiClientRepoPath);
+        const newPath = `${resolvedPath}-${index}`;
+        fs.cpSync(apiClientRepoPath, newPath, {
+          recursive: true,
+        });
+        info(`created path ${apiClientRepoPath} to ${newPath}`);
+        await install({ directory: newPath });
+        return newPath;
+      }
+
+      return apiClientRepoPath;
+    })
+  );
+  timerCopyRepoEnd();
+
+  return Promise.all(
+    newShardConfigs.map((newShardConfig, index) => {
+      const frontendsKeys = pickShardedFrontends(
+        frontendVersions,
+        newShardConfig
+      );
+      info(`Running checks for ${frontendsKeys.join()}`);
+      return run(frontendsKeys, frontendVersions, newShardRepoPaths[index]);
+    })
+  );
+}
+
+runSharded();

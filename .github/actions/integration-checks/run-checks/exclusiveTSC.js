@@ -176,7 +176,6 @@ function isNodeReferencedByImportedSymbols(
 
   let isReferenced = false;
   const declarationMap = new Map(); // ✅ { identifier -> declarationNode }
-  const objectPropertyMap = new Map(); // ✅ Tracks object properties { objectName -> { propertyName -> declarationNode } }
 
   /** 1️⃣ Collect all top-level declarations and store them in `declarationMap` */
   function collectTopLevelDeclarations(node) {
@@ -188,23 +187,6 @@ function isNodeReferencedByImportedSymbols(
       node.declarationList.declarations.forEach((declaration) => {
         if (ts.isIdentifier(declaration.name)) {
           declarationMap.set(declaration.name.text, declaration);
-
-          // ✅ Track object properties if it's an object literal
-          if (
-            declaration.initializer &&
-            ts.isObjectLiteralExpression(declaration.initializer)
-          ) {
-            const objectName = declaration.name.text;
-            objectPropertyMap.set(objectName, new Map());
-
-            declaration.initializer.properties.forEach((prop) => {
-              if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
-                objectPropertyMap
-                  .get(objectName)
-                  .set(prop.name.text, prop.initializer);
-              }
-            });
-          }
         }
       });
     }
@@ -231,35 +213,13 @@ function isNodeReferencedByImportedSymbols(
       ? node.text
       : node.getText(sourceFile);
 
-    // ✅ If this node is accessing an object property, track **only the accessed property**
-    if (ts.isPropertyAccessExpression(node)) {
-      const objectName = node.expression.getText(sourceFile);
-      const propertyName = node.name.text;
-
-      if (
-        objectPropertyMap.has(objectName) &&
-        objectPropertyMap.get(objectName).has(propertyName)
-      ) {
-        const propertyDeclaration = objectPropertyMap
-          .get(objectName)
-          .get(propertyName);
-
-        // ✅ Ensure we only mark the property as imported, not the whole object
-        if (!importedSymbols.has(filePath)) {
-          importedSymbols.set(filePath, new Set());
-        }
-        importedSymbols.get(filePath).add(`${objectName}.${propertyName}`);
-
-        if (propertyDeclaration) {
-          traverseAST(
-            propertyDeclaration,
-            referencesAcc,
-            new Set([`${objectName}.${propertyName}`])
-          );
-        }
-      } else {
-        return;
-      }
+    // ✅ Ignore method calls like `something.test(...)`
+    if (
+      ts.isPropertyAccessExpression(node.parent) &&
+      node.parent.name === node &&
+      ts.isCallExpression(node.parent.parent)
+    ) {
+      return;
     }
 
     if (referencesAcc.has(nodeText)) return; // ✅ Prevent redundant processing
@@ -273,7 +233,6 @@ function isNodeReferencedByImportedSymbols(
 
     // ✅ Check if this node is `targetNode`, and if it is inside an imported scope
     if (node.name?.text === targetNode.name.text) {
-      console.log(currentNodeImported, [...referencesAcc]);
       if (currentNodeImported) {
         isReferenced = true;
         return;
@@ -296,11 +255,7 @@ function isNodeReferencedByImportedSymbols(
     }
 
     // ✅ If this node is an identifier (e.g., `xa`), resolve and follow it **only if it's a global variable**
-    if (
-      ts.isIdentifier(node) &&
-      declarationMap.has(node.text) &&
-      !objectPropertyMap.has(node.text)
-    ) {
+    if (ts.isIdentifier(node) && declarationMap.has(node.text)) {
       const variableDeclaration = declarationMap.get(node.text);
       traverseAST(variableDeclaration, referencesAcc, currentNodeImported);
     }
@@ -348,8 +303,6 @@ function filterErrors() {
       ),
     }))
     .filter(({ isReferenced }) => isReferenced);
-
-  // console.log(filteredErrors)
 
   if (filteredErrors.length === 0) {
     console.log(

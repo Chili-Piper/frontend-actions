@@ -1,4 +1,4 @@
-name: "Integration Checks"
+name: "Contract Testing"
 description: "Checks for FE <-> BE Integration"
 inputs:
   frontend:
@@ -51,7 +51,7 @@ runs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
     - name: Update api-client services.json
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-services@main
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-services@main
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
@@ -60,7 +60,7 @@ runs:
       working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs
     - name: Update api-client docs json
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/set-be-openapi@main
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-openapi@main
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
@@ -79,7 +79,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/integration-checks/run-checks@main
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@main
       with:
         frontend: ${{ inputs.frontend }}
         api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}

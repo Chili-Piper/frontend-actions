@@ -16,6 +16,9 @@ inputs:
   frontend:
     description: "frontend apps versions"
     required: false
+  appsStatuses:
+    description: "object describing which apps have possible contract changes"
+    required: false
   shard:
     description: "Defines a fraction of checks to run. For example, setting it to 1/3 will execute one-third of the total checks, allowing for distributed or partial test execution"
     required: true

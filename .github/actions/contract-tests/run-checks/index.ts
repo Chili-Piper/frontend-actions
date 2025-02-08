@@ -225,7 +225,22 @@ async function run() {
     const apiClientRepoPath = getInput("api_client_repo_path");
 
     const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
-    const frontendsKeys = pickShardedFrontends(frontendVersions);
+    const frontendsKeys = pickShardedFrontends(frontendVersions).filter(
+      (item) => {
+        if (hasBEChanges) {
+          return true;
+        }
+
+        if (appsStatuses?.frontend[item] === "CHANGED") {
+          return true;
+        }
+
+        info(
+          `No BE changes and no FE changes found for app ${item}. Skipping checks...`
+        );
+        return false;
+      }
+    );
     shardedFrontendsTimerEnd();
 
     if (!frontendsKeys.length) {
@@ -270,15 +285,6 @@ async function run() {
     // so we skip checkout if first frontend version is master branch
     let lastFrontendKey = "";
     for (const frontendKey of frontendsKeys) {
-      if (
-        !hasBEChanges &&
-        appsStatuses?.frontend[frontendKey] === "NOT_CHANGED"
-      ) {
-        info(
-          `No BE changes and no changes for app ${frontendKey}. Skipping checks...`
-        );
-        continue;
-      }
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;

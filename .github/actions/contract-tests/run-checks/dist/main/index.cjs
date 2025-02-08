@@ -81187,7 +81187,16 @@ async function run() {
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions).filter((item) => {
+            if (hasBEChanges) {
+                return true;
+            }
+            if (appsStatuses?.frontend[item] === "CHANGED") {
+                return true;
+            }
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`No BE changes and no FE changes found for app ${item}. Skipping checks...`);
+            return false;
+        });
         shardedFrontendsTimerEnd();
         if (!frontendsKeys.length) {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("No frontend to run on this shard!");
@@ -81220,11 +81229,6 @@ async function run() {
         // so we skip checkout if first frontend version is master branch
         let lastFrontendKey = "";
         for (const frontendKey of frontendsKeys) {
-            if (!hasBEChanges &&
-                appsStatuses?.frontend[frontendKey] === "NOT_CHANGED") {
-                (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`No BE changes and no changes for app ${frontendKey}. Skipping checks...`);
-                continue;
-            }
             const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_7__[frontendKey];
             const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl;
             const directory = isMonoRepo ? monoRepoPath : frontendKey;

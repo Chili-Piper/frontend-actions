@@ -24,6 +24,20 @@ process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 
 const nowhereStream = fs.createWriteStream("/dev/null");
 
+const appsStatuses = JSON.parse(getInput("appsStatuses")) as
+  | {
+      frontend: Record<string, "CHANGED" | "NOT_CHANGED">;
+      backend: Record<string, "CHANGED" | "NOT_CHANGED">;
+    }
+  | undefined;
+
+const hasBEChanges = appsStatuses
+  ? Boolean(
+      Object.values(appsStatuses.backend).find((item) => item === "CHANGED")
+    )
+  : // if no appStatuses provided, act as if there are BE changes
+    true;
+
 async function prefetchMonoRepoTags({
   versions,
   directory,
@@ -210,6 +224,16 @@ async function run() {
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
 
+    const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
+    const frontendsKeys = pickShardedFrontends(frontendVersions);
+    shardedFrontendsTimerEnd();
+
+    if (!frontendsKeys.length) {
+      info("No frontend to run on this shard!");
+      setOutput("failed_frontends", JSON.stringify([]));
+      return;
+    }
+
     const endDisableMocksTimerEnd = Timer.start(
       "Disabling TS check for api-client mocks dir"
     );
@@ -227,10 +251,6 @@ async function run() {
     });
     reuseMonoRepoTimerEnd();
     const monoRepoPath = apiClientRepoPath;
-
-    const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
-    const frontendsKeys = pickShardedFrontends(frontendVersions);
-    shardedFrontendsTimerEnd();
 
     const failedFrontends = new Set<string>();
 
@@ -250,6 +270,15 @@ async function run() {
     // so we skip checkout if first frontend version is master branch
     let lastFrontendKey = "";
     for (const frontendKey of frontendsKeys) {
+      if (
+        !hasBEChanges &&
+        appsStatuses?.frontend[frontendKey] === "NOT_CHANGED"
+      ) {
+        info(
+          `No BE changes and no changes for app ${frontendKey}. Skipping checks...`
+        );
+        continue;
+      }
       const frontend = frontendsConfig[frontendKey];
       const isMonoRepo = frontend.repository === monoRepo;
       const directory = isMonoRepo ? monoRepoPath : frontendKey;

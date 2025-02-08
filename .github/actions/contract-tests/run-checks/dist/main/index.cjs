@@ -81063,6 +81063,11 @@ const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
+const appsStatuses = JSON.parse((0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("appsStatuses"));
+const hasBEChanges = appsStatuses
+    ? Boolean(Object.values(appsStatuses.backend).find((item) => item === "CHANGED"))
+    : // if no appStatuses provided, act as if there are BE changes
+        true;
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
@@ -81181,6 +81186,14 @@ async function run() {
         const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
+        const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
+        shardedFrontendsTimerEnd();
+        if (!frontendsKeys.length) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("No frontend to run on this shard!");
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setOutput)("failed_frontends", JSON.stringify([]));
+            return;
+        }
         const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
@@ -81193,9 +81206,6 @@ async function run() {
         });
         reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
-        const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
-        shardedFrontendsTimerEnd();
         const failedFrontends = new Set();
         const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Prefetching monorepo tags");
         await prefetchMonoRepoTags({
@@ -81210,6 +81220,11 @@ async function run() {
         // so we skip checkout if first frontend version is master branch
         let lastFrontendKey = "";
         for (const frontendKey of frontendsKeys) {
+            if (!hasBEChanges &&
+                appsStatuses?.frontend[frontendKey] === "NOT_CHANGED") {
+                (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`No BE changes and no changes for app ${frontendKey}. Skipping checks...`);
+                continue;
+            }
             const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_7__[frontendKey];
             const isMonoRepo = frontend.repository === _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl;
             const directory = isMonoRepo ? monoRepoPath : frontendKey;

@@ -32,21 +32,7 @@ function getImportedFiles() {
   for (const sourceFile of program.getSourceFiles()) {
     if (sourceFile.isDeclarationFile) continue; // Skip .d.ts files
 
-    ts.forEachChild(sourceFile, (node) => {
-      if (ts.isImportDeclaration(node) && node.moduleSpecifier) {
-        const importPath = node.moduleSpecifier.text;
-        const resolved = ts.resolveModuleName(
-          importPath,
-          sourceFile.fileName,
-          parsedConfig.options,
-          ts.sys
-        );
-        if (resolved.resolvedModule)
-          importedFiles.add(
-            path.resolve(resolved.resolvedModule.resolvedFileName)
-          );
-      }
-    });
+    importedFiles.add(sourceFile.fileName);
   }
 
   return importedFiles;

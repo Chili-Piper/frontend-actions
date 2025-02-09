@@ -227,18 +227,18 @@ async function run() {
     const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
     const frontendsKeys = pickShardedFrontends(frontendVersions).filter(
       (item) => {
-        // if (hasBEChanges) {
-        //   return true;
-        // }
+        if (hasBEChanges) {
+          return true;
+        }
 
-        // if (appsStatuses?.frontend[item] === "CHANGED") {
-        //   return true;
-        // }
+        if (appsStatuses?.frontend[item] === "CHANGED") {
+          return true;
+        }
 
-        // info(
-        //   `No BE changes and no FE changes found for app ${item}. Skipping checks...`
-        // );
-        return true;
+        info(
+          `No BE changes and no FE changes found for app ${item}. Skipping checks...`
+        );
+        return false;
       }
     );
     shardedFrontendsTimerEnd();

@@ -81188,14 +81188,16 @@ async function run() {
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
         const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions).filter((item) => {
-            if (hasBEChanges) {
-                return true;
-            }
-            if (appsStatuses?.frontend[item] === "CHANGED") {
-                return true;
-            }
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`No BE changes and no FE changes found for app ${item}. Skipping checks...`);
-            return false;
+            // if (hasBEChanges) {
+            //   return true;
+            // }
+            // if (appsStatuses?.frontend[item] === "CHANGED") {
+            //   return true;
+            // }
+            // info(
+            //   `No BE changes and no FE changes found for app ${item}. Skipping checks...`
+            // );
+            return true;
         });
         shardedFrontendsTimerEnd();
         if (!frontendsKeys.length) {

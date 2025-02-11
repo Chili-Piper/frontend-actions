@@ -429,11 +429,9 @@ async function run() {
       lastFrontendKey = frontendKey;
     }
 
+    setOutput("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
+
     if (failedFrontends.size > 0) {
-      setOutput(
-        "failed_frontends",
-        JSON.stringify(Array.from(failedFrontends))
-      );
       const shouldFail = getInput("should_fail") === "true";
       const errorMessage = `Failed frontends: [${Array.from(
         failedFrontends

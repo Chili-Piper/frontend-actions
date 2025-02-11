@@ -81334,8 +81334,8 @@ async function run() {
             }
             lastFrontendKey = frontendKey;
         }
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
         if (failedFrontends.size > 0) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
             const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("should_fail") === "true";
             const errorMessage = `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`;
             if (shouldFail) {

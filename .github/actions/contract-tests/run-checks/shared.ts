@@ -102,8 +102,8 @@ function getCacheKey({
   addFingerPrint?: boolean;
 }) {
   const fingerPrint = addFingerPrint
-    ? ""
-    : hashFileSync(`${directory}/yarn.lock`);
+    ? hashFileSync(`${directory}/yarn.lock`)
+    : "";
   return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 
@@ -112,12 +112,12 @@ function getCachePaths(directory: string) {
 }
 
 export async function restoreYarnCache(directory: string) {
-  const key = await restoreCache(
-    getCachePaths(directory),
-    getCacheKey({ directory, addFingerPrint: true }),
-    [getCacheKey({ directory })]
-  );
-  return key === getCacheKey({ directory, addFingerPrint: true });
+  const key = getCacheKey({ directory, addFingerPrint: true });
+  const matchKey = await restoreCache(getCachePaths(directory), key, [
+    getCacheKey({ directory }),
+  ]);
+  info(`comparing keys ${matchKey} and ${key}`);
+  return matchKey === key;
 }
 
 export async function saveYarnCache(directory: string) {

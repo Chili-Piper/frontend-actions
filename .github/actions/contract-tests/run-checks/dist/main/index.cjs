@@ -81063,11 +81063,6 @@ const gitUser = "srebot";
 const apiClientSubDir = "frontend-packages/api-client";
 process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWriteStream("/dev/null");
-const appsStatuses = JSON.parse((0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("appsStatuses"));
-const hasBEChanges = appsStatuses
-    ? Boolean(Object.values(appsStatuses.backend).find((item) => item === "CHANGED"))
-    : // if no appStatuses provided, act as if there are BE changes
-        true;
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
@@ -81187,16 +81182,7 @@ async function run() {
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions).filter((item) => {
-            if (hasBEChanges) {
-                return true;
-            }
-            if (appsStatuses?.frontend[item] === "CHANGED") {
-                return true;
-            }
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`No BE changes and no FE changes found for app ${item}. Skipping checks...`);
-            return false;
-        });
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
         shardedFrontendsTimerEnd();
         if (!frontendsKeys.length) {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("No frontend to run on this shard!");
@@ -81506,6 +81492,11 @@ const Timer = {
         };
     },
 };
+const appsStatuses = JSON.parse((0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("appsStatuses"));
+const hasBEChanges = appsStatuses
+    ? Boolean(Object.values(appsStatuses.backend).find((item) => item === "CHANGED"))
+    : // if no appStatuses provided, act as if there are BE changes
+        true;
 function pickShardedFrontends(frontendVersions) {
     const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("shard");
     // Step 1: Partition frontends into mono-repo and other frontends
@@ -81514,7 +81505,16 @@ function pickShardedFrontends(frontendVersions) {
     // Other frontends, on the other hand, are heavier to run since they cannot
     // benefit from the mono-repo configuration reuse. By partitioning them,
     // we can handle their distribution separately and optimize overall execution.
-    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_5__);
+    const frontendsKeys = Object.keys(_frontends_json__WEBPACK_IMPORTED_MODULE_5__).filter((item) => {
+        if (hasBEChanges) {
+            return true;
+        }
+        if (appsStatuses?.frontend[item] === "CHANGED") {
+            return true;
+        }
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`No BE changes and no FE changes found for app ${item}. Skipping checks...`);
+        return false;
+    });
     const [monoRepoFrontends, otherFrontends] = (0,lodash__WEBPACK_IMPORTED_MODULE_2__.partition)(frontendsKeys, (key) => _frontends_json__WEBPACK_IMPORTED_MODULE_5__[key].repository === monoRepo);
     // Step 2: Sort mono-repo frontends by their tags
     // Sorting ensures that frontends with the same version are grouped together in order.

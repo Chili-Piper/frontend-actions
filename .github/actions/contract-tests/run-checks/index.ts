@@ -24,20 +24,6 @@ process.env.NODE_OPTIONS = "--max_old_space_size=9216";
 
 const nowhereStream = fs.createWriteStream("/dev/null");
 
-const appsStatuses = JSON.parse(getInput("appsStatuses")) as
-  | {
-      frontend: Record<string, "CHANGED" | "NOT_CHANGED">;
-      backend: Record<string, "CHANGED" | "NOT_CHANGED">;
-    }
-  | undefined;
-
-const hasBEChanges = appsStatuses
-  ? Boolean(
-      Object.values(appsStatuses.backend).find((item) => item === "CHANGED")
-    )
-  : // if no appStatuses provided, act as if there are BE changes
-    true;
-
 async function prefetchMonoRepoTags({
   versions,
   directory,
@@ -225,22 +211,7 @@ async function run() {
     const apiClientRepoPath = getInput("api_client_repo_path");
 
     const shardedFrontendsTimerEnd = Timer.start("Picking sharded frontends");
-    const frontendsKeys = pickShardedFrontends(frontendVersions).filter(
-      (item) => {
-        if (hasBEChanges) {
-          return true;
-        }
-
-        if (appsStatuses?.frontend[item] === "CHANGED") {
-          return true;
-        }
-
-        info(
-          `No BE changes and no FE changes found for app ${item}. Skipping checks...`
-        );
-        return false;
-      }
-    );
+    const frontendsKeys = pickShardedFrontends(frontendVersions);
     shardedFrontendsTimerEnd();
 
     if (!frontendsKeys.length) {

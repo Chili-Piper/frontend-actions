@@ -30,6 +30,20 @@ export const Timer = {
   },
 };
 
+const appsStatuses = JSON.parse(getInput("appsStatuses")) as
+  | {
+      frontend: Record<string, "CHANGED" | "NOT_CHANGED">;
+      backend: Record<string, "CHANGED" | "NOT_CHANGED">;
+    }
+  | undefined;
+
+const hasBEChanges = appsStatuses
+  ? Boolean(
+      Object.values(appsStatuses.backend).find((item) => item === "CHANGED")
+    )
+  : // if no appStatuses provided, act as if there are BE changes
+    true;
+
 export function pickShardedFrontends(frontendVersions: Record<string, string>) {
   const shardConfig = getInput("shard");
 
@@ -39,9 +53,22 @@ export function pickShardedFrontends(frontendVersions: Record<string, string>) {
   // Other frontends, on the other hand, are heavier to run since they cannot
   // benefit from the mono-repo configuration reuse. By partitioning them,
   // we can handle their distribution separately and optimize overall execution.
-  const frontendsKeys = Object.keys(frontendsConfig) as Array<
-    keyof typeof frontendsConfig
-  >;
+  const frontendsKeys = (
+    Object.keys(frontendsConfig) as Array<keyof typeof frontendsConfig>
+  ).filter((item) => {
+    if (hasBEChanges) {
+      return true;
+    }
+
+    if (appsStatuses?.frontend[item] === "CHANGED") {
+      return true;
+    }
+
+    info(
+      `No BE changes and no FE changes found for app ${item}. Skipping checks...`
+    );
+    return false;
+  });
   const [monoRepoFrontends, otherFrontends] = partition(
     frontendsKeys,
     (key) => frontendsConfig[key].repository === monoRepo

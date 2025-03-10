@@ -10,6 +10,9 @@ inputs:
   target_env:
     description: "Target environment"
     required: false
+  build_args:
+    description: "Build args"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -34,7 +37,7 @@ runs:
       shell: bash
     - name: Build & push docker image
       run: |
-        docker build -f "./Dockerfile" -t "$IMAGE" .
+        docker build ${{ inputs.build_args }} -f "./Dockerfile" -t "$IMAGE" .
         docker push $IMAGE
       shell: bash
     - name: Deploy to docker registry with env tag

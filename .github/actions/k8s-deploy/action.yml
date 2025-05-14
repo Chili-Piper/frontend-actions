@@ -13,7 +13,7 @@ inputs:
   build_args:
     description: "Build args"
     required: false
-  working-directory:
+  working_directory:
     description: "Working Directory"
     required: false
 runs:
@@ -38,13 +38,13 @@ runs:
       env:
         PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working_directory }}
     - name: Build & push docker image
       run: |
         docker build ${{ inputs.build_args }} -f "./Dockerfile" -t "$IMAGE" .
         docker push $IMAGE
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working_directory }}
     - name: Deploy to docker registry with env tag
       if: ${{ inputs.target_env == 'staging' }}
       run: |
@@ -57,4 +57,4 @@ runs:
         TARGET_ENV: ${{ inputs.target_env }}
         PROJECT_NAME: ${{ inputs.project_name }}
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working_directory }}

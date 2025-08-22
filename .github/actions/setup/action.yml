@@ -43,21 +43,26 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node_version }}
-        node-version-file: ${{ inputs.node_version_file }}
-
-    - name: Install yarn
-      run: corepack enable
-      shell: bash
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.ref }}
         fetch-depth: ${{ inputs.fetch-depth }}
+
+    - name: Setup Node.js (from file)
+      if: ${{ inputs.node_version_file }}
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: ${{ inputs.node_version_file }}
+    - name: Setup Node.js (from version)
+      if: ${{ ! inputs.node_version_file }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+
+    - name: Install yarn
+      run: corepack enable
+      shell: bash
 
     - name: Cache node_modules
       if: inputs.cache == 'true'

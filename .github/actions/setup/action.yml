@@ -43,6 +43,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+
     - name: Setup Node.js (from file)
       if: ${{ inputs.node_version_file }}
       uses: actions/setup-node@v4
@@ -57,12 +63,6 @@ runs:
     - name: Install yarn
       run: corepack enable
       shell: bash
-
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ inputs.ref }}
-        fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Cache node_modules
       if: inputs.cache == 'true'

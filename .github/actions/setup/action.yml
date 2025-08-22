@@ -37,6 +37,9 @@ inputs:
     description: "Node version"
     required: false
     default: "22.13.0"
+  node_version_file:
+    description: "File containing the version Spec of the version to use.  Examples: .nvmrc, .tool-versions, etc."
+    required: false
 runs:
   using: "composite"
   steps:
@@ -44,6 +47,7 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node_version }}
+        node-version-file: ${{ inputs.node_version_file }}
 
     - name: Install yarn
       run: corepack enable

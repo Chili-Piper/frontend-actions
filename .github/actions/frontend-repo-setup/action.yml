@@ -7,10 +7,6 @@ inputs:
   fetch-depth:
     description: "Fetch depth for checkout"
     required: false
-  node_version:
-    description: "Node version"
-    required: false
-    default: "22.13.0"
   npm_token:
     description: "NPM token"
     required: false
@@ -24,6 +20,13 @@ inputs:
   checkout_token:
     description: "Github Token for when checking out a different repository"
     required: false
+  node_version:
+    description: "Node version"
+    required: false
+    default: "22.13.0"
+  node_version_file:
+    description: "File containing the version Spec of the version to use.  Examples: .nvmrc, .tool-versions, etc."
+    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"
@@ -31,15 +34,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node_version }}
-
-    - name: Install yarn
-      run: corepack enable
-      shell: bash
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
@@ -49,12 +43,31 @@ runs:
         repository: ${{ inputs.checkout_repo }}
         path: ${{ inputs.checkout_path }}
 
+    - name: Setup Node.js (from file)
+      if: ${{ inputs.node_version_file }}
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: ${{ inputs.node_version_file }}
+    - name: Setup Node.js (from version)
+      if: ${{ ! inputs.node_version_file }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+
+    - name: Expose node version as environment variable
+      run: echo "NODE_VERSION=$(node --version)" >> ${GITHUB_ENV}
+      shell: bash
+
+    - name: Install yarn
+      run: corepack enable
+      shell: bash
+
     - name: Cache node_modules
       uses: actions/cache@v4
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn
-        cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
+        cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
           ${{ inputs.checkout_path }}/**/node_modules

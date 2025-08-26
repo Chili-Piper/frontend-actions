@@ -54,6 +54,10 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
+    - name: Expose node version as environment variable
+      run: echo "NODE_VERSION=$(node --version)" >> ${GITHUB_ENV}
+      shell: bash
+
     - name: Install yarn
       run: corepack enable
       shell: bash
@@ -63,7 +67,7 @@ runs:
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn
-        cache-fingerprint: ${{ env.node-version }}-${{ hashFiles('**/yarn.lock') }}
+        cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
           ${{ inputs.checkout_path }}/**/node_modules

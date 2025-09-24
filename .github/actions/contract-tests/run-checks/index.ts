@@ -172,14 +172,14 @@ async function installApiClient({
       },
     });
   } else {
-    // If we just copy the whole api-client from monorepo, it will install all 
+    // If we just copy the whole api-client from monorepo, it will install all
     // services, which can cause issues with outdated internal libraries in apps outside
     // of monorepo. So we cherry-pick only the services that being checked.
     info(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
     cherryPickBackends.forEach((backend) => {
       fs.cpSync(
         `${apiClientPath}/src/${backend}`,
-        `./node-modules/@chilipiper/api-client/src/${backend}`,
+        `${directory}/node-modules/@chilipiper/api-client/src/${backend}`,
         {
           recursive: true,
           force: true,
@@ -504,39 +504,39 @@ async function run() {
     });
     prefetchingMonoRepoTagsTimerEnd();
 
-    const monoRepoFrontends = frontendsKeys.filter(
-      (key) => frontendsConfig[key].repository === monoRepo
-    );
+    // const monoRepoFrontends = frontendsKeys.filter(
+    //   (key) => frontendsConfig[key].repository === monoRepo
+    // );
 
-    const groupedMonoRepoFrontends = groupBy(
-      monoRepoFrontends,
-      (key) => frontendVersions[key] || "master"
-    );
+    // const groupedMonoRepoFrontends = groupBy(
+    //   monoRepoFrontends,
+    //   (key) => frontendVersions[key] || "master"
+    // );
 
-    for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
-      const sameVersionMonoRepoFrontends =
-        groupedMonoRepoFrontends[frontendVersion];
-      const firstFrontend = sameVersionMonoRepoFrontends[0];
+    // for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
+    //   const sameVersionMonoRepoFrontends =
+    //     groupedMonoRepoFrontends[frontendVersion];
+    //   const firstFrontend = sameVersionMonoRepoFrontends[0];
 
-      info(
-        `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
-      );
-      const result = await prepareMonoRepo({
-        frontendKey: firstFrontend,
-        frontendVersions,
-        checkoutToken,
-        directory: monoRepoPath,
-        apiClientPath,
-      });
+    //   info(
+    //     `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
+    //   );
+    //   const result = await prepareMonoRepo({
+    //     frontendKey: firstFrontend,
+    //     frontendVersions,
+    //     checkoutToken,
+    //     directory: monoRepoPath,
+    //     apiClientPath,
+    //   });
 
-      await runMonoRepoCommands({
-        frontendKeys: sameVersionMonoRepoFrontends,
-        frontendVersions,
-        failedFrontends,
-        foundTSCacheMatch: result.foundTSCacheMatch,
-        directory: monoRepoPath,
-      });
-    }
+    //   await runMonoRepoCommands({
+    //     frontendKeys: sameVersionMonoRepoFrontends,
+    //     frontendVersions,
+    //     failedFrontends,
+    //     foundTSCacheMatch: result.foundTSCacheMatch,
+    //     directory: monoRepoPath,
+    //   });
+    // }
 
     const otherFrontends = frontendsKeys.filter(
       (key) => frontendsConfig[key].repository !== monoRepo

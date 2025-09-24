@@ -176,13 +176,15 @@ async function installApiClient({
     // services, which can cause issues with outdated internal libraries in apps outside
     // of monorepo. So we cherry-pick only the services that being checked.
     info(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
+
+    const absoluteDirectory = path.resolve(directory);
     await exec(
-      `cat ${directory}/node-modules/@chilipiper/api-client/src/concierge-fire`
+      `cat ${absoluteDirectory}/node-modules/@chilipiper/api-client/src/concierge-fire`
     );
     cherryPickBackends.forEach((backend) => {
       fs.cpSync(
         `${apiClientPath}/src/${backend}`,
-        `${directory}/node-modules/@chilipiper/api-client/src/${backend}`,
+        `${absoluteDirectory}/node-modules/@chilipiper/api-client/src/${backend}`,
         {
           recursive: true,
           force: true,
@@ -190,7 +192,7 @@ async function installApiClient({
       );
     });
     await exec(
-      `cat ${directory}/node-modules/@chilipiper/api-client/src/concierge-fire`
+      `cat ${absoluteDirectory}/node-modules/@chilipiper/api-client/src/concierge-fire`
     );
   }
 }

@@ -81158,14 +81158,15 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPi
         // services, which can cause issues with outdated internal libraries in apps outside
         // of monorepo. So we cherry-pick only the services that being checked.
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`cat ${directory}/node-modules/@chilipiper/api-client/src/concierge-fire`);
+        const absoluteDirectory = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory);
+        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`cat ${absoluteDirectory}/node-modules/@chilipiper/api-client/src/concierge-fire`);
         cherryPickBackends.forEach((backend) => {
-            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientPath}/src/${backend}`, `${directory}/node-modules/@chilipiper/api-client/src/${backend}`, {
+            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientPath}/src/${backend}`, `${absoluteDirectory}/node-modules/@chilipiper/api-client/src/${backend}`, {
                 recursive: true,
                 force: true,
             });
         });
-        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`cat ${directory}/node-modules/@chilipiper/api-client/src/concierge-fire`);
+        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`cat ${absoluteDirectory}/node-modules/@chilipiper/api-client/src/concierge-fire`);
     }
 }
 async function runChecks({ directory }) {

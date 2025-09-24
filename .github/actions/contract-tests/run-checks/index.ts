@@ -200,6 +200,186 @@ function disableMocksDirCheck(directory: string) {
   }
 }
 
+async function prepareMonoRepo({
+  frontendKey,
+  lastFrontendKey,
+  frontendVersions,
+  checkoutToken,
+  directory,
+  apiClientPath,
+}: {
+  frontendKey: keyof typeof frontendsConfig;
+  frontendVersions: Record<string, string>;
+  directory: string;
+  apiClientPath: string;
+  checkoutToken: string;
+  lastFrontendKey: string;
+}) {
+  const frontend = frontendsConfig[frontendKey];
+  const isSameAsLastVersion =
+    frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
+
+  // If is same version as last, no need to checkout & reinstall. Reuse configuration.
+  // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
+  if (!isSameAsLastVersion) {
+    const checkoutTimerEnd = Timer.start(
+      `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
+    );
+    await checkout({
+      checkoutToken,
+      directory,
+      repository: frontend.repository,
+      version: frontendVersions[frontendKey],
+    });
+    checkoutTimerEnd();
+
+    // temporary workaround
+    editJSON(`${directory}/package.json`, (packagejson) => {
+      packagejson.devDependencies["typescript"] = "5.6.3";
+      packagejson.resolutions["typescript"] = "5.6.3";
+    });
+    disableStrictIteratorChecks(directory);
+
+    await install({ directory });
+
+    const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
+    const foundTSCacheMatch = await restoreTypescriptCache({
+      directory,
+      app: "monorepo",
+      version: frontendVersions[frontendKey],
+    });
+    restoreTSCacheTimerEnd();
+
+    const apiClientInstallTimerEnd = Timer.start(
+      `Installing api-client for ${frontendKey}`
+    );
+    await installApiClient({
+      apiClientPath,
+      directory,
+      isMonoRepo: true,
+    });
+    apiClientInstallTimerEnd();
+
+    return { foundTSCacheMatch };
+  } else {
+    info(
+      `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
+    );
+
+    return { foundTSCacheMatch: false };
+  }
+}
+
+async function prepareNonMonoRepo({
+  frontendKey,
+  frontendVersions,
+  checkoutToken,
+  directory,
+  apiClientPath,
+}: {
+  frontendKey: keyof typeof frontendsConfig;
+  frontendVersions: Record<string, string>;
+  directory: string;
+  apiClientPath: string;
+  checkoutToken: string;
+}) {
+  const frontend = frontendsConfig[frontendKey];
+  const checkoutTimerEnd = Timer.start(
+    `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
+  );
+  await checkout({
+    checkoutToken,
+    directory,
+    repository: frontend.repository,
+    version: frontendVersions[frontendKey],
+  });
+  checkoutTimerEnd();
+
+  // booking-app cache is too big. its better to not save it
+  let exactMatch = true;
+  if (frontendKey !== "booking-app") {
+    const restoreCacheTimerEnd = Timer.start(
+      `Restoring cache for ${frontendKey}`
+    );
+    exactMatch = await restoreYarnCache(directory);
+    restoreCacheTimerEnd();
+  }
+
+  await install({ directory });
+
+  if (!exactMatch) {
+    const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);
+    await saveYarnCache(directory);
+    saveCacheTimerEnd();
+  } else {
+    info(`Skipping saving cache since it was an exact match`);
+  }
+
+  const apiClientInstallTimerEnd = Timer.start(
+    `Installing api-client for ${frontendKey}`
+  );
+  await installApiClient({
+    apiClientPath,
+    directory,
+    isMonoRepo: false,
+  });
+  apiClientInstallTimerEnd();
+}
+
+async function runCommands({
+  directory,
+  frontendKey,
+  frontendVersions,
+  isMonoRepo,
+  foundTSCacheMatch,
+  failedFrontends,
+}: {
+  frontendKey: keyof typeof frontendsConfig;
+  frontendVersions: Record<string, string>;
+  directory: string;
+  isMonoRepo: boolean;
+  foundTSCacheMatch: boolean;
+  failedFrontends: Set<string>;
+}) {
+  info(`Running check commands for ${frontendKey}`);
+  const frontend = frontendsConfig[frontendKey];
+  for (const command of frontend.commands) {
+    const ignoreTestFilesTimerEnd = Timer.start(
+      `Ignoring test files before running tests for ${frontendKey}`
+    );
+    ignoreTestFiles(path.join(directory, command.directory));
+    ignoreTestFilesTimerEnd();
+    const runCheckTimerEnd = Timer.start(
+      `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
+    );
+    const exitCode = await runChecks({
+      command: command.exec,
+      directory: path.join(directory, command.directory),
+    });
+    runCheckTimerEnd();
+
+    if (!foundTSCacheMatch && isMonoRepo) {
+      const saveTSCacheTimerEnd = Timer.start(
+        `Saving TS cache for ${frontendKey}`
+      );
+      await saveTypescriptCache({
+        directory,
+        app: "monorepo",
+        version: frontendVersions[frontendKey],
+      });
+      saveTSCacheTimerEnd();
+    } else {
+      info(
+        `Skipping save TS cache because restore was exact match or repo is not monorepo`
+      );
+    }
+
+    if (exitCode !== 0) {
+      failedFrontends.add(frontendKey);
+    }
+  }
+}
+
 async function run() {
   try {
     const frontendVersionsJSON = getInput("frontend");
@@ -252,152 +432,63 @@ async function run() {
     });
     prefetchingMonoRepoTagsTimerEnd();
 
+    const monoRepoFrontends = frontendsKeys.filter(
+      (key) => frontendsConfig[key].repository === monoRepo
+    );
+
     // force first iteration to have last version as undefined (fallback to master)
     // so we skip checkout if first frontend version is master branch
     let lastFrontendKey = "";
-    for (const frontendKey of frontendsKeys) {
-      const frontend = frontendsConfig[frontendKey];
-      const isMonoRepo = frontend.repository === monoRepo;
-      const directory = isMonoRepo ? monoRepoPath : frontendKey;
+    for (const frontendKey of monoRepoFrontends) {
+      const directory = monoRepoPath;
       let foundTSCacheMatch = false;
 
-      if (!isMonoRepo) {
-        const checkoutTimerEnd = Timer.start(
-          `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
-        );
-        await checkout({
-          checkoutToken,
-          directory,
-          repository: frontend.repository,
-          version: frontendVersions[frontendKey],
-        });
-        checkoutTimerEnd();
+      const result = await prepareMonoRepo({
+        frontendKey,
+        frontendVersions,
+        checkoutToken,
+        directory,
+        apiClientPath,
+        lastFrontendKey,
+      });
+      foundTSCacheMatch = result.foundTSCacheMatch;
 
-        // booking-app cache is too big. its better to not save it
-        let exactMatch = true;
-        if (frontendKey !== "booking-app") {
-          const restoreCacheTimerEnd = Timer.start(
-            `Restoring cache for ${frontendKey}`
-          );
-          exactMatch = await restoreYarnCache(directory);
-          restoreCacheTimerEnd();
-        }
-
-        await install({ directory });
-
-        if (!exactMatch) {
-          const saveCacheTimerEnd = Timer.start(
-            `Saving cache for ${frontendKey}`
-          );
-          await saveYarnCache(directory);
-          saveCacheTimerEnd();
-        } else {
-          info(`Skipping saving cache since it was an exact match`);
-        }
-
-        const apiClientInstallTimerEnd = Timer.start(
-          `Installing api-client for ${frontendKey}`
-        );
-        await installApiClient({
-          apiClientPath,
-          directory,
-          isMonoRepo,
-        });
-        apiClientInstallTimerEnd();
-      }
-
-      if (isMonoRepo) {
-        const isSameAsLastVersion =
-          frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
-
-        // If is same version as last, no need to checkout & reinstall. Reuse configuration.
-        // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
-        if (!isSameAsLastVersion) {
-          const checkoutTimerEnd = Timer.start(
-            `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
-          );
-          await checkout({
-            checkoutToken,
-            directory,
-            repository: frontend.repository,
-            version: frontendVersions[frontendKey],
-          });
-          checkoutTimerEnd();
-
-          // temporary workaround
-          editJSON(`${directory}/package.json`, (packagejson) => {
-            packagejson.devDependencies["typescript"] = "5.6.3";
-            packagejson.resolutions["typescript"] = "5.6.3";
-          });
-          disableStrictIteratorChecks(directory);
-
-          await install({ directory });
-
-          const restoreTSCacheTimerEnd = Timer.start(
-            "restoring TSBuild cache..."
-          );
-          foundTSCacheMatch = await restoreTypescriptCache({
-            directory,
-            app: "monorepo",
-            version: frontendVersions[frontendKey],
-          });
-          restoreTSCacheTimerEnd();
-
-          const apiClientInstallTimerEnd = Timer.start(
-            `Installing api-client for ${frontendKey}`
-          );
-          await installApiClient({
-            apiClientPath,
-            directory,
-            isMonoRepo,
-          });
-          apiClientInstallTimerEnd();
-        } else {
-          info(
-            `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
-          );
-        }
-      }
-
-      info(`Running check commands for ${frontendKey}`);
-
-      for (const command of frontend.commands) {
-        const ignoreTestFilesTimerEnd = Timer.start(
-          `Ignoring test files before running tests for ${frontendKey}`
-        );
-        ignoreTestFiles(path.join(directory, command.directory));
-        ignoreTestFilesTimerEnd();
-        const runCheckTimerEnd = Timer.start(
-          `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
-        );
-        const exitCode = await runChecks({
-          command: command.exec,
-          directory: path.join(directory, command.directory),
-        });
-        runCheckTimerEnd();
-
-        if (!foundTSCacheMatch && isMonoRepo) {
-          const saveTSCacheTimerEnd = Timer.start(
-            `Saving TS cache for ${frontendKey}`
-          );
-          await saveTypescriptCache({
-            directory,
-            app: "monorepo",
-            version: frontendVersions[frontendKey],
-          });
-          saveTSCacheTimerEnd();
-        } else {
-          info(
-            `Skipping save TS cache because restore was exact match or repo is not monorepo`
-          );
-        }
-
-        if (exitCode !== 0) {
-          failedFrontends.add(frontendKey);
-        }
-      }
+      await runCommands({
+        frontendKey,
+        frontendVersions,
+        directory,
+        isMonoRepo: true,
+        foundTSCacheMatch,
+        failedFrontends,
+      });
 
       lastFrontendKey = frontendKey;
+    }
+
+    const otherFrontends = frontendsKeys.filter(
+      (key) => frontendsConfig[key].repository !== monoRepo
+    );
+
+    for (const frontendKey of otherFrontends) {
+      const directory = frontendKey;
+      let foundTSCacheMatch = false;
+
+      await prepareNonMonoRepo({
+        frontendKey,
+        frontendVersions,
+        checkoutToken,
+        directory,
+        apiClientPath,
+      });
+
+      await runCommands({
+        frontendKey,
+        frontendVersions,
+        directory,
+        isMonoRepo: false,
+        foundTSCacheMatch,
+        failedFrontends,
+      });
     }
 
     setOutput("failed_frontends", JSON.stringify(Array.from(failedFrontends)));

@@ -81041,14 +81041,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var node_path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(node_path__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var node_fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3024);
 /* harmony import */ var node_fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(node_fs__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6977);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(382);
-/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(272);
-/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(5959);
-/* harmony import */ var raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(7019);
-var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_6__]);
-_shared__WEBPACK_IMPORTED_MODULE_6__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2543);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6977);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(382);
+/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(272);
+/* harmony import */ var _frontends_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(5959);
+/* harmony import */ var raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(7019);
+var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_7__]);
+_shared__WEBPACK_IMPORTED_MODULE_7__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+
 
 
 
@@ -81085,11 +81088,11 @@ async function checkout({ checkoutToken, repository, version, directory, }) {
     }
     const tagArgs = version ? [`--branch=v${version}`] : [];
     const repo = `https://${gitUser}:${checkoutToken}@github.com/${repository}.git`;
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Checking out ${repo} ${tagArgs[0] ?? ""}`);
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["clone", "--depth=1", ...tagArgs, repo, directory]);
 }
 async function install({ directory }) {
-    const timerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Installing deps");
+    const timerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Installing deps");
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("yarn --no-immutable", undefined, {
         cwd: directory,
         outStream: nowhereStream,
@@ -81134,7 +81137,7 @@ function disableStrictIteratorChecks(directory) {
 async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPickBackends, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Copying api-client from ${apiClientPath}`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Copying api-client from ${apiClientPath}`);
         const packageJson = node_fs__WEBPACK_IMPORTED_MODULE_3___default().readFileSync(`${localApiClientPath}/package.json`, "utf-8");
         node_fs__WEBPACK_IMPORTED_MODULE_3___default().rmSync(localApiClientPath, { recursive: true, force: true });
         node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(apiClientPath, localApiClientPath, { recursive: true });
@@ -81142,7 +81145,7 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPi
         return;
     }
     if (cherryPickBackends.length === 0) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Linking api-client ${apiClientPath}`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Linking api-client ${apiClientPath}`);
         setApiClientResolution({ directory, apiClientPath });
         await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
             cwd: directory,
@@ -81157,7 +81160,7 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPi
         // If we just copy the whole api-client from monorepo, it will install all
         // services, which can cause issues with outdated internal libraries in apps outside
         // of monorepo. So we cherry-pick only the services that being checked.
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
         cherryPickBackends.forEach((backend) => {
             node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientPath}/src/${backend}`, `${directory}/node_modules/@chilipiper/api-client/src/${backend}`, {
                 recursive: true,
@@ -81167,8 +81170,8 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPi
     }
 }
 async function runChecks({ directory }) {
-    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A, "utf-8");
-    return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js"], {
+    node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_9__/* ["default"] */ .A, "utf-8");
+    return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js", directory], {
         cwd: directory,
         ignoreReturnCode: true,
     });
@@ -81189,10 +81192,10 @@ function disableMocksDirCheck(directory) {
     }
 }
 async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, directory, apiClientPath, }) {
-    const frontend = frontendsConfig[frontendKey];
+    const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
     // If is same version as last, no need to checkout & reinstall. Reuse configuration.
     // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
-    const checkoutTimerEnd = Timer.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
+    const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
     await checkout({
         checkoutToken,
         directory,
@@ -81207,14 +81210,14 @@ async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, d
     });
     disableStrictIteratorChecks(directory);
     await install({ directory });
-    const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
-    const foundTSCacheMatch = await restoreTypescriptCache({
+    const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("restoring TSBuild cache...");
+    const foundTSCacheMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .restoreTypescriptCache */ .e8)({
         directory,
         app: "monorepo",
         version: frontendVersions[frontendKey],
     });
     restoreTSCacheTimerEnd();
-    const apiClientInstallTimerEnd = Timer.start(`Installing api-client for ${frontendKey}`);
+    const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
     await installApiClient({
         apiClientPath,
         directory,
@@ -81225,8 +81228,8 @@ async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, d
     return { foundTSCacheMatch };
 }
 async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersions, checkoutToken, directory, apiClientPath, }) {
-    const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_7__[frontendKey];
-    const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
+    const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
+    const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
     await checkout({
         checkoutToken,
         directory,
@@ -81237,20 +81240,20 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersio
     // booking-app cache is too big. its better to not save it
     let exactMatch = true;
     if (frontendKey !== "booking-app") {
-        const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
-        exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .restoreYarnCache */ .pF)(directory);
+        const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
+        exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .restoreYarnCache */ .pF)(directory);
         restoreCacheTimerEnd();
     }
     await install({ directory });
     if (!exactMatch) {
-        const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
-        await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveYarnCache */ .kZ)(directory);
+        const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
+        await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveYarnCache */ .kZ)(directory);
         saveCacheTimerEnd();
     }
     else {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping saving cache since it was an exact match`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Skipping saving cache since it was an exact match`);
     }
-    const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
+    const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
     await installApiClient({
         apiClientPath,
         cherryPickBackends: Object.keys(backendVersions),
@@ -81260,20 +81263,20 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersio
     apiClientInstallTimerEnd();
 }
 async function runCommands({ directory, frontendKey, frontendVersions, isMonoRepo, foundTSCacheMatch, failedFrontends, }) {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Running check commands for ${frontendKey}`);
-    const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_7__[frontendKey];
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Running check commands for ${frontendKey}`);
+    const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
     for (const command of frontend.commands) {
-        const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
+        const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
         ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
         ignoreTestFilesTimerEnd();
-        const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
+        const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
         const exitCode = await runChecks({
             directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
         });
         runCheckTimerEnd();
         if (!foundTSCacheMatch && isMonoRepo) {
-            const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
-            await (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .saveTypescriptCache */ .RN)({
+            const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
+            await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveTypescriptCache */ .RN)({
                 directory,
                 app: "monorepo",
                 version: frontendVersions[frontendKey],
@@ -81281,7 +81284,7 @@ async function runCommands({ directory, frontendKey, frontendVersions, isMonoRep
             saveTSCacheTimerEnd();
         }
         else {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
         }
         if (exitCode !== 0) {
             failedFrontends.add(frontendKey);
@@ -81289,22 +81292,22 @@ async function runCommands({ directory, frontendKey, frontendVersions, isMonoRep
     }
 }
 async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, foundTSCacheMatch, failedFrontends, }) {
-    info(`Running check commands for ${frontendKeys.join(", ")}`);
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Running check commands for ${frontendKeys.join(", ")}`);
     for (const frontendKey of frontendKeys) {
-        const frontend = frontendsConfig[frontendKey];
-        const ignoreTestFilesTimerEnd = Timer.start(`Ignoring test files before running tests for ${frontendKey}`);
-        ignoreTestFiles(path.join(directory, frontend.directory));
+        const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
+        const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
+        ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
         ignoreTestFilesTimerEnd();
     }
     const frontendQueue = [...frontendKeys];
     const batchSize = 2; // Number of frontends to process in parallel. Same as monorepo concurrency
     while (frontendQueue.length > 0) {
         const currentBatch = frontendQueue.splice(0, batchSize);
-        const runCheckTimerEnd = Timer.start(`Running type checks for ${currentBatch.join(", ")}`);
+        const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running type checks for ${currentBatch.join(", ")}`);
         await Promise.all(currentBatch.map(async (frontendKey) => {
-            const frontend = frontendsConfig[frontendKey];
+            const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
             const exitCode = await runChecks({
-                directory: path.join(directory, frontend.directory),
+                directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
             });
             if (exitCode !== 0) {
                 failedFrontends.add(frontendKey);
@@ -81313,8 +81316,8 @@ async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, 
         runCheckTimerEnd();
     }
     if (!foundTSCacheMatch) {
-        const saveTSCacheTimerEnd = Timer.start(`Saving TS cache for ${frontendKeys.join(", ")}`);
-        await saveTypescriptCache({
+        const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKeys.join(", ")}`);
+        await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveTypescriptCache */ .RN)({
             directory,
             app: "monorepo",
             version: frontendVersions[frontendKeys[0]],
@@ -81322,31 +81325,31 @@ async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, 
         saveTSCacheTimerEnd();
     }
     else {
-        info(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
     }
 }
 async function run() {
     try {
-        const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("frontend");
-        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(frontendVersionsJSON) ?? {});
-        const backendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("backend");
-        const backendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_5__/* .load */ .Hh(backendVersionsJSON) ?? {});
-        const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("checkout_token");
-        const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("api_client_repo_path");
-        const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Picking sharded frontends");
-        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_6__/* .pickShardedFrontends */ .Ae)(frontendVersions);
+        const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("frontend");
+        const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_6__/* .load */ .Hh(frontendVersionsJSON) ?? {});
+        const backendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("backend");
+        const backendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_6__/* .load */ .Hh(backendVersionsJSON) ?? {});
+        const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("checkout_token");
+        const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("api_client_repo_path");
+        const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Picking sharded frontends");
+        const frontendsKeys = (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .pickShardedFrontends */ .Ae)(frontendVersions);
         shardedFrontendsTimerEnd();
         if (!frontendsKeys.length) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)("No frontend to run on this shard!");
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setOutput)("failed_frontends", JSON.stringify([]));
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)("No frontend to run on this shard!");
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setOutput)("failed_frontends", JSON.stringify([]));
             return;
         }
-        const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
+        const endDisableMocksTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Disabling TS check for api-client mocks dir");
         disableMocksDirCheck(`${apiClientRepoPath}/${apiClientSubDir}/mocks`);
         endDisableMocksTimerEnd();
         // Moving api-client to a separate folder and reusing its repo saves around 30/40s
         // of CI runtime
-        const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
+        const reuseMonoRepoTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Reusing monorepo clone from parent action");
         const apiClientPath = node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve("api-client-directory", apiClientSubDir);
         node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientRepoPath}/${apiClientSubDir}`, apiClientPath, {
             recursive: true,
@@ -81354,45 +81357,37 @@ async function run() {
         reuseMonoRepoTimerEnd();
         const monoRepoPath = apiClientRepoPath;
         const failedFrontends = new Set();
-        const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_6__/* .Timer */ .M4.start("Prefetching monorepo tags");
+        const prefetchingMonoRepoTagsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Prefetching monorepo tags");
         await prefetchMonoRepoTags({
             directory: monoRepoPath,
             versions: frontendsKeys
-                .filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_7__[key].repository === _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl)
+                .filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_8__[key].repository === _shared__WEBPACK_IMPORTED_MODULE_7__/* .monoRepo */ .yl)
                 .map((key) => frontendVersions[key])
                 .filter((item) => item),
         });
         prefetchingMonoRepoTagsTimerEnd();
-        // const monoRepoFrontends = frontendsKeys.filter(
-        //   (key) => frontendsConfig[key].repository === monoRepo
-        // );
-        // const groupedMonoRepoFrontends = groupBy(
-        //   monoRepoFrontends,
-        //   (key) => frontendVersions[key] || "master"
-        // );
-        // for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
-        //   const sameVersionMonoRepoFrontends =
-        //     groupedMonoRepoFrontends[frontendVersion];
-        //   const firstFrontend = sameVersionMonoRepoFrontends[0];
-        //   info(
-        //     `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
-        //   );
-        //   const result = await prepareMonoRepo({
-        //     frontendKey: firstFrontend,
-        //     frontendVersions,
-        //     checkoutToken,
-        //     directory: monoRepoPath,
-        //     apiClientPath,
-        //   });
-        //   await runMonoRepoCommands({
-        //     frontendKeys: sameVersionMonoRepoFrontends,
-        //     frontendVersions,
-        //     failedFrontends,
-        //     foundTSCacheMatch: result.foundTSCacheMatch,
-        //     directory: monoRepoPath,
-        //   });
-        // }
-        const otherFrontends = frontendsKeys.filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_7__[key].repository !== _shared__WEBPACK_IMPORTED_MODULE_6__/* .monoRepo */ .yl);
+        const monoRepoFrontends = frontendsKeys.filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_8__[key].repository === _shared__WEBPACK_IMPORTED_MODULE_7__/* .monoRepo */ .yl);
+        const groupedMonoRepoFrontends = (0,lodash__WEBPACK_IMPORTED_MODULE_4__.groupBy)(monoRepoFrontends, (key) => frontendVersions[key] || "master");
+        for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
+            const sameVersionMonoRepoFrontends = groupedMonoRepoFrontends[frontendVersion];
+            const firstFrontend = sameVersionMonoRepoFrontends[0];
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`);
+            const result = await prepareMonoRepo({
+                frontendKey: firstFrontend,
+                frontendVersions,
+                checkoutToken,
+                directory: monoRepoPath,
+                apiClientPath,
+            });
+            await runMonoRepoCommands({
+                frontendKeys: sameVersionMonoRepoFrontends,
+                frontendVersions,
+                failedFrontends,
+                foundTSCacheMatch: result.foundTSCacheMatch,
+                directory: monoRepoPath,
+            });
+        }
+        const otherFrontends = frontendsKeys.filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_8__[key].repository !== _shared__WEBPACK_IMPORTED_MODULE_7__/* .monoRepo */ .yl);
         for (const frontendKey of otherFrontends) {
             const directory = frontendKey;
             let foundTSCacheMatch = false;
@@ -81413,21 +81408,21 @@ async function run() {
                 failedFrontends,
             });
         }
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
         if (failedFrontends.size > 0) {
-            const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.getInput)("should_fail") === "true";
+            const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("should_fail") === "true";
             const errorMessage = `Failed frontends: [${Array.from(failedFrontends).join(", ")}]`;
             if (shouldFail) {
-                (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setFailed)(errorMessage);
+                (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setFailed)(errorMessage);
             }
             else {
-                (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.info)(errorMessage);
+                (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(errorMessage);
             }
             return;
         }
     }
     catch (error) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_4__.setFailed)(error.message);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setFailed)(error.message);
     }
 }
 run();
@@ -81537,11 +81532,12 @@ __webpack_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony export */   Ae: () => (/* binding */ pickShardedFrontends),
 /* harmony export */   M4: () => (/* binding */ Timer),
 /* harmony export */   RN: () => (/* binding */ saveTypescriptCache),
+/* harmony export */   e8: () => (/* binding */ restoreTypescriptCache),
 /* harmony export */   kZ: () => (/* binding */ saveYarnCache),
 /* harmony export */   pF: () => (/* binding */ restoreYarnCache),
 /* harmony export */   yl: () => (/* binding */ monoRepo)
 /* harmony export */ });
-/* unused harmony exports updateTSBuildFilesTimestamp, restoreTypescriptCache */
+/* unused harmony export updateTSBuildFilesTimestamp */
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6977);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var node_child_process__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3802);
@@ -81669,18 +81665,18 @@ async function saveTypescriptCache({ directory, app, version, }) {
 // https://github.com/microsoft/TypeScript/issues/54563
 function updateTSBuildFilesTimestamp(directory) {
     const end = Timer.start("updating tsbuildinfo timestamps");
-    const resolvedDir = path.resolve(directory);
-    execSync(`find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
-    execSync(`find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    const resolvedDir = node_path__WEBPACK_IMPORTED_MODULE_6___default().resolve(directory);
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
+    (0,node_child_process__WEBPACK_IMPORTED_MODULE_1__.execSync)(`find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`, { stdio: "inherit", shell: "/bin/bash" });
     end();
 }
 
 async function restoreTypescriptCache({ directory, app, version, }) {
     if (!version) {
-        info(`Skipped restoring TS cache cause there is no version configured for ${app}.`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Skipped restoring TS cache cause there is no version configured for ${app}.`);
         return false;
     }
-    const key = await restoreCache(getTSCachePaths(directory), getTSCacheKey(app, version));
+    const key = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getTSCachePaths(directory), getTSCacheKey(app, version));
     if (key) {
         updateTSBuildFilesTimestamp(directory);
     }
@@ -113079,7 +113075,7 @@ var lib = JSON5;
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   A: () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("import ts from \"typescript\";\nimport { execFileSync } from \"child_process\";\nimport path from \"path\";\n\n// This is a version of TSC command which removes errors from files that are not directly imported\n// by current project. This is needed because tsc with project references builds referenced packages\n// and reports errors for all files regardless if they are actually used or not. This helps reducing\n// false positives.\n\n// Function to extract all imported files\nfunction getImportedFiles() {\n  const configPath = ts.findConfigFile(\n    \"./\",\n    ts.sys.fileExists,\n    \"tsconfig.json\"\n  );\n  if (!configPath) throw new Error(\"tsconfig.json not found\");\n\n  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);\n  const parsedConfig = ts.parseJsonConfigFileContent(\n    configFile.config,\n    ts.sys,\n    \"./\"\n  );\n\n  const program = ts.createProgram(\n    parsedConfig.fileNames,\n    parsedConfig.options\n  );\n  const importedFiles = new Set();\n\n  for (const sourceFile of program.getSourceFiles()) {\n    if (sourceFile.isDeclarationFile) continue; // Skip .d.ts files\n\n    importedFiles.add(sourceFile.fileName);\n  }\n\n  return importedFiles;\n}\n\n// Function to run `tsc` and extract errors\nfunction getTscErrors() {\n  let tscOutput;\n  try {\n    tscOutput = execFileSync(\"yarn\", [\"tsc\", \"--build\", \"--pretty\", \"false\"], {\n      encoding: \"utf-8\",\n    });\n  } catch (error) {\n    tscOutput = error.stdout || \"\";\n  }\n\n  const errorMap = new Map();\n  const errorRegex = /^(.+?)\\((\\d+),(\\d+)\\): error (TS\\d+): (.*)$/gm;\n  let match;\n  while ((match = errorRegex.exec(tscOutput)) !== null) {\n    const [_, relativePath, line, column, errorCode, message] = match;\n    const absolutePath = path.resolve(process.cwd(), relativePath);\n    const formattedMessage = {\n      file: absolutePath,\n      line,\n      column,\n      errorCode,\n      message,\n    };\n    errorMap.set(formattedMessage, absolutePath);\n  }\n\n  return errorMap;\n}\n\n// Function to format TypeScript-style error messages\nfunction formatErrorMessage(error) {\n  const relativePath = path.relative(process.cwd(), error.file);\n  return `\\x1b[1m\\x1b[31m${relativePath}(${error.line},${error.column}): error ${error.errorCode}: ${error.message}\\x1b[0m`;\n}\n\n// Main function to filter errors\nfunction filterErrors() {\n  const importedFiles = getImportedFiles();\n  const errors = getTscErrors();\n\n  const filteredErrors = [...errors.entries()]\n    .filter(([_, filePath]) => importedFiles.has(filePath))\n    .map(([error]) => error);\n\n  if (filteredErrors.length === 0) {\n    console.log(\n      \"\\x1b[32m✔ TypeScript compilation successful. No relevant errors found.\\x1b[0m\"\n    );\n    process.exit(0);\n  } else {\n    console.log(\"\\x1b[31m❌ TypeScript found errors:\\x1b[0m\");\n    filteredErrors.forEach((error) => console.log(formatErrorMessage(error)));\n    process.exit(1);\n  }\n}\n\nfilterErrors();\n");
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("import ts from \"typescript\";\nimport { execFileSync } from \"child_process\";\nimport path from \"path\";\n\n// This is a version of TSC command which removes errors from files that are not directly imported\n// by current project. This is needed because tsc with project references builds referenced packages\n// and reports errors for all files regardless if they are actually used or not. This helps reducing\n// false positives.\n\nconst directory = process.argv[2];\n\n// Function to extract all imported files\nfunction getImportedFiles() {\n  const configPath = ts.findConfigFile(\n    \"./\",\n    ts.sys.fileExists,\n    \"tsconfig.json\"\n  );\n  if (!configPath) throw new Error(\"tsconfig.json not found\");\n\n  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);\n  const parsedConfig = ts.parseJsonConfigFileContent(\n    configFile.config,\n    ts.sys,\n    \"./\"\n  );\n\n  const program = ts.createProgram(\n    parsedConfig.fileNames,\n    parsedConfig.options\n  );\n  const importedFiles = new Set();\n\n  for (const sourceFile of program.getSourceFiles()) {\n    if (sourceFile.isDeclarationFile) continue; // Skip .d.ts files\n\n    importedFiles.add(sourceFile.fileName);\n  }\n\n  return importedFiles;\n}\n\n// Function to run `tsc` and extract errors\nfunction getTscErrors() {\n  let tscOutput;\n  try {\n    tscOutput = execFileSync(\"yarn\", [\"tsc\", \"--build\", \"--pretty\", \"false\"], {\n      encoding: \"utf-8\",\n    });\n  } catch (error) {\n    tscOutput = error.stdout || \"\";\n  }\n\n  const errorMap = new Map();\n  const errorRegex = /^(.+?)\\((\\d+),(\\d+)\\): error (TS\\d+): (.*)$/gm;\n  let match;\n  while ((match = errorRegex.exec(tscOutput)) !== null) {\n    const [_, relativePath, line, column, errorCode, message] = match;\n    const absolutePath = path.resolve(process.cwd(), relativePath);\n    const formattedMessage = {\n      file: absolutePath,\n      line,\n      column,\n      errorCode,\n      message,\n    };\n    errorMap.set(formattedMessage, absolutePath);\n  }\n\n  return errorMap;\n}\n\n// Function to format TypeScript-style error messages\nfunction formatErrorMessage(error) {\n  const relativePath = path.relative(process.cwd(), error.file);\n  return `\\x1b[1m\\x1b[31m${relativePath}(${error.line},${error.column}): error ${error.errorCode}: ${error.message}\\x1b[0m`;\n}\n\n// Main function to filter errors\nfunction filterErrors() {\n  const importedFiles = getImportedFiles();\n  const errors = getTscErrors();\n\n  const filteredErrors = [...errors.entries()]\n    .filter(([_, filePath]) => importedFiles.has(filePath))\n    .map(([error]) => error);\n\n  if (filteredErrors.length === 0) {\n    console.log(\n      `\\x1b[32m✔ TypeScript compilation successful for ${directory}. No relevant errors found.\\x1b[0m`\n    );\n    process.exit(0);\n  } else {\n    console.log(`\\x1b[31m❌ TypeScript found errors in ${directory}:\\x1b[0m`);\n    filteredErrors.forEach((error) => console.log(formatErrorMessage(error)));\n    process.exit(1);\n  }\n}\n\nfilterErrors();\n");
 
 /***/ }),
 

@@ -81134,7 +81134,7 @@ function disableStrictIteratorChecks(directory) {
         tsconfig.compilerOptions.strictBuiltinIteratorReturn = false;
     });
 }
-async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
+async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPickBackends, }) {
     if (isMonoRepo) {
         const localApiClientPath = `${directory}/${apiClientSubDir}`;
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Copying api-client from ${apiClientPath}`);
@@ -81144,16 +81144,30 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, }) {
         node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${localApiClientPath}/package.json`, packageJson);
         return;
     }
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Linking api-client ${apiClientPath}`);
-    setApiClientResolution({ directory, apiClientPath });
-    await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-        cwd: directory,
-        outStream: nowhereStream,
-        env: {
-            ...process.env,
-            YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
-        },
-    });
+    if (cherryPickBackends.length === 0) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Linking api-client ${apiClientPath}`);
+        setApiClientResolution({ directory, apiClientPath });
+        await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+            cwd: directory,
+            outStream: nowhereStream,
+            env: {
+                ...process.env,
+                YARN_CACHE_FOLDER: `${node_path__WEBPACK_IMPORTED_MODULE_2___default().resolve(directory, ".yarn", "cache")}`,
+            },
+        });
+    }
+    else {
+        // If we just copy the whole api-client from monorepo, it will install all 
+        // services, which can cause issues with outdated internal libraries in apps outside
+        // of monorepo. So we cherry-pick only the services that being checked.
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
+        cherryPickBackends.forEach((backend) => {
+            node_fs__WEBPACK_IMPORTED_MODULE_3___default().cpSync(`${apiClientPath}/src/${backend}`, `./node-modules/@chilipiper/api-client/src/${backend}`, {
+                recursive: true,
+                force: true,
+            });
+        });
+    }
 }
 async function runChecks({ directory }) {
     node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_9__/* ["default"] */ .A, "utf-8");
@@ -81207,12 +81221,13 @@ async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, d
     await installApiClient({
         apiClientPath,
         directory,
+        cherryPickBackends: [],
         isMonoRepo: true,
     });
     apiClientInstallTimerEnd();
     return { foundTSCacheMatch };
 }
-async function prepareNonMonoRepo({ frontendKey, frontendVersions, checkoutToken, directory, apiClientPath, }) {
+async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersions, checkoutToken, directory, apiClientPath, }) {
     const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
     const checkoutTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`);
     await checkout({
@@ -81241,6 +81256,7 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, checkoutToken
     const apiClientInstallTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Installing api-client for ${frontendKey}`);
     await installApiClient({
         apiClientPath,
+        cherryPickBackends: Object.keys(backendVersions),
         directory,
         isMonoRepo: false,
     });
@@ -81316,6 +81332,8 @@ async function run() {
     try {
         const frontendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("frontend");
         const frontendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_6__/* .load */ .Hh(frontendVersionsJSON) ?? {});
+        const backendVersionsJSON = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("backend");
+        const backendVersions = (js_yaml__WEBPACK_IMPORTED_MODULE_6__/* .load */ .Hh(backendVersionsJSON) ?? {});
         const checkoutToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("checkout_token");
         const apiClientRepoPath = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("api_client_repo_path");
         const shardedFrontendsTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("Picking sharded frontends");
@@ -81379,6 +81397,7 @@ async function run() {
                 checkoutToken,
                 directory,
                 apiClientPath,
+                backendVersions,
             });
             await runCommands({
                 frontendKey,

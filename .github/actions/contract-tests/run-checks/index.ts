@@ -140,10 +140,12 @@ async function installApiClient({
   apiClientPath,
   directory,
   isMonoRepo,
+  cherryPickBackends,
 }: {
   directory: string;
   apiClientPath: string;
   isMonoRepo: boolean;
+  cherryPickBackends: string[];
 }) {
   if (isMonoRepo) {
     const localApiClientPath = `${directory}/${apiClientSubDir}`;
@@ -157,16 +159,34 @@ async function installApiClient({
     fs.writeFileSync(`${localApiClientPath}/package.json`, packageJson);
     return;
   }
-  info(`Linking api-client ${apiClientPath}`);
-  setApiClientResolution({ directory, apiClientPath });
-  await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
-    cwd: directory,
-    outStream: nowhereStream,
-    env: {
-      ...process.env,
-      YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
-    },
-  });
+
+  if (cherryPickBackends.length === 0) {
+    info(`Linking api-client ${apiClientPath}`);
+    setApiClientResolution({ directory, apiClientPath });
+    await exec(`yarn add @chilipiper/api-client@${apiClientPath}`, undefined, {
+      cwd: directory,
+      outStream: nowhereStream,
+      env: {
+        ...process.env,
+        YARN_CACHE_FOLDER: `${path.resolve(directory, ".yarn", "cache")}`,
+      },
+    });
+  } else {
+    // If we just copy the whole api-client from monorepo, it will install all 
+    // services, which can cause issues with outdated internal libraries in apps outside
+    // of monorepo. So we cherry-pick only the services that being checked.
+    info(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
+    cherryPickBackends.forEach((backend) => {
+      fs.cpSync(
+        `${apiClientPath}/src/${backend}`,
+        `./node-modules/@chilipiper/api-client/src/${backend}`,
+        {
+          recursive: true,
+          force: true,
+        }
+      );
+    });
+  }
 }
 
 async function runChecks({ directory }: { directory: string }) {
@@ -244,6 +264,7 @@ async function prepareMonoRepo({
   await installApiClient({
     apiClientPath,
     directory,
+    cherryPickBackends: [],
     isMonoRepo: true,
   });
   apiClientInstallTimerEnd();
@@ -254,12 +275,14 @@ async function prepareMonoRepo({
 async function prepareNonMonoRepo({
   frontendKey,
   frontendVersions,
+  backendVersions,
   checkoutToken,
   directory,
   apiClientPath,
 }: {
   frontendKey: keyof typeof frontendsConfig;
   frontendVersions: Record<string, string>;
+  backendVersions: Record<string, string>;
   directory: string;
   apiClientPath: string;
   checkoutToken: string;
@@ -301,6 +324,7 @@ async function prepareNonMonoRepo({
   );
   await installApiClient({
     apiClientPath,
+    cherryPickBackends: Object.keys(backendVersions),
     directory,
     isMonoRepo: false,
   });
@@ -430,6 +454,11 @@ async function run() {
       string,
       string
     >;
+    const backendVersionsJSON = getInput("backend");
+    const backendVersions = (yaml.load(backendVersionsJSON) ?? {}) as Record<
+      string,
+      string
+    >;
     const checkoutToken = getInput("checkout_token");
     const apiClientRepoPath = getInput("api_client_repo_path");
 
@@ -523,6 +552,7 @@ async function run() {
         checkoutToken,
         directory,
         apiClientPath,
+        backendVersions,
       });
 
       await runCommands({

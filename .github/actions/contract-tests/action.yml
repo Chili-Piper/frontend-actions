@@ -85,6 +85,7 @@ runs:
       uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@contract-tests-refactor
       with:
         frontend: ${{ inputs.frontend }}
+        backend: ${{ inputs.backend }}
         appsStatuses: ${{ inputs.appsStatuses }}
         api_client_repo_path: ${{ steps.get-api-client-path.outputs.api_client_repo_path }}
         checkout_token: ${{ inputs.checkout_token }}

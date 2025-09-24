@@ -81492,10 +81492,12 @@ const Timer = {
         };
     },
 };
-const appsStatuses = JSON.parse((0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("appsStatuses"));
+const appsStatuses = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("appsStatuses")
+    ? JSON.parse((0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("appsStatuses"))
+    : undefined;
 const hasBEChanges = appsStatuses
     ? Boolean(Object.values(appsStatuses.backend).find((item) => item === "CHANGED"))
-    : // if no appStatuses provided, act as if there are BE changes
+    : // if no appsStatuses provided, act as if there are BE changes
         true;
 function pickShardedFrontends(frontendVersions) {
     const shardConfig = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("shard");

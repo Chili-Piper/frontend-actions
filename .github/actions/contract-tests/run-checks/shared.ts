@@ -30,18 +30,20 @@ export const Timer = {
   },
 };
 
-const appsStatuses = JSON.parse(getInput("appsStatuses")) as
-  | {
-      frontend: Record<string, "CHANGED" | "NOT_CHANGED">;
-      backend: Record<string, "CHANGED" | "NOT_CHANGED">;
-    }
-  | undefined;
+type AppsStatuses = {
+  frontend: Record<string, "CHANGED" | "NOT_CHANGED">;
+  backend: Record<string, "CHANGED" | "NOT_CHANGED">;
+};
+
+const appsStatuses = getInput("appsStatuses")
+  ? (JSON.parse(getInput("appsStatuses")) as AppsStatuses)
+  : undefined;
 
 const hasBEChanges = appsStatuses
   ? Boolean(
       Object.values(appsStatuses.backend).find((item) => item === "CHANGED")
     )
-  : // if no appStatuses provided, act as if there are BE changes
+  : // if no appsStatuses provided, act as if there are BE changes
     true;
 
 export function pickShardedFrontends(frontendVersions: Record<string, string>) {

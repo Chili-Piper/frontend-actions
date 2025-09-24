@@ -1,140 +1,143 @@
 {
   "admin-billing": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-billing",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-billing"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-branding": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-branding",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-branding"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-center": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-center",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-center"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-chat": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-chat",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-chat"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-chilical": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-chilical",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-chilical"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-concierge": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-concierge",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-concierge"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-distribution": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-distribution",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-distribution"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-distro": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-distro",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-distro"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-integrations": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-integrations",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-integrations"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-notifications": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-notifications",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-notifications"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-platform-assets": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-platform-assets",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-platform-assets"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "admin-users": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/admin-users",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/admin-users"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "chili-chat": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/chili-chat",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/chili-chat"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "conciergejs-fire": {
     "repository": "Chili-Piper/frontend",
+    "directory": "./apps/conciergejs-fire",
     "commands": [
       {
-        "exec": "yarn tsc --build",
-        "directory": "./apps/conciergejs-fire"
+        "exec": "yarn tsc --build"
       }
     ]
   },
   "chilical": {
     "repository": "Chili-Piper/chilical",
-    "commands": [{ "exec": "yarn tsc", "directory": "." }]
+    "directory": ".",
+    "commands": [{ "exec": "yarn tsc" }]
   },
   "booking-app": {
     "repository": "Chili-Piper/booking-app",
-    "commands": [{ "exec": "yarn tsc", "directory": "./v1" }]
+    "directory": "./v1",
+    "commands": [{ "exec": "yarn tsc" }]
   },
   "chilical-scheduler": {
     "repository": "Chili-Piper/chilical-scheduler",
-    "commands": [{ "exec": "yarn tsc", "directory": "." }]
+    "directory": ".",
+    "commands": [{ "exec": "yarn tsc" }]
   }
 }

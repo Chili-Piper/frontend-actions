@@ -146,6 +146,10 @@ export async function saveTypescriptCache({
   app: string;
   version: string;
 }) {
+  if (!version) {
+    info(`Skipped saving TS cache cause there is no version configured for ${app}.`);
+    return;
+  }
   const paths = getTSCachePaths(directory);
   const hasFilesInPaths = paths.find((pattern) => {
     const resolvedPattern = path.resolve(directory, pattern);
@@ -156,7 +160,7 @@ export async function saveTypescriptCache({
   if (hasFilesInPaths) {
     await saveCache(paths, getTSCacheKey(app, version));
   } else {
-    info(`Skipped saving cache cause there is no file or directory match.`);
+    info(`Skipped saving TS cache cause there is no file or directory match.`);
   }
 }
 
@@ -188,6 +192,10 @@ export async function restoreTypescriptCache({
   app: string;
   version: string;
 }) {
+  if (!version) {
+    info(`Skipped restoring TS cache cause there is no version configured for ${app}.`);
+    return false;
+  }
   const key = await restoreCache(
     getTSCachePaths(directory),
     getTSCacheKey(app, version)

@@ -16,6 +16,9 @@ inputs:
   frontend:
     description: "frontend apps versions"
     required: false
+  backend:
+    description: "backend apps versions"
+    required: false
   appsStatuses:
     description: "object describing which apps have possible contract changes"
     required: false

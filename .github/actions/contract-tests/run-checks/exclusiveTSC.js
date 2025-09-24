@@ -7,6 +7,8 @@ import path from "path";
 // and reports errors for all files regardless if they are actually used or not. This helps reducing
 // false positives.
 
+const directory = process.argv[2];
+
 // Function to extract all imported files
 function getImportedFiles() {
   const configPath = ts.findConfigFile(
@@ -85,11 +87,11 @@ function filterErrors() {
 
   if (filteredErrors.length === 0) {
     console.log(
-      "\x1b[32m✔ TypeScript compilation successful. No relevant errors found.\x1b[0m"
+      `\x1b[32m✔ TypeScript compilation successful for ${directory}. No relevant errors found.\x1b[0m`
     );
     process.exit(0);
   } else {
-    console.log("\x1b[31m❌ TypeScript found errors:\x1b[0m");
+    console.log(`\x1b[31m❌ TypeScript found errors in ${directory}:\x1b[0m`);
     filteredErrors.forEach((error) => console.log(formatErrorMessage(error)));
     process.exit(1);
   }

@@ -81069,6 +81069,10 @@ const nowhereStream = node_fs__WEBPACK_IMPORTED_MODULE_3___default().createWrite
 async function prefetchMonoRepoTags({ versions, directory, }) {
     const dedupedVersions = [...new Set(versions)];
     const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
+    if (tags.length === 0) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)("No tags to prefetch");
+        return;
+    }
     await (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
         cwd: directory,
     });
@@ -81169,9 +81173,9 @@ async function installApiClient({ apiClientPath, directory, isMonoRepo, cherryPi
         });
     }
 }
-async function runChecks({ directory }) {
+async function runChecks({ app, directory, }) {
     node_fs__WEBPACK_IMPORTED_MODULE_3___default().writeFileSync(`${directory}/exclusiveTSC.js`, raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_9__/* ["default"] */ .A, "utf-8");
-    return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js", directory], {
+    return (0,_actions_exec__WEBPACK_IMPORTED_MODULE_0__.exec)("node", ["exclusiveTSC.js", app], {
         cwd: directory,
         ignoreReturnCode: true,
     });
@@ -81271,6 +81275,7 @@ async function runCommands({ directory, frontendKey, frontendVersions, isMonoRep
         ignoreTestFilesTimerEnd();
         const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
         const exitCode = await runChecks({
+            app: frontendKey,
             directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
         });
         runCheckTimerEnd();
@@ -81307,6 +81312,7 @@ async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, 
         await Promise.all(currentBatch.map(async (frontendKey) => {
             const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
             const exitCode = await runChecks({
+                app: frontendKey,
                 directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
             });
             if (exitCode !== 0) {

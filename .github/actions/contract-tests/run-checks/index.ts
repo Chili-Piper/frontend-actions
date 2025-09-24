@@ -34,6 +34,10 @@ async function prefetchMonoRepoTags({
 }) {
   const dedupedVersions = [...new Set(versions)];
   const tags = dedupedVersions.flatMap((version) => ["tag", `v${version}`]);
+  if (tags.length === 0) {
+    info("No tags to prefetch");
+    return;
+  }
   await exec("git", ["fetch", "--no-tags", "origin", ...tags, "--quiet"], {
     cwd: directory,
   });
@@ -189,9 +193,15 @@ async function installApiClient({
   }
 }
 
-async function runChecks({ directory }: { directory: string }) {
+async function runChecks({
+  app,
+  directory,
+}: {
+  app: string;
+  directory: string;
+}) {
   fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
-  return exec("node", ["exclusiveTSC.js", directory], {
+  return exec("node", ["exclusiveTSC.js", app], {
     cwd: directory,
     ignoreReturnCode: true,
   });
@@ -358,6 +368,7 @@ async function runCommands({
       `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
     );
     const exitCode = await runChecks({
+      app: frontendKey,
       directory: path.join(directory, frontend.directory),
     });
     runCheckTimerEnd();
@@ -420,6 +431,7 @@ async function runMonoRepoCommands({
       currentBatch.map(async (frontendKey) => {
         const frontend = frontendsConfig[frontendKey];
         const exitCode = await runChecks({
+          app: frontendKey,
           directory: path.join(directory, frontend.directory),
         });
         if (exitCode !== 0) {

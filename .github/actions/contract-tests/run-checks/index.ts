@@ -2,6 +2,7 @@ import { exec } from "@actions/exec";
 import JSON5 from "json5";
 import path from "node:path";
 import fs from "node:fs";
+import { groupBy } from "lodash";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
 import {
@@ -168,14 +169,7 @@ async function installApiClient({
   });
 }
 
-async function runChecks({
-  command,
-  directory,
-}: {
-  command: string;
-  directory: string;
-}) {
-  info(`Running type checks with command ${command}`);
+async function runChecks({ directory }: { directory: string }) {
   fs.writeFileSync(`${directory}/exclusiveTSC.js`, exclusiveTSC, "utf-8");
   return exec("node", ["exclusiveTSC.js"], {
     cwd: directory,
@@ -202,7 +196,6 @@ function disableMocksDirCheck(directory: string) {
 
 async function prepareMonoRepo({
   frontendKey,
-  lastFrontendKey,
   frontendVersions,
   checkoutToken,
   directory,
@@ -213,61 +206,49 @@ async function prepareMonoRepo({
   directory: string;
   apiClientPath: string;
   checkoutToken: string;
-  lastFrontendKey: string;
 }) {
   const frontend = frontendsConfig[frontendKey];
-  const isSameAsLastVersion =
-    frontendVersions[frontendKey] === frontendVersions[lastFrontendKey];
-
   // If is same version as last, no need to checkout & reinstall. Reuse configuration.
   // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
-  if (!isSameAsLastVersion) {
-    const checkoutTimerEnd = Timer.start(
-      `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
-    );
-    await checkout({
-      checkoutToken,
-      directory,
-      repository: frontend.repository,
-      version: frontendVersions[frontendKey],
-    });
-    checkoutTimerEnd();
+  const checkoutTimerEnd = Timer.start(
+    `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
+  );
+  await checkout({
+    checkoutToken,
+    directory,
+    repository: frontend.repository,
+    version: frontendVersions[frontendKey],
+  });
+  checkoutTimerEnd();
 
-    // temporary workaround
-    editJSON(`${directory}/package.json`, (packagejson) => {
-      packagejson.devDependencies["typescript"] = "5.6.3";
-      packagejson.resolutions["typescript"] = "5.6.3";
-    });
-    disableStrictIteratorChecks(directory);
+  // temporary workaround
+  editJSON(`${directory}/package.json`, (packagejson) => {
+    packagejson.devDependencies["typescript"] = "5.6.3";
+    packagejson.resolutions["typescript"] = "5.6.3";
+  });
+  disableStrictIteratorChecks(directory);
 
-    await install({ directory });
+  await install({ directory });
 
-    const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
-    const foundTSCacheMatch = await restoreTypescriptCache({
-      directory,
-      app: "monorepo",
-      version: frontendVersions[frontendKey],
-    });
-    restoreTSCacheTimerEnd();
+  const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
+  const foundTSCacheMatch = await restoreTypescriptCache({
+    directory,
+    app: "monorepo",
+    version: frontendVersions[frontendKey],
+  });
+  restoreTSCacheTimerEnd();
 
-    const apiClientInstallTimerEnd = Timer.start(
-      `Installing api-client for ${frontendKey}`
-    );
-    await installApiClient({
-      apiClientPath,
-      directory,
-      isMonoRepo: true,
-    });
-    apiClientInstallTimerEnd();
+  const apiClientInstallTimerEnd = Timer.start(
+    `Installing api-client for ${frontendKey}`
+  );
+  await installApiClient({
+    apiClientPath,
+    directory,
+    isMonoRepo: true,
+  });
+  apiClientInstallTimerEnd();
 
-    return { foundTSCacheMatch };
-  } else {
-    info(
-      `Version for ${frontendKey} is same as last run ${lastFrontendKey}. Skipping checkout & install`
-    );
-
-    return { foundTSCacheMatch: false };
-  }
+  return { foundTSCacheMatch };
 }
 
 async function prepareNonMonoRepo({
@@ -347,14 +328,13 @@ async function runCommands({
     const ignoreTestFilesTimerEnd = Timer.start(
       `Ignoring test files before running tests for ${frontendKey}`
     );
-    ignoreTestFiles(path.join(directory, command.directory));
+    ignoreTestFiles(path.join(directory, frontend.directory));
     ignoreTestFilesTimerEnd();
     const runCheckTimerEnd = Timer.start(
       `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
     );
     const exitCode = await runChecks({
-      command: command.exec,
-      directory: path.join(directory, command.directory),
+      directory: path.join(directory, frontend.directory),
     });
     runCheckTimerEnd();
 
@@ -377,6 +357,69 @@ async function runCommands({
     if (exitCode !== 0) {
       failedFrontends.add(frontendKey);
     }
+  }
+}
+
+async function runMonoRepoCommands({
+  directory,
+  frontendKeys,
+  frontendVersions,
+  foundTSCacheMatch,
+  failedFrontends,
+}: {
+  frontendKeys: Array<keyof typeof frontendsConfig>;
+  frontendVersions: Record<string, string>;
+  directory: string;
+  foundTSCacheMatch: boolean;
+  failedFrontends: Set<string>;
+}) {
+  info(`Running check commands for ${frontendKeys.join(", ")}`);
+  for (const frontendKey of frontendKeys) {
+    const frontend = frontendsConfig[frontendKey];
+
+    const ignoreTestFilesTimerEnd = Timer.start(
+      `Ignoring test files before running tests for ${frontendKey}`
+    );
+    ignoreTestFiles(path.join(directory, frontend.directory));
+    ignoreTestFilesTimerEnd();
+  }
+
+  const frontendQueue = [...frontendKeys];
+
+  const batchSize = 2; // Number of frontends to process in parallel. Same as monorepo concurrency
+  while (frontendQueue.length > 0) {
+    const currentBatch = frontendQueue.splice(0, batchSize);
+    const runCheckTimerEnd = Timer.start(
+      `Running type checks for ${currentBatch.join(", ")}`
+    );
+    await Promise.all(
+      currentBatch.map(async (frontendKey) => {
+        const frontend = frontendsConfig[frontendKey];
+        const exitCode = await runChecks({
+          directory: path.join(directory, frontend.directory),
+        });
+        if (exitCode !== 0) {
+          failedFrontends.add(frontendKey);
+        }
+      })
+    );
+    runCheckTimerEnd();
+  }
+
+  if (!foundTSCacheMatch) {
+    const saveTSCacheTimerEnd = Timer.start(
+      `Saving TS cache for ${frontendKeys.join(", ")}`
+    );
+    await saveTypescriptCache({
+      directory,
+      app: "monorepo",
+      version: frontendVersions[frontendKeys[0]],
+    });
+    saveTSCacheTimerEnd();
+  } else {
+    info(
+      `Skipping save TS cache because restore was exact match or repo is not monorepo`
+    );
   }
 }
 
@@ -436,33 +479,34 @@ async function run() {
       (key) => frontendsConfig[key].repository === monoRepo
     );
 
-    // force first iteration to have last version as undefined (fallback to master)
-    // so we skip checkout if first frontend version is master branch
-    let lastFrontendKey = "";
-    for (const frontendKey of monoRepoFrontends) {
-      const directory = monoRepoPath;
-      let foundTSCacheMatch = false;
+    const groupedMonoRepoFrontends = groupBy(
+      monoRepoFrontends,
+      (key) => frontendVersions[key] || "master"
+    );
 
+    for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
+      const sameVersionMonoRepoFrontends =
+        groupedMonoRepoFrontends[frontendVersion];
+      const firstFrontend = sameVersionMonoRepoFrontends[0];
+
+      info(
+        `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
+      );
       const result = await prepareMonoRepo({
-        frontendKey,
+        frontendKey: firstFrontend,
         frontendVersions,
         checkoutToken,
-        directory,
+        directory: monoRepoPath,
         apiClientPath,
-        lastFrontendKey,
       });
-      foundTSCacheMatch = result.foundTSCacheMatch;
 
-      await runCommands({
-        frontendKey,
+      await runMonoRepoCommands({
+        frontendKeys: sameVersionMonoRepoFrontends,
         frontendVersions,
-        directory,
-        isMonoRepo: true,
-        foundTSCacheMatch,
         failedFrontends,
+        foundTSCacheMatch: result.foundTSCacheMatch,
+        directory: monoRepoPath,
       });
-
-      lastFrontendKey = frontendKey;
     }
 
     const otherFrontends = frontendsKeys.filter(

@@ -81643,7 +81643,7 @@ async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, 
         ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
         ignoreTestFilesTimerEnd();
     }
-    const queue = new p_queue__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A({ concurrency: 3 });
+    const queue = new p_queue__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A({ concurrency: 2 });
     for (const frontendKey of frontendKeys) {
         queue.add(async () => {
             const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running type checks for ${frontendKey}`);

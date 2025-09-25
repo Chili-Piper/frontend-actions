@@ -413,7 +413,7 @@ async function runMonoRepoCommands({
     ignoreTestFilesTimerEnd();
   }
 
-  const queue = new PQueue({ concurrency: 2 }); // Number of frontends to process in parallel. Same as monorepo concurrency
+  const queue = new PQueue({ concurrency: 3 });
   for (const frontendKey of frontendKeys) {
     queue.add(async () => {
       const runCheckTimerEnd = Timer.start(

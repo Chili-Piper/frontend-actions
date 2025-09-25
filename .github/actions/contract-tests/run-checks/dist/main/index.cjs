@@ -81269,31 +81269,29 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersio
 async function runCommands({ directory, frontendKey, frontendVersions, isMonoRepo, foundTSCacheMatch, failedFrontends, }) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Running check commands for ${frontendKey}`);
     const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
-    for (const command of frontend.commands) {
-        const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
-        ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
-        ignoreTestFilesTimerEnd();
-        const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`);
-        const exitCode = await runChecks({
-            app: frontendKey,
-            directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
+    const ignoreTestFilesTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Ignoring test files before running tests for ${frontendKey}`);
+    ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
+    ignoreTestFilesTimerEnd();
+    const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running TSC for ${frontendKey} ${frontendVersions[frontendKey]}`);
+    const exitCode = await runChecks({
+        app: frontendKey,
+        directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
+    });
+    runCheckTimerEnd();
+    if (!foundTSCacheMatch && isMonoRepo) {
+        const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
+        await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveTypescriptCache */ .RN)({
+            directory,
+            app: "monorepo",
+            version: frontendVersions[frontendKey],
         });
-        runCheckTimerEnd();
-        if (!foundTSCacheMatch && isMonoRepo) {
-            const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKey}`);
-            await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveTypescriptCache */ .RN)({
-                directory,
-                app: "monorepo",
-                version: frontendVersions[frontendKey],
-            });
-            saveTSCacheTimerEnd();
-        }
-        else {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
-        }
-        if (exitCode !== 0) {
-            failedFrontends.add(frontendKey);
-        }
+        saveTSCacheTimerEnd();
+    }
+    else {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.info)(`Skipping save TS cache because restore was exact match or repo is not monorepo`);
+    }
+    if (exitCode !== 0) {
+        failedFrontends.add(frontendKey);
     }
 }
 async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, foundTSCacheMatch, failedFrontends, }) {
@@ -113089,7 +113087,7 @@ var lib = JSON5;
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-billing","commands":[{"exec":"yarn tsc --build"}]},"admin-branding":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-branding","commands":[{"exec":"yarn tsc --build"}]},"admin-center":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-center","commands":[{"exec":"yarn tsc --build"}]},"admin-chat":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-chat","commands":[{"exec":"yarn tsc --build"}]},"admin-chilical":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-chilical","commands":[{"exec":"yarn tsc --build"}]},"admin-concierge":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-concierge","commands":[{"exec":"yarn tsc --build"}]},"admin-distribution":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-distribution","commands":[{"exec":"yarn tsc --build"}]},"admin-distro":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-distro","commands":[{"exec":"yarn tsc --build"}]},"admin-integrations":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-integrations","commands":[{"exec":"yarn tsc --build"}]},"admin-notifications":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-notifications","commands":[{"exec":"yarn tsc --build"}]},"admin-platform-assets":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-platform-assets","commands":[{"exec":"yarn tsc --build"}]},"admin-users":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-users","commands":[{"exec":"yarn tsc --build"}]},"chili-chat":{"repository":"Chili-Piper/frontend","directory":"./apps/chili-chat","commands":[{"exec":"yarn tsc --build"}]},"conciergejs-fire":{"repository":"Chili-Piper/frontend","directory":"./apps/conciergejs-fire","commands":[{"exec":"yarn tsc --build"}]},"chilical":{"repository":"Chili-Piper/chilical","directory":".","commands":[{"exec":"yarn tsc"}]},"booking-app":{"repository":"Chili-Piper/booking-app","directory":"./v1","commands":[{"exec":"yarn tsc"}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","directory":".","commands":[{"exec":"yarn tsc"}]}}');
+module.exports = /*#__PURE__*/JSON.parse('{"admin-billing":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-billing"},"admin-branding":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-branding"},"admin-center":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-center"},"admin-chat":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-chat"},"admin-chilical":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-chilical"},"admin-concierge":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-concierge"},"admin-distribution":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-distribution"},"admin-distro":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-distro"},"admin-flow-orchestrator":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-flow-orchestrator"},"admin-integrations":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-integrations"},"admin-notifications":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-notifications"},"admin-platform-assets":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-platform-assets"},"admin-spam-checker":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-spam-checker"},"admin-users":{"repository":"Chili-Piper/frontend","directory":"./apps/admin-users"},"chili-chat":{"repository":"Chili-Piper/frontend","directory":"./apps/chili-chat"},"conciergejs-fire":{"repository":"Chili-Piper/frontend","directory":"./apps/conciergejs-fire"},"chilical":{"repository":"Chili-Piper/chilical","directory":".","commands":[{"exec":"yarn tsc"}]},"booking-app":{"repository":"Chili-Piper/booking-app","directory":"./v1","commands":[{"exec":"yarn tsc"}]},"chilical-scheduler":{"repository":"Chili-Piper/chilical-scheduler","directory":".","commands":[{"exec":"yarn tsc"}]}}');
 
 /***/ }),
 

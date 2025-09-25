@@ -358,40 +358,38 @@ async function runCommands({
 }) {
   info(`Running check commands for ${frontendKey}`);
   const frontend = frontendsConfig[frontendKey];
-  for (const command of frontend.commands) {
-    const ignoreTestFilesTimerEnd = Timer.start(
-      `Ignoring test files before running tests for ${frontendKey}`
+  const ignoreTestFilesTimerEnd = Timer.start(
+    `Ignoring test files before running tests for ${frontendKey}`
+  );
+  ignoreTestFiles(path.join(directory, frontend.directory));
+  ignoreTestFilesTimerEnd();
+  const runCheckTimerEnd = Timer.start(
+    `Running TSC for ${frontendKey} ${frontendVersions[frontendKey]}`
+  );
+  const exitCode = await runChecks({
+    app: frontendKey,
+    directory: path.join(directory, frontend.directory),
+  });
+  runCheckTimerEnd();
+
+  if (!foundTSCacheMatch && isMonoRepo) {
+    const saveTSCacheTimerEnd = Timer.start(
+      `Saving TS cache for ${frontendKey}`
     );
-    ignoreTestFiles(path.join(directory, frontend.directory));
-    ignoreTestFilesTimerEnd();
-    const runCheckTimerEnd = Timer.start(
-      `Running ${command.exec} for ${frontendKey} ${frontendVersions[frontendKey]}`
-    );
-    const exitCode = await runChecks({
-      app: frontendKey,
-      directory: path.join(directory, frontend.directory),
+    await saveTypescriptCache({
+      directory,
+      app: "monorepo",
+      version: frontendVersions[frontendKey],
     });
-    runCheckTimerEnd();
+    saveTSCacheTimerEnd();
+  } else {
+    info(
+      `Skipping save TS cache because restore was exact match or repo is not monorepo`
+    );
+  }
 
-    if (!foundTSCacheMatch && isMonoRepo) {
-      const saveTSCacheTimerEnd = Timer.start(
-        `Saving TS cache for ${frontendKey}`
-      );
-      await saveTypescriptCache({
-        directory,
-        app: "monorepo",
-        version: frontendVersions[frontendKey],
-      });
-      saveTSCacheTimerEnd();
-    } else {
-      info(
-        `Skipping save TS cache because restore was exact match or repo is not monorepo`
-      );
-    }
-
-    if (exitCode !== 0) {
-      failedFrontends.add(frontendKey);
-    }
+  if (exitCode !== 0) {
+    failedFrontends.add(frontendKey);
   }
 }
 

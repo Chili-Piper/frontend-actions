@@ -251,11 +251,6 @@ async function prepareMonoRepo({
   });
   checkoutTimerEnd();
 
-  // temporary workaround
-  editJSON(`${directory}/package.json`, (packagejson) => {
-    packagejson.devDependencies["typescript"] = "5.6.3";
-    packagejson.resolutions["typescript"] = "5.6.3";
-  });
   disableStrictIteratorChecks(directory);
 
   await install({ directory });

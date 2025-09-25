@@ -81207,11 +81207,6 @@ async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, d
         version: frontendVersions[frontendKey],
     });
     checkoutTimerEnd();
-    // temporary workaround
-    editJSON(`${directory}/package.json`, (packagejson) => {
-        packagejson.devDependencies["typescript"] = "5.6.3";
-        packagejson.resolutions["typescript"] = "5.6.3";
-    });
     disableStrictIteratorChecks(directory);
     await install({ directory });
     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("restoring TSBuild cache...");

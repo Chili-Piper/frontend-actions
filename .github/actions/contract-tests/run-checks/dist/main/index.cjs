@@ -8747,12 +8747,12 @@ exports.getIDToken = getIDToken;
 /**
  * Summary exports
  */
-var summary_1 = __webpack_require__(228);
+var summary_1 = __webpack_require__(7847);
 Object.defineProperty(exports, "summary", ({ enumerable: true, get: function () { return summary_1.summary; } }));
 /**
  * @deprecated use core.summary
  */
-var summary_2 = __webpack_require__(228);
+var summary_2 = __webpack_require__(7847);
 Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return summary_2.markdownSummary; } }));
 /**
  * Path exports
@@ -9092,7 +9092,7 @@ exports.getDetails = getDetails;
 
 /***/ }),
 
-/***/ 228:
+/***/ 7847:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -52872,6 +52872,350 @@ module.exports = DotObject
 
 /***/ }),
 
+/***/ 228:
+/***/ ((module) => {
+
+"use strict";
+
+
+var has = Object.prototype.hasOwnProperty
+  , prefix = '~';
+
+/**
+ * Constructor to create a storage for our `EE` objects.
+ * An `Events` instance is a plain object whose properties are event names.
+ *
+ * @constructor
+ * @private
+ */
+function Events() {}
+
+//
+// We try to not inherit from `Object.prototype`. In some engines creating an
+// instance in this way is faster than calling `Object.create(null)` directly.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// character to make sure that the built-in object properties are not
+// overridden or used as an attack vector.
+//
+if (Object.create) {
+  Events.prototype = Object.create(null);
+
+  //
+  // This hack is needed because the `__proto__` property is still inherited in
+  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+  //
+  if (!new Events().__proto__) prefix = false;
+}
+
+/**
+ * Representation of a single event listener.
+ *
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
+ * @constructor
+ * @private
+ */
+function EE(fn, context, once) {
+  this.fn = fn;
+  this.context = context;
+  this.once = once || false;
+}
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} once Specify if the listener is a one-time listener.
+ * @returns {EventEmitter}
+ * @private
+ */
+function addListener(emitter, event, fn, context, once) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('The listener must be a function');
+  }
+
+  var listener = new EE(fn, context || emitter, once)
+    , evt = prefix ? prefix + event : event;
+
+  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+  else emitter._events[evt] = [emitter._events[evt], listener];
+
+  return emitter;
+}
+
+/**
+ * Clear event by name.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} evt The Event name.
+ * @private
+ */
+function clearEvent(emitter, evt) {
+  if (--emitter._eventsCount === 0) emitter._events = new Events();
+  else delete emitter._events[evt];
+}
+
+/**
+ * Minimal `EventEmitter` interface that is molded against the Node.js
+ * `EventEmitter` interface.
+ *
+ * @constructor
+ * @public
+ */
+function EventEmitter() {
+  this._events = new Events();
+  this._eventsCount = 0;
+}
+
+/**
+ * Return an array listing the events for which the emitter has registered
+ * listeners.
+ *
+ * @returns {Array}
+ * @public
+ */
+EventEmitter.prototype.eventNames = function eventNames() {
+  var names = []
+    , events
+    , name;
+
+  if (this._eventsCount === 0) return names;
+
+  for (name in (events = this._events)) {
+    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+  }
+
+  if (Object.getOwnPropertySymbols) {
+    return names.concat(Object.getOwnPropertySymbols(events));
+  }
+
+  return names;
+};
+
+/**
+ * Return the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Array} The registered listeners.
+ * @public
+ */
+EventEmitter.prototype.listeners = function listeners(event) {
+  var evt = prefix ? prefix + event : event
+    , handlers = this._events[evt];
+
+  if (!handlers) return [];
+  if (handlers.fn) return [handlers.fn];
+
+  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+    ee[i] = handlers[i].fn;
+  }
+
+  return ee;
+};
+
+/**
+ * Return the number of listeners listening to a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Number} The number of listeners.
+ * @public
+ */
+EventEmitter.prototype.listenerCount = function listenerCount(event) {
+  var evt = prefix ? prefix + event : event
+    , listeners = this._events[evt];
+
+  if (!listeners) return 0;
+  if (listeners.fn) return 1;
+  return listeners.length;
+};
+
+/**
+ * Calls each of the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Boolean} `true` if the event had listeners, else `false`.
+ * @public
+ */
+EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return false;
+
+  var listeners = this._events[evt]
+    , len = arguments.length
+    , args
+    , i;
+
+  if (listeners.fn) {
+    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+    switch (len) {
+      case 1: return listeners.fn.call(listeners.context), true;
+      case 2: return listeners.fn.call(listeners.context, a1), true;
+      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+    }
+
+    for (i = 1, args = new Array(len -1); i < len; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    listeners.fn.apply(listeners.context, args);
+  } else {
+    var length = listeners.length
+      , j;
+
+    for (i = 0; i < length; i++) {
+      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+      switch (len) {
+        case 1: listeners[i].fn.call(listeners[i].context); break;
+        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+        default:
+          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+            args[j - 1] = arguments[j];
+          }
+
+          listeners[i].fn.apply(listeners[i].context, args);
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.on = function on(event, fn, context) {
+  return addListener(this, event, fn, context, false);
+};
+
+/**
+ * Add a one-time listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.once = function once(event, fn, context) {
+  return addListener(this, event, fn, context, true);
+};
+
+/**
+ * Remove the listeners of a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn Only remove the listeners that match this function.
+ * @param {*} context Only remove the listeners that have this context.
+ * @param {Boolean} once Only remove one-time listeners.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return this;
+  if (!fn) {
+    clearEvent(this, evt);
+    return this;
+  }
+
+  var listeners = this._events[evt];
+
+  if (listeners.fn) {
+    if (
+      listeners.fn === fn &&
+      (!once || listeners.once) &&
+      (!context || listeners.context === context)
+    ) {
+      clearEvent(this, evt);
+    }
+  } else {
+    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+      if (
+        listeners[i].fn !== fn ||
+        (once && !listeners[i].once) ||
+        (context && listeners[i].context !== context)
+      ) {
+        events.push(listeners[i]);
+      }
+    }
+
+    //
+    // Reset the array, or remove it completely if we have no more listeners.
+    //
+    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+    else clearEvent(this, evt);
+  }
+
+  return this;
+};
+
+/**
+ * Remove all listeners, or those of the specified event.
+ *
+ * @param {(String|Symbol)} [event] The event name.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+  var evt;
+
+  if (event) {
+    evt = prefix ? prefix + event : event;
+    if (this._events[evt]) clearEvent(this, evt);
+  } else {
+    this._events = new Events();
+    this._eventsCount = 0;
+  }
+
+  return this;
+};
+
+//
+// Alias methods names because people roll like that.
+//
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
+
+//
+// Allow `EventEmitter` to be imported as module namespace.
+//
+EventEmitter.EventEmitter = EventEmitter;
+
+//
+// Expose the module.
+//
+if (true) {
+  module.exports = EventEmitter;
+}
+
+
+/***/ }),
+
 /***/ 4447:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -81043,6 +81387,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var node_fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(node_fs__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2543);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var p_queue__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(8343);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6977);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(382);
@@ -81051,6 +81396,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var raw_loader_exclusiveTSC_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(7019);
 var __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_shared__WEBPACK_IMPORTED_MODULE_7__]);
 _shared__WEBPACK_IMPORTED_MODULE_7__ = (__webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__)[0];
+
 
 
 
@@ -81207,11 +81553,6 @@ async function prepareMonoRepo({ frontendKey, frontendVersions, checkoutToken, d
         version: frontendVersions[frontendKey],
     });
     checkoutTimerEnd();
-    // temporary workaround
-    editJSON(`${directory}/package.json`, (packagejson) => {
-        packagejson.devDependencies["typescript"] = "5.6.3";
-        packagejson.resolutions["typescript"] = "5.6.3";
-    });
     disableStrictIteratorChecks(directory);
     await install({ directory });
     const restoreTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start("restoring TSBuild cache...");
@@ -81302,23 +81643,21 @@ async function runMonoRepoCommands({ directory, frontendKeys, frontendVersions, 
         ignoreTestFiles(node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory));
         ignoreTestFilesTimerEnd();
     }
-    const frontendQueue = [...frontendKeys];
-    const batchSize = 2; // Number of frontends to process in parallel. Same as monorepo concurrency
-    while (frontendQueue.length > 0) {
-        const currentBatch = frontendQueue.splice(0, batchSize);
-        const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running type checks for ${currentBatch.join(", ")}`);
-        await Promise.all(currentBatch.map(async (frontendKey) => {
+    const queue = new p_queue__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A({ concurrency: 3 });
+    for (const frontendKey of frontendKeys) {
+        queue.add(async () => {
+            const runCheckTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Running type checks for ${frontendKey}`);
             const frontend = _frontends_json__WEBPACK_IMPORTED_MODULE_8__[frontendKey];
             const exitCode = await runChecks({
                 app: frontendKey,
                 directory: node_path__WEBPACK_IMPORTED_MODULE_2___default().join(directory, frontend.directory),
             });
-            if (exitCode !== 0) {
+            if (exitCode !== 0)
                 failedFrontends.add(frontendKey);
-            }
-        }));
-        runCheckTimerEnd();
+            runCheckTimerEnd();
+        });
     }
+    await queue.onIdle();
     if (!foundTSCacheMatch) {
         const saveTSCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving TS cache for ${frontendKeys.join(", ")}`);
         await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveTypescriptCache */ .RN)({
@@ -81392,26 +81731,30 @@ async function run() {
             });
         }
         const otherFrontends = frontendsKeys.filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_8__[key].repository !== _shared__WEBPACK_IMPORTED_MODULE_7__/* .monoRepo */ .yl);
+        const queue = new p_queue__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A({ concurrency: 2 });
         for (const frontendKey of otherFrontends) {
-            const directory = frontendKey;
-            let foundTSCacheMatch = false;
-            await prepareNonMonoRepo({
-                frontendKey,
-                frontendVersions,
-                checkoutToken,
-                directory,
-                apiClientPath,
-                backendVersions,
-            });
-            await runCommands({
-                frontendKey,
-                frontendVersions,
-                directory,
-                isMonoRepo: false,
-                foundTSCacheMatch,
-                failedFrontends,
+            queue.add(async () => {
+                const directory = frontendKey;
+                let foundTSCacheMatch = false;
+                await prepareNonMonoRepo({
+                    frontendKey,
+                    frontendVersions,
+                    checkoutToken,
+                    directory,
+                    apiClientPath,
+                    backendVersions,
+                });
+                await runCommands({
+                    frontendKey,
+                    frontendVersions,
+                    directory,
+                    isMonoRepo: false,
+                    foundTSCacheMatch,
+                    failedFrontends,
+                });
             });
         }
+        await queue.onIdle();
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
         if (failedFrontends.size > 0) {
             const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("should_fail") === "true";
@@ -113068,6 +113411,567 @@ const JSON5 = {
 var lib = JSON5;
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (lib);
+
+
+/***/ }),
+
+/***/ 8343:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  A: () => (/* binding */ PQueue)
+});
+
+// EXTERNAL MODULE: ./node_modules/eventemitter3/index.js
+var eventemitter3 = __webpack_require__(228);
+;// ./node_modules/eventemitter3/index.mjs
+
+
+
+/* harmony default export */ const node_modules_eventemitter3 = ((/* unused pure expression or super */ null && (EventEmitter)));
+
+;// ./node_modules/p-timeout/index.js
+class TimeoutError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'TimeoutError';
+	}
+}
+
+/**
+An error to be thrown when the request is aborted by AbortController.
+DOMException is thrown instead of this Error when DOMException is available.
+*/
+class AbortError extends Error {
+	constructor(message) {
+		super();
+		this.name = 'AbortError';
+		this.message = message;
+	}
+}
+
+/**
+TODO: Remove AbortError and just throw DOMException when targeting Node 18.
+*/
+const getDOMException = errorMessage => globalThis.DOMException === undefined
+	? new AbortError(errorMessage)
+	: new DOMException(errorMessage);
+
+/**
+TODO: Remove below function and just 'reject(signal.reason)' when targeting Node 18.
+*/
+const getAbortedReason = signal => {
+	const reason = signal.reason === undefined
+		? getDOMException('This operation was aborted.')
+		: signal.reason;
+
+	return reason instanceof Error ? reason : getDOMException(reason);
+};
+
+function pTimeout(promise, options) {
+	const {
+		milliseconds,
+		fallback,
+		message,
+		customTimers = {setTimeout, clearTimeout},
+	} = options;
+
+	let timer;
+	let abortHandler;
+
+	const wrappedPromise = new Promise((resolve, reject) => {
+		if (typeof milliseconds !== 'number' || Math.sign(milliseconds) !== 1) {
+			throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
+		}
+
+		if (options.signal) {
+			const {signal} = options;
+			if (signal.aborted) {
+				reject(getAbortedReason(signal));
+			}
+
+			abortHandler = () => {
+				reject(getAbortedReason(signal));
+			};
+
+			signal.addEventListener('abort', abortHandler, {once: true});
+		}
+
+		if (milliseconds === Number.POSITIVE_INFINITY) {
+			promise.then(resolve, reject);
+			return;
+		}
+
+		// We create the error outside of `setTimeout` to preserve the stack trace.
+		const timeoutError = new TimeoutError();
+
+		timer = customTimers.setTimeout.call(undefined, () => {
+			if (fallback) {
+				try {
+					resolve(fallback());
+				} catch (error) {
+					reject(error);
+				}
+
+				return;
+			}
+
+			if (typeof promise.cancel === 'function') {
+				promise.cancel();
+			}
+
+			if (message === false) {
+				resolve();
+			} else if (message instanceof Error) {
+				reject(message);
+			} else {
+				timeoutError.message = message ?? `Promise timed out after ${milliseconds} milliseconds`;
+				reject(timeoutError);
+			}
+		}, milliseconds);
+
+		(async () => {
+			try {
+				resolve(await promise);
+			} catch (error) {
+				reject(error);
+			}
+		})();
+	});
+
+	const cancelablePromise = wrappedPromise.finally(() => {
+		cancelablePromise.clear();
+		if (abortHandler && options.signal) {
+			options.signal.removeEventListener('abort', abortHandler);
+		}
+	});
+
+	cancelablePromise.clear = () => {
+		customTimers.clearTimeout.call(undefined, timer);
+		timer = undefined;
+	};
+
+	return cancelablePromise;
+}
+
+;// ./node_modules/p-queue/dist/lower-bound.js
+// Port of lower_bound from https://en.cppreference.com/w/cpp/algorithm/lower_bound
+// Used to compute insertion index to keep queue sorted after insertion
+function lowerBound(array, value, comparator) {
+    let first = 0;
+    let count = array.length;
+    while (count > 0) {
+        const step = Math.trunc(count / 2);
+        let it = first + step;
+        if (comparator(array[it], value) <= 0) {
+            first = ++it;
+            count -= step + 1;
+        }
+        else {
+            count = step;
+        }
+    }
+    return first;
+}
+
+;// ./node_modules/p-queue/dist/priority-queue.js
+
+class PriorityQueue {
+    #queue = [];
+    enqueue(run, options) {
+        options = {
+            priority: 0,
+            ...options,
+        };
+        const element = {
+            priority: options.priority,
+            id: options.id,
+            run,
+        };
+        if (this.size === 0 || this.#queue[this.size - 1].priority >= options.priority) {
+            this.#queue.push(element);
+            return;
+        }
+        const index = lowerBound(this.#queue, element, (a, b) => b.priority - a.priority);
+        this.#queue.splice(index, 0, element);
+    }
+    setPriority(id, priority) {
+        const index = this.#queue.findIndex((element) => element.id === id);
+        if (index === -1) {
+            throw new ReferenceError(`No promise function with the id "${id}" exists in the queue.`);
+        }
+        const [item] = this.#queue.splice(index, 1);
+        this.enqueue(item.run, { priority, id });
+    }
+    dequeue() {
+        const item = this.#queue.shift();
+        return item?.run;
+    }
+    filter(options) {
+        return this.#queue.filter((element) => element.priority === options.priority).map((element) => element.run);
+    }
+    get size() {
+        return this.#queue.length;
+    }
+}
+
+;// ./node_modules/p-queue/dist/index.js
+
+
+
+/**
+Promise queue with concurrency control.
+*/
+class PQueue extends eventemitter3 {
+    #carryoverConcurrencyCount;
+    #isIntervalIgnored;
+    #intervalCount = 0;
+    #intervalCap;
+    #interval;
+    #intervalEnd = 0;
+    #intervalId;
+    #timeoutId;
+    #queue;
+    #queueClass;
+    #pending = 0;
+    // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
+    #concurrency;
+    #isPaused;
+    #throwOnTimeout;
+    // Use to assign a unique identifier to a promise function, if not explicitly specified
+    #idAssigner = 1n;
+    /**
+    Per-operation timeout in milliseconds. Operations fulfill once `timeout` elapses if they haven't already.
+
+    Applies to each future operation.
+    */
+    timeout;
+    // TODO: The `throwOnTimeout` option should affect the return types of `add()` and `addAll()`
+    constructor(options) {
+        super();
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        options = {
+            carryoverConcurrencyCount: false,
+            intervalCap: Number.POSITIVE_INFINITY,
+            interval: 0,
+            concurrency: Number.POSITIVE_INFINITY,
+            autoStart: true,
+            queueClass: PriorityQueue,
+            ...options,
+        };
+        if (!(typeof options.intervalCap === 'number' && options.intervalCap >= 1)) {
+            throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${options.intervalCap?.toString() ?? ''}\` (${typeof options.intervalCap})`);
+        }
+        if (options.interval === undefined || !(Number.isFinite(options.interval) && options.interval >= 0)) {
+            throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${options.interval?.toString() ?? ''}\` (${typeof options.interval})`);
+        }
+        this.#carryoverConcurrencyCount = options.carryoverConcurrencyCount;
+        this.#isIntervalIgnored = options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0;
+        this.#intervalCap = options.intervalCap;
+        this.#interval = options.interval;
+        this.#queue = new options.queueClass();
+        this.#queueClass = options.queueClass;
+        this.concurrency = options.concurrency;
+        this.timeout = options.timeout;
+        this.#throwOnTimeout = options.throwOnTimeout === true;
+        this.#isPaused = options.autoStart === false;
+    }
+    get #doesIntervalAllowAnother() {
+        return this.#isIntervalIgnored || this.#intervalCount < this.#intervalCap;
+    }
+    get #doesConcurrentAllowAnother() {
+        return this.#pending < this.#concurrency;
+    }
+    #next() {
+        this.#pending--;
+        this.#tryToStartAnother();
+        this.emit('next');
+    }
+    #onResumeInterval() {
+        this.#onInterval();
+        this.#initializeIntervalIfNeeded();
+        this.#timeoutId = undefined;
+    }
+    get #isIntervalPaused() {
+        const now = Date.now();
+        if (this.#intervalId === undefined) {
+            const delay = this.#intervalEnd - now;
+            if (delay < 0) {
+                // Act as the interval was done
+                // We don't need to resume it here because it will be resumed on line 160
+                this.#intervalCount = (this.#carryoverConcurrencyCount) ? this.#pending : 0;
+            }
+            else {
+                // Act as the interval is pending
+                if (this.#timeoutId === undefined) {
+                    this.#timeoutId = setTimeout(() => {
+                        this.#onResumeInterval();
+                    }, delay);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    #tryToStartAnother() {
+        if (this.#queue.size === 0) {
+            // We can clear the interval ("pause")
+            // Because we can redo it later ("resume")
+            if (this.#intervalId) {
+                clearInterval(this.#intervalId);
+            }
+            this.#intervalId = undefined;
+            this.emit('empty');
+            if (this.#pending === 0) {
+                this.emit('idle');
+            }
+            return false;
+        }
+        if (!this.#isPaused) {
+            const canInitializeInterval = !this.#isIntervalPaused;
+            if (this.#doesIntervalAllowAnother && this.#doesConcurrentAllowAnother) {
+                const job = this.#queue.dequeue();
+                if (!job) {
+                    return false;
+                }
+                this.emit('active');
+                job();
+                if (canInitializeInterval) {
+                    this.#initializeIntervalIfNeeded();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    #initializeIntervalIfNeeded() {
+        if (this.#isIntervalIgnored || this.#intervalId !== undefined) {
+            return;
+        }
+        this.#intervalId = setInterval(() => {
+            this.#onInterval();
+        }, this.#interval);
+        this.#intervalEnd = Date.now() + this.#interval;
+    }
+    #onInterval() {
+        if (this.#intervalCount === 0 && this.#pending === 0 && this.#intervalId) {
+            clearInterval(this.#intervalId);
+            this.#intervalId = undefined;
+        }
+        this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
+        this.#processQueue();
+    }
+    /**
+    Executes all queued functions until it reaches the limit.
+    */
+    #processQueue() {
+        // eslint-disable-next-line no-empty
+        while (this.#tryToStartAnother()) { }
+    }
+    get concurrency() {
+        return this.#concurrency;
+    }
+    set concurrency(newConcurrency) {
+        if (!(typeof newConcurrency === 'number' && newConcurrency >= 1)) {
+            throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
+        }
+        this.#concurrency = newConcurrency;
+        this.#processQueue();
+    }
+    async #throwOnAbort(signal) {
+        return new Promise((_resolve, reject) => {
+            signal.addEventListener('abort', () => {
+                reject(signal.reason);
+            }, { once: true });
+        });
+    }
+    /**
+    Updates the priority of a promise function by its id, affecting its execution order. Requires a defined concurrency limit to take effect.
+
+    For example, this can be used to prioritize a promise function to run earlier.
+
+    ```js
+    import PQueue from 'p-queue';
+
+    const queue = new PQueue({concurrency: 1});
+
+    queue.add(async () => '🦄', {priority: 1});
+    queue.add(async () => '🦀', {priority: 0, id: '🦀'});
+    queue.add(async () => '🦄', {priority: 1});
+    queue.add(async () => '🦄', {priority: 1});
+
+    queue.setPriority('🦀', 2);
+    ```
+
+    In this case, the promise function with `id: '🦀'` runs second.
+
+    You can also deprioritize a promise function to delay its execution:
+
+    ```js
+    import PQueue from 'p-queue';
+
+    const queue = new PQueue({concurrency: 1});
+
+    queue.add(async () => '🦄', {priority: 1});
+    queue.add(async () => '🦀', {priority: 1, id: '🦀'});
+    queue.add(async () => '🦄');
+    queue.add(async () => '🦄', {priority: 0});
+
+    queue.setPriority('🦀', -1);
+    ```
+    Here, the promise function with `id: '🦀'` executes last.
+    */
+    setPriority(id, priority) {
+        this.#queue.setPriority(id, priority);
+    }
+    async add(function_, options = {}) {
+        // In case `id` is not defined.
+        options.id ??= (this.#idAssigner++).toString();
+        options = {
+            timeout: this.timeout,
+            throwOnTimeout: this.#throwOnTimeout,
+            ...options,
+        };
+        return new Promise((resolve, reject) => {
+            this.#queue.enqueue(async () => {
+                this.#pending++;
+                try {
+                    options.signal?.throwIfAborted();
+                    this.#intervalCount++;
+                    let operation = function_({ signal: options.signal });
+                    if (options.timeout) {
+                        operation = pTimeout(Promise.resolve(operation), { milliseconds: options.timeout });
+                    }
+                    if (options.signal) {
+                        operation = Promise.race([operation, this.#throwOnAbort(options.signal)]);
+                    }
+                    const result = await operation;
+                    resolve(result);
+                    this.emit('completed', result);
+                }
+                catch (error) {
+                    if (error instanceof TimeoutError && !options.throwOnTimeout) {
+                        resolve();
+                        return;
+                    }
+                    reject(error);
+                    this.emit('error', error);
+                }
+                finally {
+                    this.#next();
+                }
+            }, options);
+            this.emit('add');
+            this.#tryToStartAnother();
+        });
+    }
+    async addAll(functions, options) {
+        return Promise.all(functions.map(async (function_) => this.add(function_, options)));
+    }
+    /**
+    Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
+    */
+    start() {
+        if (!this.#isPaused) {
+            return this;
+        }
+        this.#isPaused = false;
+        this.#processQueue();
+        return this;
+    }
+    /**
+    Put queue execution on hold.
+    */
+    pause() {
+        this.#isPaused = true;
+    }
+    /**
+    Clear the queue.
+    */
+    clear() {
+        this.#queue = new this.#queueClass();
+    }
+    /**
+    Can be called multiple times. Useful if you for example add additional items at a later time.
+
+    @returns A promise that settles when the queue becomes empty.
+    */
+    async onEmpty() {
+        // Instantly resolve if the queue is empty
+        if (this.#queue.size === 0) {
+            return;
+        }
+        await this.#onEvent('empty');
+    }
+    /**
+    @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
+
+    If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
+
+    Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
+    */
+    async onSizeLessThan(limit) {
+        // Instantly resolve if the queue is empty.
+        if (this.#queue.size < limit) {
+            return;
+        }
+        await this.#onEvent('next', () => this.#queue.size < limit);
+    }
+    /**
+    The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
+
+    @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
+    */
+    async onIdle() {
+        // Instantly resolve if none pending and if nothing else is queued
+        if (this.#pending === 0 && this.#queue.size === 0) {
+            return;
+        }
+        await this.#onEvent('idle');
+    }
+    async #onEvent(event, filter) {
+        return new Promise(resolve => {
+            const listener = () => {
+                if (filter && !filter()) {
+                    return;
+                }
+                this.off(event, listener);
+                resolve();
+            };
+            this.on(event, listener);
+        });
+    }
+    /**
+    Size of the queue, the number of queued items waiting to run.
+    */
+    get size() {
+        return this.#queue.size;
+    }
+    /**
+    Size of the queue, filtered by the given options.
+
+    For example, this can be used to find the number of items remaining in the queue with a specific priority level.
+    */
+    sizeBy(options) {
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        return this.#queue.filter(options).length;
+    }
+    /**
+    Number of running items (no longer in the queue).
+    */
+    get pending() {
+        return this.#pending;
+    }
+    /**
+    Whether the queue is currently paused.
+    */
+    get isPaused() {
+        return this.#isPaused;
+    }
+}
 
 
 /***/ }),

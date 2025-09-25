@@ -3,6 +3,7 @@ import JSON5 from "json5";
 import path from "node:path";
 import fs from "node:fs";
 import { groupBy } from "lodash";
+import PQueue from "p-queue";
 import { info, getInput, setFailed, setOutput } from "@actions/core";
 import * as yaml from "js-yaml";
 import {
@@ -251,11 +252,6 @@ async function prepareMonoRepo({
   });
   checkoutTimerEnd();
 
-  // temporary workaround
-  editJSON(`${directory}/package.json`, (packagejson) => {
-    packagejson.devDependencies["typescript"] = "5.6.3";
-    packagejson.resolutions["typescript"] = "5.6.3";
-  });
   disableStrictIteratorChecks(directory);
 
   await install({ directory });
@@ -417,28 +413,23 @@ async function runMonoRepoCommands({
     ignoreTestFilesTimerEnd();
   }
 
-  const frontendQueue = [...frontendKeys];
-
-  const batchSize = 2; // Number of frontends to process in parallel. Same as monorepo concurrency
-  while (frontendQueue.length > 0) {
-    const currentBatch = frontendQueue.splice(0, batchSize);
-    const runCheckTimerEnd = Timer.start(
-      `Running type checks for ${currentBatch.join(", ")}`
-    );
-    await Promise.all(
-      currentBatch.map(async (frontendKey) => {
-        const frontend = frontendsConfig[frontendKey];
-        const exitCode = await runChecks({
-          app: frontendKey,
-          directory: path.join(directory, frontend.directory),
-        });
-        if (exitCode !== 0) {
-          failedFrontends.add(frontendKey);
-        }
-      })
-    );
-    runCheckTimerEnd();
+  const queue = new PQueue({ concurrency: 2 });
+  for (const frontendKey of frontendKeys) {
+    queue.add(async () => {
+      const runCheckTimerEnd = Timer.start(
+        `Running type checks for ${frontendKey}`
+      );
+      const frontend = frontendsConfig[frontendKey];
+      const exitCode = await runChecks({
+        app: frontendKey,
+        directory: path.join(directory, frontend.directory),
+      });
+      if (exitCode !== 0) failedFrontends.add(frontendKey);
+      runCheckTimerEnd();
+    });
   }
+
+  await queue.onIdle();
 
   if (!foundTSCacheMatch) {
     const saveTSCacheTimerEnd = Timer.start(
@@ -552,28 +543,33 @@ async function run() {
       (key) => frontendsConfig[key].repository !== monoRepo
     );
 
+    const queue = new PQueue({ concurrency: 2 });
     for (const frontendKey of otherFrontends) {
-      const directory = frontendKey;
-      let foundTSCacheMatch = false;
+      queue.add(async () => {
+        const directory = frontendKey;
+        let foundTSCacheMatch = false;
 
-      await prepareNonMonoRepo({
-        frontendKey,
-        frontendVersions,
-        checkoutToken,
-        directory,
-        apiClientPath,
-        backendVersions,
-      });
+        await prepareNonMonoRepo({
+          frontendKey,
+          frontendVersions,
+          checkoutToken,
+          directory,
+          apiClientPath,
+          backendVersions,
+        });
 
-      await runCommands({
-        frontendKey,
-        frontendVersions,
-        directory,
-        isMonoRepo: false,
-        foundTSCacheMatch,
-        failedFrontends,
+        await runCommands({
+          frontendKey,
+          frontendVersions,
+          directory,
+          isMonoRepo: false,
+          foundTSCacheMatch,
+          failedFrontends,
+        });
       });
     }
+
+    await queue.onIdle();
 
     setOutput("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
 

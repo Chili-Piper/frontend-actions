@@ -86,6 +86,7 @@ runs:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
     - name: Load Open API Docs
+      if: steps.decide.outputs.mode == 'multi'
       shell: bash
       working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs

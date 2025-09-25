@@ -67,6 +67,29 @@ runs:
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
+    - name: Decide single vs multi backend
+      id: decide
+      shell: bash
+      env:
+        BACKEND: ${{ inputs.backend }}
+      run: |
+        printf '%s\n' "$BACKEND" > backend.yml
+        line_count=$(grep -cve '^[[:space:]]*$' backend.yml)
+
+        if [ "$line_count" -eq 1 ]; then
+          line=$(head -n1 backend.yml)
+          backend_name=$(echo "$line" | cut -d':' -f1 | xargs)
+          echo "mode=single" >> "$GITHUB_OUTPUT"
+          echo "backend_name=$backend_name" >> "$GITHUB_OUTPUT"
+        else
+          echo "mode=multi" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Show decided mode
+      run: |
+        echo "Decided mode: ${{ steps.decide.outputs.mode }}"
+        if [ "${{ steps.decide.outputs.mode }}" = "single" ]; then
+          echo "Backend Name: ${{ steps.decide.outputs.backend_name }}"
+        fi
     - name: Build API code
       shell: bash
       working-directory: api-client-source

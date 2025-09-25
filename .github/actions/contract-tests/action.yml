@@ -47,18 +47,46 @@ runs:
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
         npm_token: ${{ inputs.npm_token }}
+    - name: Decide single vs multi backend
+      id: decide
+      shell: bash
+      env:
+        BACKEND: ${{ inputs.backend }}
+      run: |
+        printf '%s\n' "$BACKEND" > backend.yml
+        line_count=$(grep -cve '^[[:space:]]*$' backend.yml)
+
+        if [ "$line_count" -eq 1 ]; then
+          line=$(head -n1 backend.yml)
+          backend_name=$(echo "$line" | cut -d':' -f1 | xargs)
+          echo "mode=single" >> "$GITHUB_OUTPUT"
+          echo "backend_name=$backend_name" >> "$GITHUB_OUTPUT"
+        else
+          echo "mode=multi" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Show decided mode
+      shell: bash
+      run: |
+        echo "Decided mode: ${{ steps.decide.outputs.mode }}"
+        if [ "${{ steps.decide.outputs.mode }}" = "single" ]; then
+          echo "Backend Name: ${{ steps.decide.outputs.backend_name }}"
+        fi
     - name: Authenticate to CPCLOUD
+      if: steps.decide.outputs.mode == 'multi'
       uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Set up Cloud SDK
+      if: steps.decide.outputs.mode == 'multi'
       uses: google-github-actions/setup-gcloud@v2
     - name: Update api-client services.json
+      if: steps.decide.outputs.mode == 'multi'
       uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-services@main
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
     - name: Load Open API Docs
+      if: steps.decide.outputs.mode == 'multi'
       shell: bash
       working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs
@@ -70,6 +98,8 @@ runs:
     - name: Build API code
       shell: bash
       working-directory: api-client-source
+      env:
+        SERVICE: ${{ steps.decide.outputs.backend_name }}
       run: yarn workspace @chilipiper/api-client generate-code
     - name: Get api-client path
       id: get-api-client-path

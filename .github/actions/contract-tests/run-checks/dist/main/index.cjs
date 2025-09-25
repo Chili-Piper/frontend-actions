@@ -81731,26 +81731,30 @@ async function run() {
             });
         }
         const otherFrontends = frontendsKeys.filter((key) => _frontends_json__WEBPACK_IMPORTED_MODULE_8__[key].repository !== _shared__WEBPACK_IMPORTED_MODULE_7__/* .monoRepo */ .yl);
+        const queue = new p_queue__WEBPACK_IMPORTED_MODULE_10__/* ["default"] */ .A({ concurrency: 2 });
         for (const frontendKey of otherFrontends) {
-            const directory = frontendKey;
-            let foundTSCacheMatch = false;
-            await prepareNonMonoRepo({
-                frontendKey,
-                frontendVersions,
-                checkoutToken,
-                directory,
-                apiClientPath,
-                backendVersions,
-            });
-            await runCommands({
-                frontendKey,
-                frontendVersions,
-                directory,
-                isMonoRepo: false,
-                foundTSCacheMatch,
-                failedFrontends,
+            queue.add(async () => {
+                const directory = frontendKey;
+                let foundTSCacheMatch = false;
+                await prepareNonMonoRepo({
+                    frontendKey,
+                    frontendVersions,
+                    checkoutToken,
+                    directory,
+                    apiClientPath,
+                    backendVersions,
+                });
+                await runCommands({
+                    frontendKey,
+                    frontendVersions,
+                    directory,
+                    isMonoRepo: false,
+                    foundTSCacheMatch,
+                    failedFrontends,
+                });
             });
         }
+        await queue.onIdle();
         (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.setOutput)("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
         if (failedFrontends.size > 0) {
             const shouldFail = (0,_actions_core__WEBPACK_IMPORTED_MODULE_5__.getInput)("should_fail") === "true";

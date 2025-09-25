@@ -543,28 +543,33 @@ async function run() {
       (key) => frontendsConfig[key].repository !== monoRepo
     );
 
+    const queue = new PQueue({ concurrency: 2 });
     for (const frontendKey of otherFrontends) {
-      const directory = frontendKey;
-      let foundTSCacheMatch = false;
+      queue.add(async () => {
+        const directory = frontendKey;
+        let foundTSCacheMatch = false;
 
-      await prepareNonMonoRepo({
-        frontendKey,
-        frontendVersions,
-        checkoutToken,
-        directory,
-        apiClientPath,
-        backendVersions,
-      });
+        await prepareNonMonoRepo({
+          frontendKey,
+          frontendVersions,
+          checkoutToken,
+          directory,
+          apiClientPath,
+          backendVersions,
+        });
 
-      await runCommands({
-        frontendKey,
-        frontendVersions,
-        directory,
-        isMonoRepo: false,
-        foundTSCacheMatch,
-        failedFrontends,
+        await runCommands({
+          frontendKey,
+          frontendVersions,
+          directory,
+          isMonoRepo: false,
+          foundTSCacheMatch,
+          failedFrontends,
+        });
       });
     }
+
+    await queue.onIdle();
 
     setOutput("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
 

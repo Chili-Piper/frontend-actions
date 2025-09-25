@@ -98,7 +98,7 @@ runs:
       shell: bash
       working-directory: api-client-source
       env:
-        SERVICE: steps.decide.outputs.backend_name
+        SERVICE: ${{ steps.decide.outputs.backend_name }}
       run: yarn workspace @chilipiper/api-client generate-code
     - name: Get api-client path
       id: get-api-client-path

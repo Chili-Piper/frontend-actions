@@ -85,6 +85,7 @@ runs:
           echo "mode=multi" >> "$GITHUB_OUTPUT"
         fi
     - name: Show decided mode
+      shell: bash
       run: |
         echo "Decided mode: ${{ steps.decide.outputs.mode }}"
         if [ "${{ steps.decide.outputs.mode }}" = "single" ]; then

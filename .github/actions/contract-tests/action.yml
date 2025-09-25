@@ -47,26 +47,6 @@ runs:
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
         npm_token: ${{ inputs.npm_token }}
-    - name: Authenticate to CPCLOUD
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ inputs.gcloud_credentials_json }}
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-    - name: Update api-client services.json
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-services@main
-      with:
-        api_client_source_path: api-client-source
-        backend: ${{ inputs.backend }}
-    - name: Load Open API Docs
-      shell: bash
-      working-directory: api-client-source
-      run: yarn workspace @chilipiper/api-client load-docs
-    - name: Update api-client docs json
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-openapi@main
-      with:
-        api_client_source_path: api-client-source
-        backend: ${{ inputs.backend }}
     - name: Decide single vs multi backend
       id: decide
       shell: bash
@@ -91,9 +71,34 @@ runs:
         if [ "${{ steps.decide.outputs.mode }}" = "single" ]; then
           echo "Backend Name: ${{ steps.decide.outputs.backend_name }}"
         fi
+    - name: Authenticate to CPCLOUD
+      if: steps.decide.outputs.mode === 'multi'
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.gcloud_credentials_json }}
+    - name: Set up Cloud SDK
+      if: steps.decide.outputs.mode === 'multi'
+      uses: google-github-actions/setup-gcloud@v2
+    - name: Update api-client services.json
+      if: steps.decide.outputs.mode === 'multi'
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-services@main
+      with:
+        api_client_source_path: api-client-source
+        backend: ${{ inputs.backend }}
+    - name: Load Open API Docs
+      shell: bash
+      working-directory: api-client-source
+      run: yarn workspace @chilipiper/api-client load-docs
+    - name: Update api-client docs json
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-openapi@main
+      with:
+        api_client_source_path: api-client-source
+        backend: ${{ inputs.backend }}
     - name: Build API code
       shell: bash
       working-directory: api-client-source
+      env:
+        SERVICE: {{ steps.decide.outputs.backend_name }}
       run: yarn workspace @chilipiper/api-client generate-code
     - name: Get api-client path
       id: get-api-client-path

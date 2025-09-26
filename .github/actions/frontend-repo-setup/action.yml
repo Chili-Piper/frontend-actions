@@ -59,8 +59,6 @@ runs:
       shell: bash
 
     - name: Install yarn
-      env:
-        YARN_CACHE_FOLDER: ${{ inputs.checkout_path }}/.yarn/cache
       run: corepack enable
       shell: bash
 
@@ -95,6 +93,8 @@ runs:
     - name: Install dependencies
       id: install-dependencies
       working-directory: ${{ inputs.checkout_path }}
+      env:
+        YARN_CACHE_FOLDER: ${{ inputs.checkout_path }}/.yarn/cache
       run: yarn --immutable
       shell: bash
 

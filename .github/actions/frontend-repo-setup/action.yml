@@ -59,6 +59,8 @@ runs:
       shell: bash
 
     - name: Install yarn
+      env:
+        YARN_CACHE_FOLDER: ${{ inputs.checkout_path }}/.yarn/cache
       run: corepack enable
       shell: bash
 
@@ -70,7 +72,6 @@ runs:
         cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
-          ${{ inputs.checkout_path }}/**/node_modules
           !**/node_modules/.cache/turbo
           ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress

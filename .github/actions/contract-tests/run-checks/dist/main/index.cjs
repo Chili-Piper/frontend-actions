@@ -80031,7 +80031,9 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersio
     const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
     exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .restoreYarnCache */ .pF)(directory);
     restoreCacheTimerEnd();
-    await install({ directory });
+    if (!exactMatch) {
+        await install({ directory });
+    }
     if (!exactMatch) {
         const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);
         await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .saveYarnCache */ .kZ)(directory);

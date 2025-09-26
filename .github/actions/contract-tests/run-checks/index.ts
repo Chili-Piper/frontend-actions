@@ -312,7 +312,9 @@ async function prepareNonMonoRepo({
   exactMatch = await restoreYarnCache(directory);
   restoreCacheTimerEnd();
 
-  await install({ directory });
+  if (!exactMatch) {
+    await install({ directory });
+  }
 
   if (!exactMatch) {
     const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);

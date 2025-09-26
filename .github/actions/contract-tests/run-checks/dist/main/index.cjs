@@ -80412,7 +80412,11 @@ function getCacheKey({ directory, addFingerPrint, }) {
     return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
 }
 function getCachePaths(directory) {
-    return [`${directory}/.yarn/cache`];
+    return [
+        `${directory}/.yarn/cache`,
+        `${directory}/.yarn/install-state.gz`,
+        `${directory}/**/node_modules`,
+    ];
 }
 async function restoreYarnCache(directory) {
     const key = getCacheKey({ directory, addFingerPrint: true });

@@ -41,6 +41,7 @@ runs:
   using: "composite"
   steps:
     - name: Install zstd
+      shell: bash
       run: apt-get install zstd
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main

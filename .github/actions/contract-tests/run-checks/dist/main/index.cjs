@@ -80027,13 +80027,10 @@ async function prepareNonMonoRepo({ frontendKey, frontendVersions, backendVersio
         version: frontendVersions[frontendKey],
     });
     checkoutTimerEnd();
-    // booking-app cache is too big. its better to not save it
     let exactMatch = true;
-    if (frontendKey !== "booking-app") {
-        const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
-        exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .restoreYarnCache */ .pF)(directory);
-        restoreCacheTimerEnd();
-    }
+    const restoreCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Restoring cache for ${frontendKey}`);
+    exactMatch = await (0,_shared__WEBPACK_IMPORTED_MODULE_7__/* .restoreYarnCache */ .pF)(directory);
+    restoreCacheTimerEnd();
     await install({ directory });
     if (!exactMatch) {
         const saveCacheTimerEnd = _shared__WEBPACK_IMPORTED_MODULE_7__/* .Timer */ .M4.start(`Saving cache for ${frontendKey}`);

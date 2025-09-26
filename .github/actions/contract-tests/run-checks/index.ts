@@ -305,15 +305,12 @@ async function prepareNonMonoRepo({
   });
   checkoutTimerEnd();
 
-  // booking-app cache is too big. its better to not save it
   let exactMatch = true;
-  if (frontendKey !== "booking-app") {
-    const restoreCacheTimerEnd = Timer.start(
-      `Restoring cache for ${frontendKey}`
-    );
-    exactMatch = await restoreYarnCache(directory);
-    restoreCacheTimerEnd();
-  }
+  const restoreCacheTimerEnd = Timer.start(
+    `Restoring cache for ${frontendKey}`
+  );
+  exactMatch = await restoreYarnCache(directory);
+  restoreCacheTimerEnd();
 
   await install({ directory });
 

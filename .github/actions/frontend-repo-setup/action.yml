@@ -70,6 +70,7 @@ runs:
         cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
       with:
         path: |
+          ${{ inputs.checkout_path }}/**/node_modules
           !**/node_modules/.cache/turbo
           ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress
@@ -92,10 +93,13 @@ runs:
 
     - name: Install dependencies
       id: install-dependencies
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
       working-directory: ${{ inputs.checkout_path }}
       env:
         YARN_CACHE_FOLDER: ${{ inputs.checkout_path }}/.yarn/cache
-      run: yarn --immutable
+      run: |
+        echo ${{ steps.node-modules-cache.outputs.cache-hit }}
+        yarn --immutable
       shell: bash
 
     - name: set LATEST_TAG

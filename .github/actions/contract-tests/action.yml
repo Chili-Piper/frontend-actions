@@ -42,7 +42,7 @@ runs:
   steps:
     - name: Install zstd
       shell: bash
-      run: sudo apt-get install zstd
+      run: sudo apt-get update && sudo apt-get install zstd
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
       with:

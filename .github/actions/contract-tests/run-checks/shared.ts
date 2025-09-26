@@ -116,6 +116,7 @@ function getCachePaths(directory: string) {
 export async function restoreYarnCache(directory: string) {
   const key = getCacheKey({ directory, addFingerPrint: true });
   const matchKey = await restoreCache(getCachePaths(directory), key, [
+    key,
     getCacheKey({ directory }),
   ]);
   info(`comparing keys ${matchKey} and ${key}`);

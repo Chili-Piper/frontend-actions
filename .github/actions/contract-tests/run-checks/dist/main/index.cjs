@@ -81975,6 +81975,7 @@ function getCachePaths(directory) {
 async function restoreYarnCache(directory) {
     const key = getCacheKey({ directory, addFingerPrint: true });
     const matchKey = await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.restoreCache)(getCachePaths(directory), key, [
+        key,
         getCacheKey({ directory }),
     ]);
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`comparing keys ${matchKey} and ${key}`);

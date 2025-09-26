@@ -80430,7 +80430,7 @@ async function restoreYarnCache(directory) {
     return matchKey === key;
 }
 async function saveYarnCache(directory) {
-    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getCachePaths(directory), getCacheKey({ directory }));
+    await (0,_actions_cache__WEBPACK_IMPORTED_MODULE_3__.saveCache)(getCachePaths(directory), getCacheKey({ directory, addFingerPrint: true }));
 }
 function getTSCachePaths(directory) {
     return [

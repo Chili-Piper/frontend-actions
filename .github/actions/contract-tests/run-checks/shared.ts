@@ -123,7 +123,10 @@ export async function restoreYarnCache(directory: string) {
 }
 
 export async function saveYarnCache(directory: string) {
-  await saveCache(getCachePaths(directory), getCacheKey({ directory }));
+  await saveCache(
+    getCachePaths(directory),
+    getCacheKey({ directory, addFingerPrint: true })
+  );
 }
 
 function getTSCachePaths(directory: string) {

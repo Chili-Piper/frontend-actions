@@ -110,11 +110,7 @@ function getCacheKey({
 }
 
 function getCachePaths(directory: string) {
-  return [
-    `${directory}/.yarn/cache`,
-    `${directory}/.yarn/install-state.gz`,
-    `${directory}/**/node_modules`,
-  ];
+  return [`${directory}/.yarn/cache`, `${directory}/**/node_modules`];
 }
 
 export async function restoreYarnCache(directory: string) {

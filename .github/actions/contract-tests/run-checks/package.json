@@ -6,7 +6,7 @@
     "build": "webpack --config webpack.config.js"
   },
   "dependencies": {
-    "@actions/cache": "4.0.0",
+    "@actions/cache": "4.1.0",
     "@actions/core": "1.10.0",
     "@actions/exec": "1.1.1",
     "@types/lodash": "4.17.14",

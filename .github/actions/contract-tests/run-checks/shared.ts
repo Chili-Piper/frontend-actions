@@ -116,7 +116,6 @@ function getCachePaths(directory: string) {
 export async function restoreYarnCache(directory: string) {
   const key = getCacheKey({ directory, addFingerPrint: true });
   const matchKey = await restoreCache(getCachePaths(directory), key, [
-    key,
     getCacheKey({ directory }),
   ]);
   info(`comparing keys ${matchKey} and ${key}`);
@@ -148,7 +147,9 @@ export async function saveTypescriptCache({
   version: string;
 }) {
   if (!version) {
-    info(`Skipped saving TS cache cause there is no version configured for ${app}.`);
+    info(
+      `Skipped saving TS cache cause there is no version configured for ${app}.`
+    );
     return;
   }
   const paths = getTSCachePaths(directory);
@@ -194,7 +195,9 @@ export async function restoreTypescriptCache({
   version: string;
 }) {
   if (!version) {
-    info(`Skipped restoring TS cache cause there is no version configured for ${app}.`);
+    info(
+      `Skipped restoring TS cache cause there is no version configured for ${app}.`
+    );
     return false;
   }
   const key = await restoreCache(

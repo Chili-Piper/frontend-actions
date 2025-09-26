@@ -115,7 +115,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@main
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@use-zstd
       with:
         frontend: ${{ inputs.frontend }}
         backend: ${{ inputs.backend }}

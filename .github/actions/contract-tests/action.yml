@@ -41,7 +41,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@gcloud-cache
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend

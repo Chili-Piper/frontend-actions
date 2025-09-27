@@ -2,7 +2,7 @@ import { getInput, info } from "@actions/core";
 import { execSync } from "node:child_process";
 import { partition, sortBy } from "lodash";
 import { hashFileSync } from "hasha";
-import { restoreCache, saveCache } from "@actions/cache";
+import { restoreCache, saveCache } from "./cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
 import path from "node:path";
@@ -115,18 +115,20 @@ function getCachePaths(directory: string) {
 
 export async function restoreYarnCache(directory: string) {
   const key = getCacheKey({ directory, addFingerPrint: true });
-  const matchKey = await restoreCache(getCachePaths(directory), key, [
-    getCacheKey({ directory }),
-  ]);
+  const matchKey = await restoreCache({
+    path: getCachePaths(directory),
+    key,
+    restoreKeys: [getCacheKey({ directory })],
+  });
   info(`comparing keys ${matchKey} and ${key}`);
   return matchKey === key;
 }
 
 export async function saveYarnCache(directory: string) {
-  await saveCache(
-    getCachePaths(directory),
-    getCacheKey({ directory, addFingerPrint: true })
-  );
+  await saveCache({
+    path: getCachePaths(directory),
+    key: getCacheKey({ directory, addFingerPrint: true }),
+  });
 }
 
 function getTSCachePaths(directory: string) {
@@ -163,7 +165,7 @@ export async function saveTypescriptCache({
     );
   });
   if (hasFilesInPaths) {
-    await saveCache(paths, getTSCacheKey(app, version));
+    await saveCache({ path: paths, key: getTSCacheKey(app, version) });
   } else {
     info(`Skipped saving TS cache cause there is no file or directory match.`);
   }
@@ -203,10 +205,11 @@ export async function restoreTypescriptCache({
     );
     return false;
   }
-  const key = await restoreCache(
-    getTSCachePaths(directory),
-    getTSCacheKey(app, version)
-  );
+  const key = await restoreCache({
+    path: getTSCachePaths(directory),
+    key: getTSCacheKey(app, version),
+    restoreKeys: [],
+  });
   if (key) {
     updateTSBuildFilesTimestamp(directory);
   }

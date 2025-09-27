@@ -5,6 +5,8 @@ export default {
   entry: {
     main: "./src/main.ts",
     post: "./src/post.ts",
+    restore: "./src/restore.ts",
+    save: "./src/save.ts",
   },
   output: {
     path: path.resolve("dist"),

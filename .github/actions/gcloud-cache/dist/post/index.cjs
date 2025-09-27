@@ -65773,6 +65773,25 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var lib_core = __webpack_require__(6977);
+;// ./src/state.ts
+
+function saveState(state) {
+    core.debug(`Saving state: ${JSON.stringify(state)}.`);
+    core.saveState("path", JSON.stringify(state.path));
+    core.saveState("cache-hit-kind", state.cacheHitKind);
+    core.saveState("target-file-name", state.targetFileName);
+}
+function getState() {
+    const state = {
+        path: JSON.parse(lib_core.getState("path")),
+        bucket: lib_core.getState("bucket"),
+        cacheHitKind: lib_core.getState("cache-hit-kind"),
+        targetFileName: lib_core.getState("target-file-name"),
+    };
+    lib_core.debug(`Loaded state: ${JSON.stringify(state)}.`);
+    return state;
+}
+
 // EXTERNAL MODULE: ./node_modules/@actions/glob/lib/glob.js
 var glob = __webpack_require__(631);
 // EXTERNAL MODULE: ./node_modules/google-auth-library/build/src/index.js
@@ -79678,26 +79697,6 @@ class TransferManager {
 const external_node_path_namespaceObject = require("node:path");
 // EXTERNAL MODULE: ./node_modules/tmp-promise/index.js
 var tmp_promise = __webpack_require__(6458);
-;// ./src/state.ts
-
-function saveState(state) {
-    core.debug(`Saving state: ${JSON.stringify(state)}.`);
-    core.saveState("bucket", state.bucket);
-    core.saveState("path", state.path);
-    core.saveState("cache-hit-kind", state.cacheHitKind);
-    core.saveState("target-file-name", state.targetFileName);
-}
-function getState() {
-    const state = {
-        path: lib_core.getState("path"),
-        bucket: lib_core.getState("bucket"),
-        cacheHitKind: lib_core.getState("cache-hit-kind"),
-        targetFileName: lib_core.getState("target-file-name"),
-    };
-    lib_core.debug(`Loaded state: ${JSON.stringify(state)}.`);
-    return state;
-}
-
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var lib_exec = __webpack_require__(6665);
 // EXTERNAL MODULE: ./node_modules/semver/index.js
@@ -79777,7 +79776,10 @@ async function extractTar(archivePath, compressionMethod, cwd) {
     ]);
 }
 
-;// ./src/post.ts
+;// ./src/constants.ts
+const BUCKET = "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f";
+
+;// ./src/save-internal.ts
 
 
 
@@ -79785,14 +79787,8 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 
 
 
-async function main() {
-    const state = getState();
-    if (state.cacheHitKind === "exact") {
-        console.log("🌀 Skipping uploading cache as the cache was hit by exact match.");
-        return;
-    }
-    const bucket = new Storage().bucket(state.bucket);
-    const targetFileName = state.targetFileName;
+async function saveInternal({ path, targetFileName, }) {
+    const bucket = new Storage().bucket(BUCKET);
     const [targetFileExists] = await bucket
         .file(targetFileName)
         .exists()
@@ -79806,7 +79802,8 @@ async function main() {
         return;
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
-    const globber = await glob.create(state.path, {
+    const pattern = `{${path.join(",")}}`;
+    const globber = await glob.create(pattern, {
         implicitDescendants: false,
     });
     const paths = await globber
@@ -79837,6 +79834,22 @@ async function main() {
             throw err;
         });
         console.log("✅ Successfully saved cache.");
+    });
+}
+
+;// ./src/post.ts
+
+
+
+async function main() {
+    const state = getState();
+    if (state.cacheHitKind === "exact") {
+        console.log("🌀 Skipping uploading cache as the cache was hit by exact match.");
+        return;
+    }
+    return saveInternal({
+        path: state.path,
+        targetFileName: state.targetFileName,
     });
 }
 void main().catch((err) => {

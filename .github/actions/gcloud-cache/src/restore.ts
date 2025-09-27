@@ -1,0 +1,258 @@
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import { Storage, File, Bucket } from "@google-cloud/storage";
+import { withFile as withTemporaryFile } from "tmp-promise";
+
+import { ObjectMetadata } from "./gcs-utils";
+import { CacheHitKindState, saveState } from "./state";
+import { extractTar } from "./tar-utils";
+import { BUCKET } from "./constants";
+
+const masterBranch = "refs/heads/master";
+const mainBranch = "refs/heads/main";
+
+async function getBestMatch({
+  bucket,
+  key,
+  restoreKeys,
+  restoreFromRepo,
+  folderPrefix,
+  branch,
+  isPR,
+}: {
+  bucket: Bucket;
+  key: string;
+  restoreKeys: string[];
+  folderPrefix: string;
+  branch: string;
+  isPR: boolean;
+  restoreFromRepo?: string;
+}): Promise<[File, Exclude<CacheHitKindState, "none">] | [null, "none"]> {
+  const exactPath = `${folderPrefix}/${branch}/${key}.tar`;
+
+  core.info(`Will lookup for the file ${exactPath}`);
+
+  const exactFileBranch = bucket.file(exactPath);
+  const exactFileMaster = bucket.file(
+    `${folderPrefix}/${masterBranch}/${key}.tar`
+  );
+  const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
+
+  const exactFilesBranch = restoreFromRepo
+    ? [Promise.resolve([false])]
+    : [exactFileBranch.exists()];
+
+  core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
+
+  core.info("isPR: " + isPR);
+
+  const exactFilesMaster = isPR
+    ? [exactFileMaster.exists(), exactFileMain.exists()]
+    : [Promise.resolve([false]), Promise.resolve([false])];
+
+  const exactFileExistsPromises = [...exactFilesBranch, ...exactFilesMaster];
+  const [
+    exactFileExistsResult,
+    exactFileMasterExistsResult,
+    exactFileMainExistsResult,
+  ] = await Promise.all(exactFileExistsPromises).catch((err) => {
+    core.error("Failed to check if an exact match exists");
+    throw err;
+  });
+
+  core.info("exact result: " + JSON.stringify(exactFileExistsResult));
+
+  const exactFile = (() => {
+    if (exactFileExistsResult[0]) {
+      return exactFileBranch;
+    }
+    if (exactFileMasterExistsResult[0]) {
+      return exactFileMaster;
+    }
+    if (exactFileMainExistsResult[0]) {
+      return exactFileMain;
+    }
+  })();
+
+  core.info(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
+
+  if (exactFile) {
+    console.log(`🙌 Found exact match from cache for key '${key}'.`);
+    return [exactFile, "exact"];
+  } else {
+    console.log(`🔸 No exact match found for key '${key}'.`);
+  }
+
+  const restoreKey = restoreKeys[restoreKeys.length - 1];
+  const branchFiles = restoreFromRepo
+    ? Promise.resolve([])
+    : bucket
+        .getFiles({
+          prefix: `${folderPrefix}/${branch}/${restoreKey}`,
+        })
+        .then(([files]) => files);
+
+  const masterFiles = isPR
+    ? Promise.resolve([])
+    : Promise.all([
+        bucket.getFiles({
+          prefix: `${folderPrefix}/${masterBranch}/${restoreKey}`,
+        }),
+        bucket.getFiles({
+          prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
+        }),
+      ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
+
+  const [branchCandidates, masterCandidates] = await Promise.all([
+    branchFiles,
+    masterFiles,
+  ]).catch((err) => {
+    core.error("Failed to list cache candidates");
+    throw err;
+  });
+
+  const bucketFiles = [...branchCandidates, ...masterCandidates].sort(
+    (a, b) =>
+      new Date(b.metadata.updated as ObjectMetadata["updated"]).getTime() -
+      new Date(a.metadata.updated as ObjectMetadata["updated"]).getTime()
+  );
+
+  core.info(
+    `Candidates: ${JSON.stringify(
+      bucketFiles.map((f) => ({
+        name: f.name,
+        metadata: {
+          updated: f.metadata.updated as ObjectMetadata["updated"],
+        },
+      }))
+    )}.`
+  );
+
+  for (const restoreKey of restoreKeys) {
+    const foundFile = bucketFiles.find(
+      (file) =>
+        file.name.startsWith(`${folderPrefix}/${branch}/${restoreKey}`) ||
+        file.name.startsWith(`${folderPrefix}/${masterBranch}/${restoreKey}`) ||
+        file.name.startsWith(`${folderPrefix}/${mainBranch}/${restoreKey}`)
+    );
+
+    if (foundFile) {
+      console.log(`🤝 Found match from cache for restore key '${restoreKey}'.`);
+      return [foundFile, "partial"];
+    } else {
+      console.log(
+        `🔸 No cache candidate found for restore key '${restoreKey}'.`
+      );
+    }
+  }
+
+  return [null, "none"];
+}
+
+export async function restore({
+  path,
+  key,
+  restoreKeys,
+  restoreFromRepo,
+}: {
+  path: string[];
+  key: string;
+  restoreKeys: string[];
+  restoreFromRepo?: string;
+}) {
+  const bucket = new Storage().bucket(BUCKET);
+
+  const folderPrefix = `${github.context.repo.owner}/${
+    restoreFromRepo || github.context.repo.repo
+  }`;
+
+  const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
+
+  const [bestMatch, bestMatchKind] = await core.group(
+    "🔍 Searching the best cache archive available",
+    () =>
+      getBestMatch({
+        bucket,
+        key,
+        restoreKeys,
+        restoreFromRepo,
+        folderPrefix,
+        branch: github.context.ref,
+        isPR: Boolean(github.context.payload.pull_request),
+      })
+  );
+
+  core.info(`Best match kind: ${bestMatchKind}.`);
+
+  if (!bestMatch) {
+    saveState({
+      path: path,
+      cacheHitKind: "none",
+      targetFileName: exactFileName,
+    });
+    console.log("😢 No cache candidate found.");
+    return;
+  }
+
+  core.info(`Best match name: ${bestMatch.name}.`);
+
+  const bestMatchMetadata = await bestMatch
+    .getMetadata()
+    .then(([metadata]) => metadata as unknown as ObjectMetadata)
+    .catch((err) => {
+      core.error("Failed to read object metadatas");
+      throw err;
+    });
+
+  core.info(`Best match metadata: ${JSON.stringify(bestMatchMetadata)}.`);
+
+  const compressionMethod =
+    bestMatchMetadata?.metadata?.["Cache-Action-Compression-Method"];
+
+  core.info(`Best match compression method: ${compressionMethod}.`);
+
+  if (!bestMatchMetadata || !compressionMethod) {
+    saveState({
+      path: path,
+      cacheHitKind: "none",
+      targetFileName: exactFileName,
+    });
+
+    console.log("😢 No cache candidate found (missing metadata).");
+    return;
+  }
+
+  const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
+
+  return withTemporaryFile(async (tmpFile) => {
+    await core
+      .group("🌐 Downloading cache archive from bucket", async () => {
+        console.log(`🔹 Downloading file '${bestMatch.name}'...`);
+
+        return bestMatch.download({
+          destination: tmpFile.path,
+        });
+      })
+      .catch((err) => {
+        core.error("Failed to download the file");
+        throw err;
+      });
+
+    await core
+      .group("🗜️ Extracting cache archive", () =>
+        extractTar(tmpFile.path, compressionMethod, workspace)
+      )
+      .catch((err) => {
+        core.error("Failed to extract the archive");
+        throw err;
+      });
+
+    saveState({
+      path: path,
+      cacheHitKind: bestMatchKind,
+      targetFileName: exactFileName,
+    });
+    console.log("✅ Successfully restored cache.");
+    return exactFileName;
+  });
+}

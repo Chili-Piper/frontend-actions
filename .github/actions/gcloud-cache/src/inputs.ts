@@ -1,8 +1,7 @@
 import * as core from "@actions/core";
 
 export interface Inputs {
-  bucket: string;
-  path: string;
+  path: string[];
   key: string;
   restoreKeys: string[];
   restoreFromRepo?: string;
@@ -10,8 +9,10 @@ export interface Inputs {
 
 export function getInputs(): Inputs {
   const inputs = {
-    bucket: "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f",
-    path: core.getInput("path", { required: true }),
+    path: core
+      .getInput("path", { required: true })
+      .split(",")
+      .filter((path) => path),
     key: core.getInput("key", { required: true }),
     restoreKeys: core
       .getInput("restore-keys")

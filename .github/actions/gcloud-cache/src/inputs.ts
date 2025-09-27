@@ -10,7 +10,7 @@ export interface Inputs {
 
 export function getInputs(): Inputs {
   const inputs = {
-    bucket: "github_actions_cache_staging",
+    bucket: "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f",
     path: core.getInput("path", { required: true }),
     key: core.getInput("key", { required: true }),
     restoreKeys: core

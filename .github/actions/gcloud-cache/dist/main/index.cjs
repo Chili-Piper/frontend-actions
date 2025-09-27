@@ -80067,7 +80067,7 @@ var tmp_promise = __webpack_require__(6458);
 
 function getInputs() {
     const inputs = {
-        bucket: "github_actions_cache_staging",
+        bucket: "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f",
         path: lib_core.getInput("path", { required: true }),
         key: lib_core.getInput("key", { required: true }),
         restoreKeys: lib_core.getInput("restore-keys")

@@ -37,6 +37,9 @@ export async function saveInternal({
 
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
   const pattern = `{${path.join(",")}}`;
+
+  core.info(`Using pattern: ${pattern}`);
+
   const globber = await glob.create(pattern, {
     implicitDescendants: false,
   });

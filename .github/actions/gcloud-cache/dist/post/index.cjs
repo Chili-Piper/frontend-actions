@@ -79803,6 +79803,7 @@ async function saveInternal({ path, targetFileName, }) {
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
     const pattern = `{${path.join(",")}}`;
+    lib_core.info(`Using pattern: ${pattern}`);
     const globber = await glob.create(pattern, {
         implicitDescendants: false,
     });

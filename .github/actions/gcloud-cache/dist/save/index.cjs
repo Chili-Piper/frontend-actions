@@ -83772,21 +83772,18 @@ async function saveInternal({ path, targetFileName, }) {
         core.error("Failed to check if the file already exists");
         throw err;
     });
-    core.info(`Target file name: ${targetFileName}.`);
     if (targetFileExists) {
         console.log("🌀 Skipping uploading cache as it already exists (probably due to another job).");
         return;
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
     const pattern = path.join("\n");
-    core.info(`Using pattern: ${pattern}`);
     const globber = await glob.create(pattern, {
         implicitDescendants: false,
     });
     const paths = await globber
         .glob()
         .then((files) => files.map((file) => external_node_path_namespaceObject.relative(workspace, file)));
-    core.info(`Paths: ${JSON.stringify(paths)}.`);
     return (0,tmp_promise.withFile)(async (tmpFile) => {
         const compressionMethod = await core.group("🗜️ Creating cache archive", () => createTar(tmpFile.path, paths, workspace))
             .catch((err) => {
@@ -83796,7 +83793,6 @@ async function saveInternal({ path, targetFileName, }) {
         const customMetadata = {
             "Cache-Action-Compression-Method": compressionMethod,
         };
-        core.info(`Metadata: ${JSON.stringify(customMetadata)}.`);
         await core.group("🌐 Uploading cache archive to bucket", async () => {
             console.log(`🔹 Uploading file '${targetFileName}'...`);
             await bucket.upload(tmpFile.path, {

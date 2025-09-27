@@ -50933,8 +50933,6 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
     const exactFilesBranch = restoreFromRepo
         ? [Promise.resolve([false])]
         : [exactFileBranch.exists()];
-    lib_core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
-    lib_core.info("isPR: " + isPR);
     const exactFilesMaster = isPR
         ? [exactFileMaster.exists(), exactFileMain.exists()]
         : [Promise.resolve([false]), Promise.resolve([false])];
@@ -50943,7 +50941,6 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
         lib_core.error("Failed to check if an exact match exists");
         throw err;
     });
-    lib_core.info("exact result: " + JSON.stringify(exactFileExistsResult));
     const exactFile = (() => {
         if (exactFileExistsResult[0]) {
             return exactFileBranch;
@@ -50990,12 +50987,6 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
     });
     const bucketFiles = [...branchCandidates, ...masterCandidates].sort((a, b) => new Date(b.metadata.updated).getTime() -
         new Date(a.metadata.updated).getTime());
-    lib_core.info(`Candidates: ${JSON.stringify(bucketFiles.map((f) => ({
-        name: f.name,
-        metadata: {
-            updated: f.metadata.updated,
-        },
-    })))}.`);
     for (const restoreKey of restoreKeys) {
         const foundFile = bucketFiles.find((file) => file.name.startsWith(`${folderPrefix}/${branch}/${restoreKey}`) ||
             file.name.startsWith(`${folderPrefix}/${masterBranch}/${restoreKey}`) ||
@@ -51014,7 +51005,8 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
     const bucket = new Storage().bucket(BUCKET);
     const folderPrefix = `${github.context.repo.owner}/${restoreFromRepo || github.context.repo.repo}`;
     const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
-    const [bestMatch, bestMatchKind] = await lib_core.group("🔍 Searching the best cache archive available", () => getBestMatch({
+    lib_core.info("🔍 Searching the best cache archive available");
+    const [bestMatch, bestMatchKind] = await getBestMatch({
         bucket,
         key,
         restoreKeys,
@@ -51022,7 +51014,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
         folderPrefix,
         branch: github.context.ref,
         isPR: Boolean(github.context.payload.pull_request),
-    }));
+    });
     lib_core.info(`Best match kind: ${bestMatchKind}.`);
     if (!bestMatch) {
         saveState({
@@ -51041,9 +51033,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
         lib_core.error("Failed to read object metadatas");
         throw err;
     });
-    lib_core.info(`Best match metadata: ${JSON.stringify(bestMatchMetadata)}.`);
     const compressionMethod = bestMatchMetadata?.metadata?.["Cache-Action-Compression-Method"];
-    lib_core.info(`Best match compression method: ${compressionMethod}.`);
     if (!bestMatchMetadata || !compressionMethod) {
         saveState({
             path: path,

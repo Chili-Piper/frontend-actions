@@ -504,39 +504,39 @@ async function run() {
     });
     prefetchingMonoRepoTagsTimerEnd();
 
-    // const monoRepoFrontends = frontendsKeys.filter(
-    //   (key) => frontendsConfig[key].repository === monoRepo
-    // );
+    const monoRepoFrontends = frontendsKeys.filter(
+      (key) => frontendsConfig[key].repository === monoRepo
+    );
 
-    // const groupedMonoRepoFrontends = groupBy(
-    //   monoRepoFrontends,
-    //   (key) => frontendVersions[key] || "master"
-    // );
+    const groupedMonoRepoFrontends = groupBy(
+      monoRepoFrontends,
+      (key) => frontendVersions[key] || "master"
+    );
 
-    // for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
-    //   const sameVersionMonoRepoFrontends =
-    //     groupedMonoRepoFrontends[frontendVersion];
-    //   const firstFrontend = sameVersionMonoRepoFrontends[0];
+    for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
+      const sameVersionMonoRepoFrontends =
+        groupedMonoRepoFrontends[frontendVersion];
+      const firstFrontend = sameVersionMonoRepoFrontends[0];
 
-    //   info(
-    //     `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
-    //   );
-    //   const result = await prepareMonoRepo({
-    //     frontendKey: firstFrontend,
-    //     frontendVersions,
-    //     checkoutToken,
-    //     directory: monoRepoPath,
-    //     apiClientPath,
-    //   });
+      info(
+        `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
+      );
+      const result = await prepareMonoRepo({
+        frontendKey: firstFrontend,
+        frontendVersions,
+        checkoutToken,
+        directory: monoRepoPath,
+        apiClientPath,
+      });
 
-    //   await runMonoRepoCommands({
-    //     frontendKeys: sameVersionMonoRepoFrontends,
-    //     frontendVersions,
-    //     failedFrontends,
-    //     foundTSCacheMatch: result.foundTSCacheMatch,
-    //     directory: monoRepoPath,
-    //   });
-    // }
+      await runMonoRepoCommands({
+        frontendKeys: sameVersionMonoRepoFrontends,
+        frontendVersions,
+        failedFrontends,
+        foundTSCacheMatch: result.foundTSCacheMatch,
+        directory: monoRepoPath,
+      });
+    }
 
     const otherFrontends = frontendsKeys.filter(
       (key) => frontendsConfig[key].repository !== monoRepo

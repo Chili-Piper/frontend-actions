@@ -42,10 +42,6 @@ async function getBestMatch({
     ? [Promise.resolve([false])]
     : [exactFileBranch.exists()];
 
-  core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
-
-  core.info("isPR: " + isPR);
-
   const exactFilesMaster = isPR
     ? [exactFileMaster.exists(), exactFileMain.exists()]
     : [Promise.resolve([false]), Promise.resolve([false])];
@@ -59,8 +55,6 @@ async function getBestMatch({
     core.error("Failed to check if an exact match exists");
     throw err;
   });
-
-  core.info("exact result: " + JSON.stringify(exactFileExistsResult));
 
   const exactFile = (() => {
     if (exactFileExistsResult[0]) {
@@ -117,17 +111,6 @@ async function getBestMatch({
       new Date(a.metadata.updated as ObjectMetadata["updated"]).getTime()
   );
 
-  core.info(
-    `Candidates: ${JSON.stringify(
-      bucketFiles.map((f) => ({
-        name: f.name,
-        metadata: {
-          updated: f.metadata.updated as ObjectMetadata["updated"],
-        },
-      }))
-    )}.`
-  );
-
   for (const restoreKey of restoreKeys) {
     const foundFile = bucketFiles.find(
       (file) =>
@@ -168,19 +151,17 @@ export async function restore({
 
   const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
 
-  const [bestMatch, bestMatchKind] = await core.group(
-    "🔍 Searching the best cache archive available",
-    () =>
-      getBestMatch({
-        bucket,
-        key,
-        restoreKeys,
-        restoreFromRepo,
-        folderPrefix,
-        branch: github.context.ref,
-        isPR: Boolean(github.context.payload.pull_request),
-      })
-  );
+  core.info("🔍 Searching the best cache archive available");
+
+  const [bestMatch, bestMatchKind] = await getBestMatch({
+    bucket,
+    key,
+    restoreKeys,
+    restoreFromRepo,
+    folderPrefix,
+    branch: github.context.ref,
+    isPR: Boolean(github.context.payload.pull_request),
+  });
 
   core.info(`Best match kind: ${bestMatchKind}.`);
 
@@ -204,12 +185,8 @@ export async function restore({
       throw err;
     });
 
-  core.info(`Best match metadata: ${JSON.stringify(bestMatchMetadata)}.`);
-
   const compressionMethod =
     bestMatchMetadata?.metadata?.["Cache-Action-Compression-Method"];
-
-  core.info(`Best match compression method: ${compressionMethod}.`);
 
   if (!bestMatchMetadata || !compressionMethod) {
     saveState({

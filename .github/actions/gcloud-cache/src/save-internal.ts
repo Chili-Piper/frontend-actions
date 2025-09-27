@@ -26,8 +26,6 @@ export async function saveInternal({
       throw err;
     });
 
-  core.info(`Target file name: ${targetFileName}.`);
-
   if (targetFileExists) {
     console.log(
       "🌀 Skipping uploading cache as it already exists (probably due to another job)."
@@ -38,8 +36,6 @@ export async function saveInternal({
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
   const pattern = path.join("\n");
 
-  core.info(`Using pattern: ${pattern}`);
-
   const globber = await glob.create(pattern, {
     implicitDescendants: false,
   });
@@ -47,8 +43,6 @@ export async function saveInternal({
   const paths = await globber
     .glob()
     .then((files) => files.map((file) => nodePath.relative(workspace, file)));
-
-  core.info(`Paths: ${JSON.stringify(paths)}.`);
 
   return withTemporaryFile(async (tmpFile) => {
     const compressionMethod = await core
@@ -63,8 +57,6 @@ export async function saveInternal({
     const customMetadata: CacheActionMetadata = {
       "Cache-Action-Compression-Method": compressionMethod,
     };
-
-    core.info(`Metadata: ${JSON.stringify(customMetadata)}.`);
 
     await core
       .group("🌐 Uploading cache archive to bucket", async () => {

@@ -80067,12 +80067,13 @@ var tmp_promise = __webpack_require__(6458);
 
 function getInputs() {
     const inputs = {
-        bucket: lib_core.getInput('bucket', { required: true }),
-        path: lib_core.getInput('path', { required: true }),
-        key: lib_core.getInput('key', { required: true }),
-        restoreKeys: lib_core.getInput('restore-keys')
-            .split(',')
+        bucket: "github_actions_cache_staging",
+        path: lib_core.getInput("path", { required: true }),
+        key: lib_core.getInput("key", { required: true }),
+        restoreKeys: lib_core.getInput("restore-keys")
+            .split(",")
             .filter((path) => path),
+        restoreFromRepo: lib_core.getInput("restore-from-repo"),
     };
     lib_core.debug(`Loaded inputs: ${JSON.stringify(inputs)}.`);
     return inputs;
@@ -80082,17 +80083,17 @@ function getInputs() {
 
 function saveState(state) {
     lib_core.debug(`Saving state: ${JSON.stringify(state)}.`);
-    lib_core.saveState('bucket', state.bucket);
-    lib_core.saveState('path', state.path);
-    lib_core.saveState('cache-hit-kind', state.cacheHitKind);
-    lib_core.saveState('target-file-name', state.targetFileName);
+    lib_core.saveState("bucket", state.bucket);
+    lib_core.saveState("path", state.path);
+    lib_core.saveState("cache-hit-kind", state.cacheHitKind);
+    lib_core.saveState("target-file-name", state.targetFileName);
 }
 function getState() {
     const state = {
-        path: core.getState('path'),
-        bucket: core.getState('bucket'),
-        cacheHitKind: core.getState('cache-hit-kind'),
-        targetFileName: core.getState('target-file-name'),
+        path: core.getState("path"),
+        bucket: core.getState("bucket"),
+        cacheHitKind: core.getState("cache-hit-kind"),
+        targetFileName: core.getState("target-file-name"),
     };
     core.debug(`Loaded state: ${JSON.stringify(state)}.`);
     return state;
@@ -80106,7 +80107,7 @@ var node_modules_semver = __webpack_require__(9589);
 /* eslint-disable sonarjs/no-duplicate-string */
 
 
-const ZSTD_WITHOUT_LONG_VERSION = '1.3.2';
+const ZSTD_WITHOUT_LONG_VERSION = "1.3.2";
 var CompressionMethod;
 (function (CompressionMethod) {
     CompressionMethod["GZIP"] = "gzip";
@@ -80114,11 +80115,11 @@ var CompressionMethod;
     CompressionMethod["ZSTD"] = "zstd";
 })(CompressionMethod || (CompressionMethod = {}));
 async function getTarCompressionMethod() {
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
         return CompressionMethod.GZIP;
     }
     const [zstdOutput, zstdVersion] = await exec
-        .getExecOutput('zstd', ['--version'], {
+        .getExecOutput("zstd", ["--version"], {
         ignoreReturnCode: true,
         silent: true,
     })
@@ -80127,8 +80128,8 @@ async function getTarCompressionMethod() {
         const extractedVersion = /v(\d+(?:\.\d+){0,})/.exec(out);
         return [out, extractedVersion ? extractedVersion[1] : null];
     })
-        .catch(() => ['', null]);
-    if (!zstdOutput?.toLowerCase().includes('zstd command line interface')) {
+        .catch(() => ["", null]);
+    if (!zstdOutput?.toLowerCase().includes("zstd command line interface")) {
         return CompressionMethod.GZIP;
     }
     else if (!zstdVersion ||
@@ -80143,18 +80144,18 @@ async function createTar(archivePath, paths, cwd) {
     const compressionMethod = await getTarCompressionMethod();
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
-        ? ['-z']
+        ? ["-z"]
         : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-            ? ['--use-compress-program', 'zstd -T0']
-            : ['--use-compress-program', 'zstd -T0 --long=30'];
-    await exec.exec('tar', [
-        '-c',
+            ? ["--use-compress-program", "zstd -T0"]
+            : ["--use-compress-program", "zstd -T0 --long=30"];
+    await exec.exec("tar", [
+        "-c",
         ...compressionArgs,
-        '--posix',
-        '-P',
-        '-f',
+        "--posix",
+        "-P",
+        "-f",
         archivePath,
-        '-C',
+        "-C",
         cwd,
         ...paths,
     ]);
@@ -80163,17 +80164,17 @@ async function createTar(archivePath, paths, cwd) {
 async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
-        ? ['-z']
+        ? ["-z"]
         : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-            ? ['--use-compress-program', 'zstd -d']
-            : ['--use-compress-program', 'zstd -d --long=30'];
-    await lib_exec.exec('tar', [
-        '-x',
+            ? ["--use-compress-program", "zstd -d"]
+            : ["--use-compress-program", "zstd -d --long=30"];
+    await lib_exec.exec("tar", [
+        "-x",
         ...compressionArgs,
-        '-P',
-        '-f',
+        "-P",
+        "-f",
         archivePath,
-        '-C',
+        "-C",
         cwd,
     ]);
 }
@@ -80186,32 +80187,72 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 
 
 
-async function getBestMatch(bucket, key, restoreKeys) {
-    const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
+const masterBranch = "refs/heads/master";
+const mainBranch = "refs/heads/main";
+async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
+    let folderPrefix = `${github.context.repo.owner}/${restoreFromRepo ?? github.context.repo.repo}`;
     lib_core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
-    const exactFile = bucket.file(`${folderPrefix}/${key}.tar`);
-    const [exactFileExists] = await exactFile.exists().catch((err) => {
+    const exactFileBranch = bucket.file(`${folderPrefix}/${github.context.ref}/${key}.tar`);
+    const exactFileMaster = bucket.file(`${folderPrefix}/${masterBranch}/${key}.tar`);
+    const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
+    const exactFilesBranch = restoreFromRepo
+        ? [Promise.resolve([false])]
+        : [exactFileBranch.exists()];
+    const isPR = github.context.eventName === "pull_request";
+    const exactFilesMaster = isPR
+        ? [exactFileMaster.exists(), exactFileMain.exists()]
+        : [Promise.resolve([false]), Promise.resolve([false])];
+    const exactFileExistsPromises = [...exactFilesBranch, ...exactFilesMaster];
+    const [exactFileExistsResult, exactFileMasterExistsResult, exactFileMainExistsResult,] = await Promise.all(exactFileExistsPromises).catch((err) => {
         lib_core.error("Failed to check if an exact match exists");
         throw err;
     });
-    lib_core.debug(`Exact file name: ${exactFile.name}.`);
-    if (exactFileExists) {
+    const exactFile = (() => {
+        if (exactFileExistsResult[0]) {
+            return exactFileBranch;
+        }
+        if (exactFileMasterExistsResult[0]) {
+            return exactFileMaster;
+        }
+        if (exactFileMainExistsResult[0]) {
+            return exactFileMain;
+        }
+    })();
+    lib_core.debug(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
+    if (exactFile) {
         console.log(`🙌 Found exact match from cache for key '${key}'.`);
         return [exactFile, "exact"];
     }
     else {
         console.log(`🔸 No exact match found for key '${key}'.`);
     }
-    const bucketFiles = await bucket
-        .getFiles({
-        prefix: `${folderPrefix}/${restoreKeys[restoreKeys.length - 1]}`,
-    })
-        .then(([files]) => files.sort((a, b) => new Date(b.metadata.updated).getTime() -
-        new Date(a.metadata.updated).getTime()))
-        .catch((err) => {
+    const restoreKey = restoreKeys[restoreKeys.length - 1];
+    const branchFiles = restoreFromRepo
+        ? Promise.resolve([])
+        : bucket
+            .getFiles({
+            prefix: `${folderPrefix}/${github.context.ref}/${restoreKey}`,
+        })
+            .then(([files]) => files);
+    const masterFiles = isPR
+        ? Promise.resolve([])
+        : Promise.all([
+            bucket.getFiles({
+                prefix: `${folderPrefix}/${masterBranch}/${restoreKey}`,
+            }),
+            bucket.getFiles({
+                prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
+            }),
+        ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
+    const [branchCandidates, masterCandidates] = await Promise.all([
+        branchFiles,
+        masterFiles,
+    ]).catch((err) => {
         lib_core.error("Failed to list cache candidates");
         throw err;
     });
+    const bucketFiles = [...branchCandidates, ...masterCandidates].sort((a, b) => new Date(b.metadata.updated).getTime() -
+        new Date(a.metadata.updated).getTime());
     if (lib_core.isDebug()) {
         lib_core.debug(`Candidates: ${JSON.stringify(bucketFiles.map((f) => ({
             name: f.name,
@@ -80221,7 +80262,9 @@ async function getBestMatch(bucket, key, restoreKeys) {
         })))}.`);
     }
     for (const restoreKey of restoreKeys) {
-        const foundFile = bucketFiles.find((file) => file.name.startsWith(`${folderPrefix}/${restoreKey}`));
+        const foundFile = bucketFiles.find((file) => file.name.startsWith(`${folderPrefix}/${github.context.ref}/${restoreKey}`) ||
+            file.name.startsWith(`${folderPrefix}/${masterBranch}/${restoreKey}`) ||
+            file.name.startsWith(`${folderPrefix}/${mainBranch}/${restoreKey}`));
         if (foundFile) {
             console.log(`🤝 Found match from cache for restore key '${restoreKey}'.`);
             return [foundFile, "partial"];
@@ -80235,9 +80278,9 @@ async function getBestMatch(bucket, key, restoreKeys) {
 async function main() {
     const inputs = getInputs();
     const bucket = new Storage().bucket(inputs.bucket);
-    const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
+    let folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}/${github.context.ref}`;
     const exactFileName = `${folderPrefix}/${inputs.key}.tar`;
-    const [bestMatch, bestMatchKind] = await lib_core.group("🔍 Searching the best cache archive available", () => getBestMatch(bucket, inputs.key, inputs.restoreKeys));
+    const [bestMatch, bestMatchKind] = await lib_core.group("🔍 Searching the best cache archive available", () => getBestMatch(bucket, inputs.key, inputs.restoreKeys, inputs.restoreFromRepo));
     lib_core.debug(`Best match kind: ${bestMatchKind}.`);
     if (!bestMatch) {
         saveState({

@@ -79682,17 +79682,17 @@ var tmp_promise = __webpack_require__(6458);
 
 function saveState(state) {
     core.debug(`Saving state: ${JSON.stringify(state)}.`);
-    core.saveState('bucket', state.bucket);
-    core.saveState('path', state.path);
-    core.saveState('cache-hit-kind', state.cacheHitKind);
-    core.saveState('target-file-name', state.targetFileName);
+    core.saveState("bucket", state.bucket);
+    core.saveState("path", state.path);
+    core.saveState("cache-hit-kind", state.cacheHitKind);
+    core.saveState("target-file-name", state.targetFileName);
 }
 function getState() {
     const state = {
-        path: lib_core.getState('path'),
-        bucket: lib_core.getState('bucket'),
-        cacheHitKind: lib_core.getState('cache-hit-kind'),
-        targetFileName: lib_core.getState('target-file-name'),
+        path: lib_core.getState("path"),
+        bucket: lib_core.getState("bucket"),
+        cacheHitKind: lib_core.getState("cache-hit-kind"),
+        targetFileName: lib_core.getState("target-file-name"),
     };
     lib_core.debug(`Loaded state: ${JSON.stringify(state)}.`);
     return state;
@@ -79706,7 +79706,7 @@ var semver = __webpack_require__(9589);
 /* eslint-disable sonarjs/no-duplicate-string */
 
 
-const ZSTD_WITHOUT_LONG_VERSION = '1.3.2';
+const ZSTD_WITHOUT_LONG_VERSION = "1.3.2";
 var CompressionMethod;
 (function (CompressionMethod) {
     CompressionMethod["GZIP"] = "gzip";
@@ -79714,10 +79714,10 @@ var CompressionMethod;
     CompressionMethod["ZSTD"] = "zstd";
 })(CompressionMethod || (CompressionMethod = {}));
 async function getTarCompressionMethod() {
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
         return CompressionMethod.GZIP;
     }
-    const [zstdOutput, zstdVersion] = await lib_exec.getExecOutput('zstd', ['--version'], {
+    const [zstdOutput, zstdVersion] = await lib_exec.getExecOutput("zstd", ["--version"], {
         ignoreReturnCode: true,
         silent: true,
     })
@@ -79726,8 +79726,8 @@ async function getTarCompressionMethod() {
         const extractedVersion = /v(\d+(?:\.\d+){0,})/.exec(out);
         return [out, extractedVersion ? extractedVersion[1] : null];
     })
-        .catch(() => ['', null]);
-    if (!zstdOutput?.toLowerCase().includes('zstd command line interface')) {
+        .catch(() => ["", null]);
+    if (!zstdOutput?.toLowerCase().includes("zstd command line interface")) {
         return CompressionMethod.GZIP;
     }
     else if (!zstdVersion ||
@@ -79742,18 +79742,18 @@ async function createTar(archivePath, paths, cwd) {
     const compressionMethod = await getTarCompressionMethod();
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
-        ? ['-z']
+        ? ["-z"]
         : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-            ? ['--use-compress-program', 'zstd -T0']
-            : ['--use-compress-program', 'zstd -T0 --long=30'];
-    await lib_exec.exec('tar', [
-        '-c',
+            ? ["--use-compress-program", "zstd -T0"]
+            : ["--use-compress-program", "zstd -T0 --long=30"];
+    await lib_exec.exec("tar", [
+        "-c",
         ...compressionArgs,
-        '--posix',
-        '-P',
-        '-f',
+        "--posix",
+        "-P",
+        "-f",
         archivePath,
-        '-C',
+        "-C",
         cwd,
         ...paths,
     ]);
@@ -79762,17 +79762,17 @@ async function createTar(archivePath, paths, cwd) {
 async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
-        ? ['-z']
+        ? ["-z"]
         : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-            ? ['--use-compress-program', 'zstd -d']
-            : ['--use-compress-program', 'zstd -d --long=30'];
-    await exec.exec('tar', [
-        '-x',
+            ? ["--use-compress-program", "zstd -d"]
+            : ["--use-compress-program", "zstd -d --long=30"];
+    await exec.exec("tar", [
+        "-x",
         ...compressionArgs,
-        '-P',
-        '-f',
+        "-P",
+        "-f",
         archivePath,
-        '-C',
+        "-C",
         cwd,
     ]);
 }
@@ -79787,8 +79787,8 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 
 async function main() {
     const state = getState();
-    if (state.cacheHitKind === 'exact') {
-        console.log('🌀 Skipping uploading cache as the cache was hit by exact match.');
+    if (state.cacheHitKind === "exact") {
+        console.log("🌀 Skipping uploading cache as the cache was hit by exact match.");
         return;
     }
     const bucket = new Storage().bucket(state.bucket);
@@ -79797,12 +79797,12 @@ async function main() {
         .file(targetFileName)
         .exists()
         .catch((err) => {
-        lib_core.error('Failed to check if the file already exists');
+        lib_core.error("Failed to check if the file already exists");
         throw err;
     });
     lib_core.debug(`Target file name: ${targetFileName}.`);
     if (targetFileExists) {
-        console.log('🌀 Skipping uploading cache as it already exists (probably due to another job).');
+        console.log("🌀 Skipping uploading cache as it already exists (probably due to another job).");
         return;
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
@@ -79814,16 +79814,16 @@ async function main() {
         .then((files) => files.map((file) => external_node_path_namespaceObject.relative(workspace, file)));
     lib_core.debug(`Paths: ${JSON.stringify(paths)}.`);
     return (0,tmp_promise.withFile)(async (tmpFile) => {
-        const compressionMethod = await lib_core.group('🗜️ Creating cache archive', () => createTar(tmpFile.path, paths, workspace))
+        const compressionMethod = await lib_core.group("🗜️ Creating cache archive", () => createTar(tmpFile.path, paths, workspace))
             .catch((err) => {
-            lib_core.error('Failed to create the archive');
+            lib_core.error("Failed to create the archive");
             throw err;
         });
         const customMetadata = {
-            'Cache-Action-Compression-Method': compressionMethod,
+            "Cache-Action-Compression-Method": compressionMethod,
         };
         lib_core.debug(`Metadata: ${JSON.stringify(customMetadata)}.`);
-        await lib_core.group('🌐 Uploading cache archive to bucket', async () => {
+        await lib_core.group("🌐 Uploading cache archive to bucket", async () => {
             console.log(`🔹 Uploading file '${targetFileName}'...`);
             await bucket.upload(tmpFile.path, {
                 destination: targetFileName,
@@ -79833,10 +79833,10 @@ async function main() {
             });
         })
             .catch((err) => {
-            lib_core.error('Failed to upload the file');
+            lib_core.error("Failed to upload the file");
             throw err;
         });
-        console.log('✅ Successfully saved cache.');
+        console.log("✅ Successfully saved cache.");
     });
 }
 void main().catch((err) => {

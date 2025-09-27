@@ -3,9 +3,6 @@ author: "MansaGroup"
 description: "Cache your workload to a Google Cloud Storage bucket"
 
 inputs:
-  bucket:
-    description: Name of the bucket to store the cache into
-    required: true
   path:
     description: Paths to store
     required: true
@@ -15,6 +12,9 @@ inputs:
   restore-keys:
     description: Substitution keys to use when cache miss
     default: ""
+    required: false
+  restore-from-repo:
+    description: Name of the repository to restore the cache from (defaults to current repository)
     required: false
 
 outputs:

@@ -8,45 +8,102 @@ import { getInputs } from "./inputs";
 import { CacheHitKindState, saveState } from "./state";
 import { extractTar } from "./tar-utils";
 
+const masterBranch = "refs/heads/master";
+const mainBranch = "refs/heads/main";
+
 async function getBestMatch(
   bucket: Bucket,
   key: string,
-  restoreKeys: string[]
+  restoreKeys: string[],
+  restoreFromRepo?: string
 ): Promise<[File, Exclude<CacheHitKindState, "none">] | [null, "none"]> {
-  const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
+  let folderPrefix = `${github.context.repo.owner}/${
+    restoreFromRepo ?? github.context.repo.repo
+  }`;
 
   core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
 
-  const exactFile = bucket.file(`${folderPrefix}/${key}.tar`);
-  const [exactFileExists] = await exactFile.exists().catch((err) => {
+  const exactFileBranch = bucket.file(
+    `${folderPrefix}/${github.context.ref}/${key}.tar`
+  );
+  const exactFileMaster = bucket.file(
+    `${folderPrefix}/${masterBranch}/${key}.tar`
+  );
+  const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
+
+  const exactFilesBranch = restoreFromRepo
+    ? [Promise.resolve([false])]
+    : [exactFileBranch.exists()];
+
+  const isPR = github.context.eventName === "pull_request";
+  const exactFilesMaster = isPR
+    ? [exactFileMaster.exists(), exactFileMain.exists()]
+    : [Promise.resolve([false]), Promise.resolve([false])];
+
+  const exactFileExistsPromises = [...exactFilesBranch, ...exactFilesMaster];
+  const [
+    exactFileExistsResult,
+    exactFileMasterExistsResult,
+    exactFileMainExistsResult,
+  ] = await Promise.all(exactFileExistsPromises).catch((err) => {
     core.error("Failed to check if an exact match exists");
     throw err;
   });
 
-  core.debug(`Exact file name: ${exactFile.name}.`);
+  const exactFile = (() => {
+    if (exactFileExistsResult[0]) {
+      return exactFileBranch;
+    }
+    if (exactFileMasterExistsResult[0]) {
+      return exactFileMaster;
+    }
+    if (exactFileMainExistsResult[0]) {
+      return exactFileMain;
+    }
+  })();
 
-  if (exactFileExists) {
+  core.debug(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
+
+  if (exactFile) {
     console.log(`🙌 Found exact match from cache for key '${key}'.`);
     return [exactFile, "exact"];
   } else {
     console.log(`🔸 No exact match found for key '${key}'.`);
   }
 
-  const bucketFiles = await bucket
-    .getFiles({
-      prefix: `${folderPrefix}/${restoreKeys[restoreKeys.length - 1]}`,
-    })
-    .then(([files]) =>
-      files.sort(
-        (a, b) =>
-          new Date(b.metadata.updated as ObjectMetadata["updated"]).getTime() -
-          new Date(a.metadata.updated as ObjectMetadata["updated"]).getTime()
-      )
-    )
-    .catch((err) => {
-      core.error("Failed to list cache candidates");
-      throw err;
-    });
+  const restoreKey = restoreKeys[restoreKeys.length - 1];
+  const branchFiles = restoreFromRepo
+    ? Promise.resolve([])
+    : bucket
+        .getFiles({
+          prefix: `${folderPrefix}/${github.context.ref}/${restoreKey}`,
+        })
+        .then(([files]) => files);
+
+  const masterFiles = isPR
+    ? Promise.resolve([])
+    : Promise.all([
+        bucket.getFiles({
+          prefix: `${folderPrefix}/${masterBranch}/${restoreKey}`,
+        }),
+        bucket.getFiles({
+          prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
+        }),
+      ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
+
+  const [branchCandidates, masterCandidates] = await Promise.all([
+    branchFiles,
+    masterFiles,
+  ]).catch((err) => {
+    core.error("Failed to list cache candidates");
+    throw err;
+  });
+
+  const bucketFiles = [...branchCandidates, ...masterCandidates].sort(
+    (a, b) =>
+      new Date(b.metadata.updated as ObjectMetadata["updated"]).getTime() -
+      new Date(a.metadata.updated as ObjectMetadata["updated"]).getTime()
+  );
 
   if (core.isDebug()) {
     core.debug(
@@ -62,8 +119,13 @@ async function getBestMatch(
   }
 
   for (const restoreKey of restoreKeys) {
-    const foundFile = bucketFiles.find((file) =>
-      file.name.startsWith(`${folderPrefix}/${restoreKey}`)
+    const foundFile = bucketFiles.find(
+      (file) =>
+        file.name.startsWith(
+          `${folderPrefix}/${github.context.ref}/${restoreKey}`
+        ) ||
+        file.name.startsWith(`${folderPrefix}/${masterBranch}/${restoreKey}`) ||
+        file.name.startsWith(`${folderPrefix}/${mainBranch}/${restoreKey}`)
     );
 
     if (foundFile) {
@@ -83,12 +145,19 @@ async function main() {
   const inputs = getInputs();
   const bucket = new Storage().bucket(inputs.bucket);
 
-  const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
+  let folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}/${github.context.ref}`;
+
   const exactFileName = `${folderPrefix}/${inputs.key}.tar`;
 
   const [bestMatch, bestMatchKind] = await core.group(
     "🔍 Searching the best cache archive available",
-    () => getBestMatch(bucket, inputs.key, inputs.restoreKeys)
+    () =>
+      getBestMatch(
+        bucket,
+        inputs.key,
+        inputs.restoreKeys,
+        inputs.restoreFromRepo
+      )
   );
 
   core.debug(`Best match kind: ${bestMatchKind}.`);

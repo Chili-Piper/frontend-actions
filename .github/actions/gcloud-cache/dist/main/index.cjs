@@ -80190,10 +80190,9 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
 async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
-    let folderPrefix = `${github.context.repo.owner}/${restoreFromRepo ?? github.context.repo.repo}`;
-    lib_core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
+    let folderPrefix = `${github.context.repo.owner}/${restoreFromRepo || github.context.repo.repo}`;
     const exactPath = `${folderPrefix}/${github.context.ref}/${key}.tar`;
-    lib_core.info(`exact: ${exactPath}`);
+    lib_core.info(`Will lookup for the file ${exactPath}`);
     const exactFileBranch = bucket.file(exactPath);
     const exactFileMaster = bucket.file(`${folderPrefix}/${masterBranch}/${key}.tar`);
     const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
@@ -80281,7 +80280,7 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
 async function main() {
     const inputs = getInputs();
     const bucket = new Storage().bucket(inputs.bucket);
-    let folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}/${github.context.ref}`;
+    let folderPrefix = `${github.context.repo.owner}/${inputs.restoreFromRepo || github.context.repo.repo}/${github.context.ref}`;
     const exactFileName = `${folderPrefix}/${inputs.key}.tar`;
     const [bestMatch, bestMatchKind] = await lib_core.group("🔍 Searching the best cache archive available", () => getBestMatch(bucket, inputs.key, inputs.restoreKeys, inputs.restoreFromRepo));
     lib_core.debug(`Best match kind: ${bestMatchKind}.`);

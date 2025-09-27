@@ -18,13 +18,12 @@ async function getBestMatch(
   restoreFromRepo?: string
 ): Promise<[File, Exclude<CacheHitKindState, "none">] | [null, "none"]> {
   let folderPrefix = `${github.context.repo.owner}/${
-    restoreFromRepo ?? github.context.repo.repo
+    restoreFromRepo || github.context.repo.repo
   }`;
 
-  core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
-
   const exactPath = `${folderPrefix}/${github.context.ref}/${key}.tar`;
-  core.info(`exact: ${exactPath}`);
+
+  core.info(`Will lookup for the file ${exactPath}`);
 
   const exactFileBranch = bucket.file(exactPath);
   const exactFileMaster = bucket.file(
@@ -151,7 +150,9 @@ async function main() {
   const inputs = getInputs();
   const bucket = new Storage().bucket(inputs.bucket);
 
-  let folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}/${github.context.ref}`;
+  let folderPrefix = `${github.context.repo.owner}/${
+    inputs.restoreFromRepo || github.context.repo.repo
+  }/${github.context.ref}`;
 
   const exactFileName = `${folderPrefix}/${inputs.key}.tar`;
 

@@ -35,7 +35,9 @@ async function getBestMatch(
     ? [Promise.resolve([false])]
     : [exactFileBranch.exists()];
 
-  const isPR = github.context.eventName === "pull_request";
+  const isPR = Boolean(github.context.payload.pull_request);
+
+  core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
 
   core.info(JSON.stringify(github.context));
 
@@ -65,7 +67,7 @@ async function getBestMatch(
     }
   })();
 
-  core.debug(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
+  core.info(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
 
   if (exactFile) {
     console.log(`🙌 Found exact match from cache for key '${key}'.`);
@@ -94,6 +96,8 @@ async function getBestMatch(
         }),
       ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
 
+  console.log();
+
   const [branchCandidates, masterCandidates] = await Promise.all([
     branchFiles,
     masterFiles,
@@ -108,18 +112,16 @@ async function getBestMatch(
       new Date(a.metadata.updated as ObjectMetadata["updated"]).getTime()
   );
 
-  if (core.isDebug()) {
-    core.debug(
-      `Candidates: ${JSON.stringify(
-        bucketFiles.map((f) => ({
-          name: f.name,
-          metadata: {
-            updated: f.metadata.updated as ObjectMetadata["updated"],
-          },
-        }))
-      )}.`
-    );
-  }
+  core.info(
+    `Candidates: ${JSON.stringify(
+      bucketFiles.map((f) => ({
+        name: f.name,
+        metadata: {
+          updated: f.metadata.updated as ObjectMetadata["updated"],
+        },
+      }))
+    )}.`
+  );
 
   for (const restoreKey of restoreKeys) {
     const foundFile = bucketFiles.find(

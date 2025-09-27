@@ -80198,7 +80198,8 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
     const exactFilesBranch = restoreFromRepo
         ? [Promise.resolve([false])]
         : [exactFileBranch.exists()];
-    const isPR = github.context.eventName === "pull_request";
+    const isPR = Boolean(github.context.payload.pull_request);
+    lib_core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
     lib_core.info(JSON.stringify(github.context));
     const exactFilesMaster = isPR
         ? [exactFileMaster.exists(), exactFileMain.exists()]
@@ -80219,7 +80220,7 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
             return exactFileMain;
         }
     })();
-    lib_core.debug(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
+    lib_core.info(`Exact file name: ${exactFile?.name ?? "Not Found"}.`);
     if (exactFile) {
         console.log(`🙌 Found exact match from cache for key '${key}'.`);
         return [exactFile, "exact"];
@@ -80245,6 +80246,7 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
                 prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
             }),
         ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
+    console.log();
     const [branchCandidates, masterCandidates] = await Promise.all([
         branchFiles,
         masterFiles,
@@ -80254,14 +80256,12 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
     });
     const bucketFiles = [...branchCandidates, ...masterCandidates].sort((a, b) => new Date(b.metadata.updated).getTime() -
         new Date(a.metadata.updated).getTime());
-    if (lib_core.isDebug()) {
-        lib_core.debug(`Candidates: ${JSON.stringify(bucketFiles.map((f) => ({
-            name: f.name,
-            metadata: {
-                updated: f.metadata.updated,
-            },
-        })))}.`);
-    }
+    lib_core.info(`Candidates: ${JSON.stringify(bucketFiles.map((f) => ({
+        name: f.name,
+        metadata: {
+            updated: f.metadata.updated,
+        },
+    })))}.`);
     for (const restoreKey of restoreKeys) {
         const foundFile = bucketFiles.find((file) => file.name.startsWith(`${folderPrefix}/${github.context.ref}/${restoreKey}`) ||
             file.name.startsWith(`${folderPrefix}/${masterBranch}/${restoreKey}`) ||

@@ -23,9 +23,10 @@ async function getBestMatch(
 
   core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
 
-  const exactFileBranch = bucket.file(
-    `${folderPrefix}/${github.context.ref}/${key}.tar`
-  );
+  const exactPath = `${folderPrefix}/${github.context.ref}/${key}.tar`;
+  core.info(`exact: ${exactPath}`);
+
+  const exactFileBranch = bucket.file(exactPath);
   const exactFileMaster = bucket.file(
     `${folderPrefix}/${masterBranch}/${key}.tar`
   );
@@ -39,7 +40,7 @@ async function getBestMatch(
 
   core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
 
-  core.info(JSON.stringify(github.context));
+  core.info("isPR: " + isPR);
 
   const exactFilesMaster = isPR
     ? [exactFileMaster.exists(), exactFileMain.exists()]
@@ -54,6 +55,8 @@ async function getBestMatch(
     core.error("Failed to check if an exact match exists");
     throw err;
   });
+
+  core.info("exact result: " + JSON.stringify(exactFileExistsResult));
 
   const exactFile = (() => {
     if (exactFileExistsResult[0]) {
@@ -95,8 +98,6 @@ async function getBestMatch(
           prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
         }),
       ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
-
-  console.log();
 
   const [branchCandidates, masterCandidates] = await Promise.all([
     branchFiles,

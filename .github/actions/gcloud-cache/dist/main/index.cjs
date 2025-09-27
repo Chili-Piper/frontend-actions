@@ -80192,7 +80192,9 @@ const mainBranch = "refs/heads/main";
 async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
     let folderPrefix = `${github.context.repo.owner}/${restoreFromRepo ?? github.context.repo.repo}`;
     lib_core.debug(`Will lookup for the file ${folderPrefix}/${key}.tar`);
-    const exactFileBranch = bucket.file(`${folderPrefix}/${github.context.ref}/${key}.tar`);
+    const exactPath = `${folderPrefix}/${github.context.ref}/${key}.tar`;
+    lib_core.info(`exact: ${exactPath}`);
+    const exactFileBranch = bucket.file(exactPath);
     const exactFileMaster = bucket.file(`${folderPrefix}/${masterBranch}/${key}.tar`);
     const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
     const exactFilesBranch = restoreFromRepo
@@ -80200,7 +80202,7 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
         : [exactFileBranch.exists()];
     const isPR = Boolean(github.context.payload.pull_request);
     lib_core.info("restoreFromRepo: " + Boolean(restoreFromRepo) + restoreFromRepo);
-    lib_core.info(JSON.stringify(github.context));
+    lib_core.info("isPR: " + isPR);
     const exactFilesMaster = isPR
         ? [exactFileMaster.exists(), exactFileMain.exists()]
         : [Promise.resolve([false]), Promise.resolve([false])];
@@ -80209,6 +80211,7 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
         lib_core.error("Failed to check if an exact match exists");
         throw err;
     });
+    lib_core.info("exact result: " + JSON.stringify(exactFileExistsResult));
     const exactFile = (() => {
         if (exactFileExistsResult[0]) {
             return exactFileBranch;
@@ -80246,7 +80249,6 @@ async function getBestMatch(bucket, key, restoreKeys, restoreFromRepo) {
                 prefix: `${folderPrefix}/${mainBranch}/${restoreKey}`,
             }),
         ]).then(([[masterFiles], [mainFiles]]) => [...masterFiles, ...mainFiles]);
-    console.log();
     const [branchCandidates, masterCandidates] = await Promise.all([
         branchFiles,
         masterFiles,

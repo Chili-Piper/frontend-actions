@@ -36,6 +36,9 @@ async function getBestMatch(
     : [exactFileBranch.exists()];
 
   const isPR = github.context.eventName === "pull_request";
+
+  core.info(JSON.stringify(github.context));
+
   const exactFilesMaster = isPR
     ? [exactFileMaster.exists(), exactFileMain.exists()]
     : [Promise.resolve([false]), Promise.resolve([false])];

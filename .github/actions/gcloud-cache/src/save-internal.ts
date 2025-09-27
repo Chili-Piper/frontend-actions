@@ -26,7 +26,7 @@ export async function saveInternal({
       throw err;
     });
 
-  core.debug(`Target file name: ${targetFileName}.`);
+  core.info(`Target file name: ${targetFileName}.`);
 
   if (targetFileExists) {
     console.log(
@@ -45,7 +45,7 @@ export async function saveInternal({
     .glob()
     .then((files) => files.map((file) => nodePath.relative(workspace, file)));
 
-  core.debug(`Paths: ${JSON.stringify(paths)}.`);
+  core.info(`Paths: ${JSON.stringify(paths)}.`);
 
   return withTemporaryFile(async (tmpFile) => {
     const compressionMethod = await core
@@ -61,7 +61,7 @@ export async function saveInternal({
       "Cache-Action-Compression-Method": compressionMethod,
     };
 
-    core.debug(`Metadata: ${JSON.stringify(customMetadata)}.`);
+    core.info(`Metadata: ${JSON.stringify(customMetadata)}.`);
 
     await core
       .group("🌐 Uploading cache archive to bucket", async () => {

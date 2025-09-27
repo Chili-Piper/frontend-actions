@@ -69,7 +69,6 @@ runs:
         cache-name: node-modules-yarn
         cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
       with:
-        bucket: dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f
         path: |
           ${{ inputs.checkout_path }}/**/node_modules
           !**/node_modules/.cache/turbo

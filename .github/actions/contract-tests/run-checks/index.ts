@@ -63,7 +63,7 @@ async function checkout({
       return;
     }
 
-    await exec("git", ["checkout", "master"], {
+    await exec("git", ["checkout", "-f", "master"], {
       cwd: directory,
     });
     return;

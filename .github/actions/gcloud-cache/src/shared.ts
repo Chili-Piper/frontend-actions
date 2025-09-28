@@ -1,7 +1,7 @@
 import { info } from "@actions/core";
 
 export const Timer = {
-  start(identifier: string, icon: string) {
+  start(identifier: string, icon?: string) {
     info(`${icon} running "${identifier}"...`);
     const startTime = performance.now();
 

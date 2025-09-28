@@ -32,7 +32,6 @@ async function getBestMatch({
   const exactPath = `${folderPrefix}/${branch}/${key}.tar`;
 
   core.info(`Will lookup for the file ${exactPath}`);
-
   const exactFileBranch = bucket.file(exactPath);
   const exactFileMaster = bucket.file(
     `${folderPrefix}/${masterBranch}/${key}.tar`
@@ -152,7 +151,10 @@ export async function restore({
 
   const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
 
-  core.info("🔍 Searching the best cache archive available");
+  const finishedLookup = Timer.start(
+    "Searching the best cache archive available",
+    "🔍"
+  );
 
   const [bestMatch, bestMatchKind] = await getBestMatch({
     bucket,
@@ -163,6 +165,8 @@ export async function restore({
     branch: github.context.ref,
     isPR: Boolean(github.context.payload.pull_request),
   });
+
+  finishedLookup();
 
   core.info(`Best match kind: ${bestMatchKind}.`);
 
@@ -178,6 +182,7 @@ export async function restore({
 
   core.info(`Best match name: ${bestMatch.name}.`);
 
+  const finishedMetadata = Timer.start("Getting cache match metadata");
   const bestMatchMetadata = await bestMatch
     .getMetadata()
     .then(([metadata]) => metadata as unknown as ObjectMetadata)
@@ -185,6 +190,7 @@ export async function restore({
       core.error("Failed to read object metadatas");
       throw err;
     });
+  finishedMetadata();
 
   const compressionMethod =
     bestMatchMetadata?.metadata?.["Cache-Action-Compression-Method"];
@@ -221,11 +227,13 @@ export async function restore({
     finishedDownload();
 
     const finishedExtract = Timer.start("Extract cache archive", "🗜️");
-    await extractTar(tmpFile.path, compressionMethod, workspace).catch((err) => {
-      core.error("Failed to extract the archive");
-      throw err;
-    });
-    finishedExtract()
+    await extractTar(tmpFile.path, compressionMethod, workspace).catch(
+      (err) => {
+        core.error("Failed to extract the archive");
+        throw err;
+      }
+    );
+    finishedExtract();
 
     saveState({
       path: path,

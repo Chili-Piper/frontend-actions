@@ -1,13 +1,9 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 
 import * as exec from "@actions/exec";
-import * as semver from "semver";
-
-const ZSTD_WITHOUT_LONG_VERSION = "1.3.2";
 
 export enum CompressionMethod {
   GZIP = "gzip",
-  ZSTD_WITHOUT_LONG = "zstd (without long)",
   ZSTD = "zstd",
 }
 
@@ -16,7 +12,7 @@ async function getTarCompressionMethod(): Promise<CompressionMethod> {
     return CompressionMethod.GZIP;
   }
 
-  const [zstdOutput, zstdVersion] = await exec
+  const [zstdOutput] = await exec
     .getExecOutput("zstd", ["--version"], {
       ignoreReturnCode: true,
       silent: true,
@@ -30,11 +26,6 @@ async function getTarCompressionMethod(): Promise<CompressionMethod> {
 
   if (!zstdOutput?.toLowerCase().includes("zstd command line interface")) {
     return CompressionMethod.GZIP;
-  } else if (
-    !zstdVersion ||
-    semver.lt(zstdVersion, ZSTD_WITHOUT_LONG_VERSION)
-  ) {
-    return CompressionMethod.ZSTD_WITHOUT_LONG;
   } else {
     return CompressionMethod.ZSTD;
   }
@@ -51,9 +42,7 @@ export async function createTar(
   const compressionArgs =
     compressionMethod === CompressionMethod.GZIP
       ? ["-z"]
-      : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-      ? ["--use-compress-program", "zstd -T0"]
-      : ["--use-compress-program", "zstd -T0 --long=30"];
+      : ["--use-compress-program", "zstd -T0"];
 
   await exec.exec("tar", [
     "-c",
@@ -82,9 +71,7 @@ export async function extractTar(
   const compressionArgs =
     compressionMethod === CompressionMethod.GZIP
       ? ["-z"]
-      : compressionMethod === CompressionMethod.ZSTD_WITHOUT_LONG
-      ? ["--use-compress-program", "zstd -d"]
-      : ["--use-compress-program", "zstd -d --long=30"];
+      : ["--use-compress-program", "unzstd"];
 
   await exec.exec("tar", [
     "-x",

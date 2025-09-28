@@ -8,6 +8,7 @@ import { withFile as withTemporaryFile } from "tmp-promise";
 import { CacheActionMetadata } from "./gcs-utils";
 import { createTar } from "./tar-utils";
 import { BUCKET } from "./constants";
+import { Timer } from "./shared";
 
 export async function saveInternal({
   path,
@@ -45,34 +46,34 @@ export async function saveInternal({
     .then((files) => files.map((file) => nodePath.relative(workspace, file)));
 
   return withTemporaryFile(async (tmpFile) => {
-    const compressionMethod = await core
-      .group("🗜️ Creating cache archive", () =>
-        createTar(tmpFile.path, paths, workspace)
-      )
-      .catch((err) => {
-        core.error("Failed to create the archive");
-        throw err;
-      });
+    const finishedArchive = Timer.start("Creating cache archive", "🗜️");
+
+    const compressionMethod = await createTar(tmpFile.path, paths, workspace).catch((err) => {
+      core.error("Failed to create the archive");
+      throw err;
+    });
+
+    finishedArchive();
 
     const customMetadata: CacheActionMetadata = {
       "Cache-Action-Compression-Method": compressionMethod,
     };
 
-    await core
-      .group("🌐 Uploading cache archive to bucket", async () => {
-        console.log(`🔹 Uploading file '${targetFileName}'...`);
+    console.log(`🔹 Uploading file '${targetFileName}'...`);
 
-        await bucket.upload(tmpFile.path, {
-          destination: targetFileName,
-          metadata: {
-            metadata: customMetadata,
-          },
-        });
+    const finishedUpload = Timer.start("Upload cache archive to bucket", "🌐");
+    await bucket
+      .upload(tmpFile.path, {
+        destination: targetFileName,
+        metadata: {
+          metadata: customMetadata,
+        },
       })
       .catch((err) => {
         core.error("Failed to upload the file");
         throw err;
       });
+    finishedUpload();
 
     console.log("✅ Successfully saved cache.");
   });

@@ -79779,7 +79779,26 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 ;// ./src/constants.ts
 const BUCKET = "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f";
 
+;// ./src/shared.ts
+
+const Timer = {
+    start(identifier, icon) {
+        (0,lib_core.info)(`${icon} running "${identifier}"...`);
+        const startTime = performance.now();
+        return () => {
+            const endTime = performance.now();
+            const durationMs = endTime - startTime;
+            // Format duration intelligently
+            const formattedDuration = durationMs < 1000
+                ? `${durationMs.toFixed(2)}ms`
+                : `${(durationMs / 1000).toFixed(2)}s`;
+            (0,lib_core.info)(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+        };
+    },
+};
+
 ;// ./src/save-internal.ts
+
 
 
 
@@ -79809,27 +79828,29 @@ async function saveInternal({ path, targetFileName, }) {
         .glob()
         .then((files) => files.map((file) => external_node_path_namespaceObject.relative(workspace, file)));
     return (0,tmp_promise.withFile)(async (tmpFile) => {
-        const compressionMethod = await lib_core.group("🗜️ Creating cache archive", () => createTar(tmpFile.path, paths, workspace))
-            .catch((err) => {
+        const finishedArchive = Timer.start("Creating cache archive", "🗜️");
+        const compressionMethod = await createTar(tmpFile.path, paths, workspace).catch((err) => {
             lib_core.error("Failed to create the archive");
             throw err;
         });
+        finishedArchive();
         const customMetadata = {
             "Cache-Action-Compression-Method": compressionMethod,
         };
-        await lib_core.group("🌐 Uploading cache archive to bucket", async () => {
-            console.log(`🔹 Uploading file '${targetFileName}'...`);
-            await bucket.upload(tmpFile.path, {
-                destination: targetFileName,
-                metadata: {
-                    metadata: customMetadata,
-                },
-            });
+        console.log(`🔹 Uploading file '${targetFileName}'...`);
+        const finishedUpload = Timer.start("Upload cache archive to bucket", "🌐");
+        await bucket
+            .upload(tmpFile.path, {
+            destination: targetFileName,
+            metadata: {
+                metadata: customMetadata,
+            },
         })
             .catch((err) => {
             lib_core.error("Failed to upload the file");
             throw err;
         });
+        finishedUpload();
         console.log("✅ Successfully saved cache.");
     });
 }

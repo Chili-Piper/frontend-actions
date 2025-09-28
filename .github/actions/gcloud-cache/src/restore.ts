@@ -7,6 +7,7 @@ import { ObjectMetadata } from "./gcs-utils";
 import { CacheHitKindState, saveState } from "./state";
 import { extractTar } from "./tar-utils";
 import { BUCKET } from "./constants";
+import { Timer } from "./shared";
 
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
@@ -202,27 +203,29 @@ export async function restore({
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
 
   return withTemporaryFile(async (tmpFile) => {
-    await core
-      .group("🌐 Downloading cache archive from bucket", async () => {
-        console.log(`🔹 Downloading file '${bestMatch.name}'...`);
+    const finishedDownload = Timer.start(
+      "Download cache archive from bucket",
+      "🌐"
+    );
+    console.log(`🔹 Downloading file '${bestMatch.name}'...`);
 
-        return bestMatch.download({
-          destination: tmpFile.path,
-        });
+    await bestMatch
+      .download({
+        destination: tmpFile.path,
       })
       .catch((err) => {
         core.error("Failed to download the file");
         throw err;
       });
 
-    await core
-      .group("🗜️ Extracting cache archive", () =>
-        extractTar(tmpFile.path, compressionMethod, workspace)
-      )
-      .catch((err) => {
-        core.error("Failed to extract the archive");
-        throw err;
-      });
+    finishedDownload();
+
+    const finishedExtract = Timer.start("Extract cache archive", "🗜️");
+    await extractTar(tmpFile.path, compressionMethod, workspace).catch((err) => {
+      core.error("Failed to extract the archive");
+      throw err;
+    });
+    finishedExtract()
 
     saveState({
       path: path,

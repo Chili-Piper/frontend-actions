@@ -80172,7 +80172,26 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 ;// ./src/constants.ts
 const BUCKET = "dataprep-staging-cd779566-e7a3-447e-95a1-8135f91bc61f";
 
+;// ./src/shared.ts
+
+const Timer = {
+    start(identifier, icon) {
+        (0,lib_core.info)(`${icon} running "${identifier}"...`);
+        const startTime = performance.now();
+        return () => {
+            const endTime = performance.now();
+            const durationMs = endTime - startTime;
+            // Format duration intelligently
+            const formattedDuration = durationMs < 1000
+                ? `${durationMs.toFixed(2)}ms`
+                : `${(durationMs / 1000).toFixed(2)}s`;
+            (0,lib_core.info)(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+        };
+    },
+};
+
 ;// ./src/restore.ts
+
 
 
 
@@ -80303,21 +80322,23 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
     return (0,tmp_promise.withFile)(async (tmpFile) => {
-        await lib_core.group("🌐 Downloading cache archive from bucket", async () => {
-            console.log(`🔹 Downloading file '${bestMatch.name}'...`);
-            return bestMatch.download({
-                destination: tmpFile.path,
-            });
+        const finishedDownload = Timer.start("Download cache archive from bucket", "🌐");
+        console.log(`🔹 Downloading file '${bestMatch.name}'...`);
+        await bestMatch
+            .download({
+            destination: tmpFile.path,
         })
             .catch((err) => {
             lib_core.error("Failed to download the file");
             throw err;
         });
-        await lib_core.group("🗜️ Extracting cache archive", () => extractTar(tmpFile.path, compressionMethod, workspace))
-            .catch((err) => {
+        finishedDownload();
+        const finishedExtract = Timer.start("Extract cache archive", "🗜️");
+        await extractTar(tmpFile.path, compressionMethod, workspace).catch((err) => {
             lib_core.error("Failed to extract the archive");
             throw err;
         });
+        finishedExtract();
         saveState({
             path: path,
             cacheHitKind: bestMatchKind,

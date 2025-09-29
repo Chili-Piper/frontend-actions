@@ -223,46 +223,50 @@ function disableMocksDirCheck(directory: string) {
 }
 
 async function prepareMonoRepo({
-  frontendKey,
-  frontendVersions,
+  frontendKeys,
+  frontendVersion,
   checkoutToken,
   directory,
   apiClientPath,
 }: {
-  frontendKey: keyof typeof frontendsConfig;
-  frontendVersions: Record<string, string>;
+  frontendKeys: Array<keyof typeof frontendsConfig>;
+  frontendVersion: string | undefined;
   directory: string;
   apiClientPath: string;
   checkoutToken: string;
 }) {
-  const frontend = frontendsConfig[frontendKey];
-  // If is same version as last, no need to checkout & reinstall. Reuse configuration.
-  // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
-  const checkoutTimerEnd = Timer.start(
-    `Checking out into ${frontendKey} ${frontendVersions[frontendKey]}`
-  );
-  await checkout({
-    checkoutToken,
-    directory,
-    repository: frontend.repository,
-    version: frontendVersions[frontendKey],
-  });
-  checkoutTimerEnd();
+  if (frontendVersion) {
+    // If is same version as last, no need to checkout & reinstall. Reuse configuration.
+    // No need to cache monorepo as it will already be cached by frontend-repo-setup parent action
+    const checkoutTimerEnd = Timer.start(
+      `Checking out into ${frontendKeys.join(", ")} ${frontendVersion}`
+    );
+
+    await checkout({
+      checkoutToken,
+      directory,
+      repository: frontendsConfig["admin-center"].repository,
+      version: frontendVersion,
+    });
+    checkoutTimerEnd();
+  }
 
   disableStrictIteratorChecks(directory);
 
-  await install({ directory });
+  if (frontendVersion) {
+    await install({ directory });
 
-  const apiClientInstallTimerEnd = Timer.start(
-    `Installing api-client for ${frontendKey}`
-  );
-  await installApiClient({
-    apiClientPath,
-    directory,
-    cherryPickBackends: [],
-    isMonoRepo: true,
-  });
-  apiClientInstallTimerEnd();
+    const apiClientInstallTimerEnd = Timer.start(
+      `Installing api-client for ${frontendKeys.join(", ")}`
+    );
+    await installApiClient({
+      apiClientPath,
+      directory,
+      cherryPickBackends: [],
+      isMonoRepo: true,
+    });
+    apiClientInstallTimerEnd();
+  }
 }
 
 async function prepareNonMonoRepo({
@@ -453,17 +457,26 @@ async function run() {
       (key) => frontendVersions[key] || "master"
     );
 
-    for (const frontendVersion of Object.keys(groupedMonoRepoFrontends)) {
+    const groupedMonoRepoFrontendsKeys = Object.keys(
+      groupedMonoRepoFrontends
+    ).sort((a, b) => {
+      // make master go first to reuse the parent repository branch
+      if (a === "master") return -1;
+      if (b === "master") return 1;
+      return 0;
+    });
+
+    for (const frontendVersion of groupedMonoRepoFrontendsKeys) {
       const sameVersionMonoRepoFrontends =
         groupedMonoRepoFrontends[frontendVersion];
-      const firstFrontend = sameVersionMonoRepoFrontends[0];
 
       info(
         `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
       );
-      const result = await prepareMonoRepo({
-        frontendKey: firstFrontend,
-        frontendVersions,
+      await prepareMonoRepo({
+        frontendKeys: sameVersionMonoRepoFrontends,
+        frontendVersion:
+          frontendVersion !== "master" ? frontendVersion : undefined,
         checkoutToken,
         directory: monoRepoPath,
         apiClientPath,

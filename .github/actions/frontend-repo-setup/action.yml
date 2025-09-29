@@ -88,6 +88,10 @@ runs:
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
         restore-from-repo: ${{ inputs.restore_cache_from_repo }}
 
+    - name: Move to checkout_path
+      if: ${{ inputs.checkout_path }}
+      
+
     - name: NPM auth
       if: ${{ inputs.npm_token }}
       run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"

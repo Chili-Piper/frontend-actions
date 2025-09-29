@@ -1,6 +1,6 @@
 import { getInput, info } from "@actions/core";
 import { partition, sortBy } from "lodash";
-import { hashFileSync } from "hasha";
+import { createHash } from "crypto";
 import { restoreCache } from "./cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
@@ -94,6 +94,16 @@ export function pickShardedFrontends(frontendVersions: Record<string, string>) {
   );
 }
 
+function hashFileLikeActions(file: string) {
+  const files = [file];
+  const final = createHash("sha256");
+  for (const file of files) {
+    const perFile = createHash("sha256").update(readFileSync(file)).digest();
+    final.write(perFile); // raw bytes
+  }
+  return final.digest("hex");
+}
+
 function getCacheKey({
   directory,
   addFingerPrint,
@@ -102,7 +112,7 @@ function getCacheKey({
   addFingerPrint?: boolean;
 }) {
   const fingerPrint = addFingerPrint
-    ? hashFileSync(`${directory}/yarn.lock`, { algorithm: "sha256" })
+    ? hashFileLikeActions(`${directory}/yarn.lock`)
     : "";
 
   const runnerOS = process.env.RUNNER_OS || process.platform;

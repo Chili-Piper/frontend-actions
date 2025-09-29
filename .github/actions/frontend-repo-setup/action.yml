@@ -74,7 +74,7 @@ runs:
         credentials_json: ${{ inputs.gcloud_credentials_json }}
 
     - name: Cache node_modules
-      uses: Chili-Piper/frontend-actions/.github/actions/gcloud-cache@main
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud-cache@pzstd
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn

@@ -40,8 +40,11 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: pzstd
+      shell: bash
+      run: sudo apt-get install pzstd
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@pzstd
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
@@ -110,7 +113,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@main
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@pzstd
       with:
         frontend: ${{ inputs.frontend }}
         backend: ${{ inputs.backend }}

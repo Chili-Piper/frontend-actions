@@ -34200,7 +34200,7 @@ module.exports.PROCESSING_OPTIONS = PROCESSING_OPTIONS;
 
 /***/ }),
 
-/***/ 7363:
+/***/ 6696:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -34449,6 +34449,7 @@ var external_stream_ = __webpack_require__(2203);
 var teeny_request_build_src = __webpack_require__(4214);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(6928);
+var external_path_default = /*#__PURE__*/__webpack_require__.n(external_path_);
 // EXTERNAL MODULE: external "querystring"
 var external_querystring_ = __webpack_require__(3480);
 // EXTERNAL MODULE: external "url"
@@ -35847,10 +35848,12 @@ class ServiceObject extends external_events_.EventEmitter {
 var paginator_build_src = __webpack_require__(6674);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __webpack_require__(9896);
+var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
 // EXTERNAL MODULE: ./node_modules/mime/index.js
 var mime = __webpack_require__(125);
 // EXTERNAL MODULE: ./node_modules/p-limit/index.js
 var p_limit = __webpack_require__(165);
+var p_limit_default = /*#__PURE__*/__webpack_require__.n(p_limit);
 // EXTERNAL MODULE: external "util"
 var external_util_ = __webpack_require__(9023);
 // EXTERNAL MODULE: ./node_modules/async-retry/lib/index.js
@@ -48224,7 +48227,74 @@ const Timer = {
     },
 };
 
+// EXTERNAL MODULE: external "https"
+var external_https_ = __webpack_require__(5692);
+var external_https_default = /*#__PURE__*/__webpack_require__.n(external_https_);
+;// ./src/parallelDownload.ts
+
+
+
+
+(external_https_default()).globalAgent.maxSockets = Infinity;
+async function ensureDir(destPath) {
+    await external_fs_default().promises.mkdir(external_path_default().dirname(destPath), { recursive: true });
+}
+async function parallelDownload(gcsFile, destination, opts = {}) {
+    const { chunkSize = 64 * 1024 * 1024, // 64 MiB
+    concurrency = 12, maxRetries = 3, decompress = false, perChunkValidation = false, } = opts;
+    const [meta] = await gcsFile.getMetadata();
+    const total = Number(meta.size);
+    if (!Number.isFinite(total))
+        throw new Error("Unknown object size");
+    await ensureDir(destination);
+    // Preallocate destination so ranged writes succeed
+    const fd = await external_fs_default().promises.open(destination, "w");
+    await fd.truncate(total);
+    await fd.close();
+    // Build ranges
+    const ranges = [];
+    for (let start = 0; start < total; start += chunkSize) {
+        const end = Math.min(start + chunkSize, total) - 1;
+        ranges.push({ start, end });
+    }
+    const limit = p_limit_default()(concurrency);
+    await Promise.all(ranges.map(({ start, end }) => limit(async () => {
+        let attempt = 0;
+        while (true) {
+            try {
+                await new Promise((resolve, reject) => {
+                    const rs = gcsFile.createReadStream({
+                        start,
+                        end,
+                        decompress,
+                        validation: perChunkValidation,
+                        // @ts-expect-error
+                        highWaterMark: 1 << 20, // 1 MiB
+                    });
+                    const ws = external_fs_default().createWriteStream(destination, {
+                        flags: "r+",
+                        start,
+                        highWaterMark: 1 << 20,
+                    });
+                    rs.on("error", reject);
+                    ws.on("error", reject);
+                    ws.on("finish", resolve);
+                    rs.pipe(ws);
+                });
+                return;
+            }
+            catch (err) {
+                attempt++;
+                if (attempt > maxRetries)
+                    throw err;
+                await new Promise((r) => setTimeout(r, 200 * 2 ** (attempt - 1)));
+            }
+        }
+    })));
+}
+
 ;// ./src/restore.ts
+
 
 
 
@@ -48371,11 +48441,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, workingDirecto
     return (0,tmp_promise.withFile)(async (tmpFile) => {
         const finishedDownload = Timer.start("Download cache archive from bucket", "🌐");
         console.log(`🔹 Downloading file '${bestMatch.name}'...`);
-        await bestMatch
-            .download({
-            destination: tmpFile.path,
-        })
-            .catch((err) => {
+        await parallelDownload(bestMatch, tmpFile.path).catch((err) => {
             lib_core.error("Failed to download the file");
             throw err;
         });
@@ -77231,8 +77297,8 @@ function main_getInputs() {
     return inputs;
 }
 
-// EXTERNAL MODULE: ./src/restore.ts + 27 modules
-var main_restore = __webpack_require__(7363);
+// EXTERNAL MODULE: ./src/restore.ts + 28 modules
+var main_restore = __webpack_require__(6696);
 ;// ./src/main.ts
 
 

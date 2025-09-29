@@ -8,6 +8,7 @@ import { CacheHitKindState, saveState } from "./state";
 import { extractTar } from "./tar-utils";
 import { BUCKET } from "./constants";
 import { Timer } from "./shared";
+import { parallelDownload } from "./parallelDownload";
 
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
@@ -232,14 +233,10 @@ export async function restore({
     );
     console.log(`🔹 Downloading file '${bestMatch.name}'...`);
 
-    await bestMatch
-      .download({
-        destination: tmpFile.path,
-      })
-      .catch((err) => {
-        core.error("Failed to download the file");
-        throw err;
-      });
+    await parallelDownload(bestMatch, tmpFile.path).catch((err) => {
+      core.error("Failed to download the file");
+      throw err;
+    });
 
     finishedDownload();
 

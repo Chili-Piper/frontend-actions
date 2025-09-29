@@ -3,6 +3,7 @@ description: "Set up environment"
 inputs:
   gcloud_credentials_json:
     description: "Gcloud credentials json file for bucket access"
+    required: true
   ref:
     description: "Ref for checkout"
     required: false

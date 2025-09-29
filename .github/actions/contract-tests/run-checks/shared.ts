@@ -1,12 +1,10 @@
 import { getInput, info } from "@actions/core";
-import { execSync } from "node:child_process";
 import { partition, sortBy } from "lodash";
 import { hashFileSync } from "hasha";
-import { restoreCache, saveCache } from "@actions/cache";
+import { restoreCache } from "./cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
-import path from "node:path";
-import { globSync } from "fast-glob";
+import { readFileSync } from "fs";
 
 export const monoRepo = "Chili-Piper/frontend";
 
@@ -106,109 +104,31 @@ function getCacheKey({
   const fingerPrint = addFingerPrint
     ? hashFileSync(`${directory}/yarn.lock`)
     : "";
-  return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
+
+  const runnerOS = process.env.RUNNER_OS || process.platform;
+  const nodeVersion =
+    readFileSync(`${directory}/.nvmrc`, "utf-8") ||
+    readFileSync(`${directory}/.tool-versions`, "utf-8")
+      ?.split("\n")
+      .find((l) => l.trim().startsWith("node "))
+      ?.replace("node ", "");
+
+  const cacheName = "node-modules-yarn";
+  return `v4-${runnerOS}-${cacheName}-v${nodeVersion}-${fingerPrint}`;
 }
 
 function getCachePaths(directory: string) {
   return [`${directory}/.yarn/cache`, `${directory}/**/node_modules`];
 }
 
-export async function restoreYarnCache(directory: string) {
+export async function restoreYarnCache(directory: string, repository: string) {
   const key = getCacheKey({ directory, addFingerPrint: true });
-  const matchKey = await restoreCache(getCachePaths(directory), key, [
-    getCacheKey({ directory }),
-  ]);
+  const matchKey = await restoreCache({
+    path: getCachePaths(directory),
+    key,
+    restoreKeys: [getCacheKey({ directory })],
+    restoreFromRepo: repository,
+  });
   info(`comparing keys ${matchKey} and ${key}`);
   return matchKey === key;
-}
-
-export async function saveYarnCache(directory: string) {
-  await saveCache(
-    getCachePaths(directory),
-    getCacheKey({ directory, addFingerPrint: true })
-  );
-}
-
-function getTSCachePaths(directory: string) {
-  return [
-    `${directory}/apps/*/tsconfig.tsbuildinfo`,
-    `${directory}/frontend-packages/*/lib`,
-  ];
-}
-
-function getTSCacheKey(app: string, version?: string) {
-  return `v1-integration-checks-typescript-${app}-${version ?? ""}`;
-}
-
-export async function saveTypescriptCache({
-  directory,
-  app,
-  version,
-}: {
-  directory: string;
-  app: string;
-  version: string;
-}) {
-  if (!version) {
-    info(
-      `Skipped saving TS cache cause there is no version configured for ${app}.`
-    );
-    return;
-  }
-  const paths = getTSCachePaths(directory);
-  const hasFilesInPaths = paths.find((pattern) => {
-    const resolvedPattern = path.resolve(directory, pattern);
-    return (
-      globSync(resolvedPattern, { onlyFiles: true, absolute: true }).length > 0
-    );
-  });
-  if (hasFilesInPaths) {
-    await saveCache(paths, getTSCacheKey(app, version));
-  } else {
-    info(`Skipped saving TS cache cause there is no file or directory match.`);
-  }
-}
-
-// https://github.com/microsoft/TypeScript/issues/54563
-function updateTSBuildFilesTimestamp(directory: string) {
-  const end = Timer.start("updating tsbuildinfo timestamps");
-
-  const resolvedDir = path.resolve(directory);
-  execSync(
-    `find "${resolvedDir}" -type f -name ".tsbuildinfo" -exec touch {} +`,
-    { stdio: "inherit", shell: "/bin/bash" }
-  );
-  execSync(
-    `find "${resolvedDir}" -type f -name "tsconfig.tsbuildinfo" -exec touch {} +`,
-    { stdio: "inherit", shell: "/bin/bash" }
-  );
-
-  end();
-}
-
-export { updateTSBuildFilesTimestamp };
-
-export async function restoreTypescriptCache({
-  directory,
-  app,
-  version,
-}: {
-  directory: string;
-  app: string;
-  version: string;
-}) {
-  if (!version) {
-    info(
-      `Skipped restoring TS cache cause there is no version configured for ${app}.`
-    );
-    return false;
-  }
-  const key = await restoreCache(
-    getTSCachePaths(directory),
-    getTSCacheKey(app, version)
-  );
-  if (key) {
-    updateTSBuildFilesTimestamp(directory);
-  }
-  return Boolean(key);
 }

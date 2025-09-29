@@ -27,6 +27,9 @@ inputs:
   node_version_file:
     description: "File containing the version Spec of the version to use.  Examples: .nvmrc, .tool-versions, etc."
     required: false
+  restore_cache_from_repo:
+    description: "Restore cache from another repository. This is used by contract tests to reuse pre-existent cache from frontend repos."
+    required: false
 outputs:
   LATEST_TAG:
     description: "Latest tag"
@@ -63,7 +66,7 @@ runs:
       shell: bash
 
     - name: Cache node_modules
-      uses: actions/cache@v4
+      uses: Chili-Piper/frontend-actions/.github/actions/gcloud-cache@main
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn
@@ -74,8 +77,9 @@ runs:
           !**/node_modules/.cache/turbo
           ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress
-        key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-${{ env.cache-fingerprint }}
-        restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-${{ inputs.checkout_path }}-
+        key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
+        restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
+        restore-from-repo: ${{ inputs.restore_cache_from_repo }}
 
     - name: NPM auth
       if: ${{ inputs.npm_token }}

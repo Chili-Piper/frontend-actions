@@ -43,12 +43,12 @@ runs:
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
       with:
-        checkout_path: /home/runner/_work/frontend/frontend
+        checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
         npm_token: ${{ inputs.npm_token }}
         restore_cache_from_repo: frontend
-        node_version_file: /home/runner/_work/frontend/frontend/.nvmrc
+        node_version_file: api-client-source/.nvmrc
         gcloud_credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Decide single vs multi backend
       id: decide
@@ -81,27 +81,27 @@ runs:
       if: steps.decide.outputs.mode == 'multi'
       uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-services@main
       with:
-        api_client_source_path: /home/runner/_work/frontend/frontend
+        api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
     - name: Load Open API Docs
       if: steps.decide.outputs.mode == 'multi'
       shell: bash
-      working-directory: /home/runner/_work/frontend/frontend
+      working-directory: api-client-source
       run: yarn workspace @chilipiper/api-client load-docs
     - name: Update api-client docs json
       uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/set-be-openapi@main
       with:
-        api_client_source_path: /home/runner/_work/frontend/frontend
+        api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
     - name: Build API code
       shell: bash
-      working-directory: /home/runner/_work/frontend/frontend
+      working-directory: api-client-source
       env:
         SERVICE: ${{ steps.decide.outputs.backend_name }}
       run: yarn workspace @chilipiper/api-client generate-code
     - name: Get api-client path
       id: get-api-client-path
-      working-directory: /home/runner/_work/frontend/frontend
+      working-directory: api-client-source
       run: |
         FULL_PATH=$(realpath .)
         echo "Full path: $FULL_PATH"

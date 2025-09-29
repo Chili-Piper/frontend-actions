@@ -48,7 +48,7 @@ runs:
         checkout_token: ${{ inputs.checkout_token }}
         npm_token: ${{ inputs.npm_token }}
         restore_cache_from_repo: frontend
-        node_version_file: .nvmrc
+        node_version_file: api-client-source/.nvmrc
     - name: Decide single vs multi backend
       id: decide
       shell: bash

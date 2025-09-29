@@ -80599,7 +80599,8 @@ const BUCKET = "chili-piper-reports";
 
 const Timer = {
     start(identifier, icon) {
-        (0,core.info)(`${icon} running "${identifier}"...`);
+        const iconText = icon ? `${icon} ` : "";
+        (0,core.info)(`${iconText}running "${identifier}"...`);
         const startTime = performance.now();
         return () => {
             const endTime = performance.now();
@@ -80608,7 +80609,7 @@ const Timer = {
             const formattedDuration = durationMs < 1000
                 ? `${durationMs.toFixed(2)}ms`
                 : `${(durationMs / 1000).toFixed(2)}s`;
-            (0,core.info)(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+            (0,core.info)(`${iconText}finished running "${identifier}". took ${formattedDuration}!`);
         };
     },
 };

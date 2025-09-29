@@ -11,9 +11,6 @@ import {
   monoRepo,
   pickShardedFrontends,
   restoreYarnCache,
-  restoreTypescriptCache,
-  saveYarnCache,
-  saveTypescriptCache,
 } from "./shared";
 import frontendsConfig from "./frontends.json";
 // @ts-expect-error
@@ -256,14 +253,6 @@ async function prepareMonoRepo({
 
   await install({ directory });
 
-  const restoreTSCacheTimerEnd = Timer.start("restoring TSBuild cache...");
-  const foundTSCacheMatch = await restoreTypescriptCache({
-    directory,
-    app: "monorepo",
-    version: frontendVersions[frontendKey],
-  });
-  restoreTSCacheTimerEnd();
-
   const apiClientInstallTimerEnd = Timer.start(
     `Installing api-client for ${frontendKey}`
   );
@@ -274,8 +263,6 @@ async function prepareMonoRepo({
     isMonoRepo: true,
   });
   apiClientInstallTimerEnd();
-
-  return { foundTSCacheMatch };
 }
 
 async function prepareNonMonoRepo({
@@ -309,19 +296,12 @@ async function prepareNonMonoRepo({
   const restoreCacheTimerEnd = Timer.start(
     `Restoring cache for ${frontendKey}`
   );
-  exactMatch = await restoreYarnCache(directory);
+  const repository = frontend.repository.replace("Chili-Piper/", "");
+  exactMatch = await restoreYarnCache(directory, repository);
   restoreCacheTimerEnd();
 
   if (!exactMatch) {
     await install({ directory });
-  }
-
-  if (!exactMatch) {
-    const saveCacheTimerEnd = Timer.start(`Saving cache for ${frontendKey}`);
-    await saveYarnCache(directory);
-    saveCacheTimerEnd();
-  } else {
-    info(`Skipping saving cache since it was an exact match`);
   }
 
   const apiClientInstallTimerEnd = Timer.start(
@@ -367,22 +347,6 @@ async function runCommands({
   });
   runCheckTimerEnd();
 
-  if (!foundTSCacheMatch && isMonoRepo) {
-    const saveTSCacheTimerEnd = Timer.start(
-      `Saving TS cache for ${frontendKey}`
-    );
-    await saveTypescriptCache({
-      directory,
-      app: "monorepo",
-      version: frontendVersions[frontendKey],
-    });
-    saveTSCacheTimerEnd();
-  } else {
-    info(
-      `Skipping save TS cache because restore was exact match or repo is not monorepo`
-    );
-  }
-
   if (exitCode !== 0) {
     failedFrontends.add(frontendKey);
   }
@@ -391,14 +355,10 @@ async function runCommands({
 async function runMonoRepoCommands({
   directory,
   frontendKeys,
-  frontendVersions,
-  foundTSCacheMatch,
   failedFrontends,
 }: {
   frontendKeys: Array<keyof typeof frontendsConfig>;
-  frontendVersions: Record<string, string>;
   directory: string;
-  foundTSCacheMatch: boolean;
   failedFrontends: Set<string>;
 }) {
   info(`Running check commands for ${frontendKeys.join(", ")}`);
@@ -429,22 +389,6 @@ async function runMonoRepoCommands({
   }
 
   await queue.onIdle();
-
-  if (!foundTSCacheMatch) {
-    const saveTSCacheTimerEnd = Timer.start(
-      `Saving TS cache for ${frontendKeys.join(", ")}`
-    );
-    await saveTypescriptCache({
-      directory,
-      app: "monorepo",
-      version: frontendVersions[frontendKeys[0]],
-    });
-    saveTSCacheTimerEnd();
-  } else {
-    info(
-      `Skipping save TS cache because restore was exact match or repo is not monorepo`
-    );
-  }
 }
 
 async function run() {
@@ -531,9 +475,7 @@ async function run() {
 
       await runMonoRepoCommands({
         frontendKeys: sameVersionMonoRepoFrontends,
-        frontendVersions,
         failedFrontends,
-        foundTSCacheMatch: result.foundTSCacheMatch,
         directory: monoRepoPath,
       });
     }

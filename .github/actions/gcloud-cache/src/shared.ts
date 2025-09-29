@@ -2,7 +2,8 @@ import { info } from "@actions/core";
 
 export const Timer = {
   start(identifier: string, icon?: string) {
-    info(`${icon} running "${identifier}"...`);
+    const iconText = icon ? `${icon} ` : "";
+    info(`${iconText}running "${identifier}"...`);
     const startTime = performance.now();
 
     return () => {
@@ -15,7 +16,9 @@ export const Timer = {
           ? `${durationMs.toFixed(2)}ms`
           : `${(durationMs / 1000).toFixed(2)}s`;
 
-      info(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+      info(
+        `${iconText}finished running "${identifier}". took ${formattedDuration}!`
+      );
     };
   },
 };

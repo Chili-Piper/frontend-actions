@@ -11,6 +11,8 @@ import { Timer } from "./shared";
 
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
+const mockedBranchToForceCacheMiss =
+  "refs/heads/27c74ea5-557d-42c2-bd2e-4fe2762ba6ab";
 
 async function getBestMatch({
   bucket,
@@ -149,7 +151,11 @@ export async function restore({
     restoreFromRepo || github.context.repo.repo
   }`;
 
-  const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
+  const branch = restoreFromRepo
+    ? mockedBranchToForceCacheMiss
+    : github.context.ref;
+
+  const exactFileName = `${folderPrefix}/${branch}/${key}.tar`;
 
   const finishedLookup = Timer.start(
     "Searching the best cache archive available",
@@ -162,7 +168,7 @@ export async function restore({
     restoreKeys,
     restoreFromRepo,
     folderPrefix,
-    branch: github.context.ref,
+    branch,
     isPR: Boolean(github.context.payload.pull_request),
   });
 
@@ -175,6 +181,7 @@ export async function restore({
       path: path,
       cacheHitKind: "none",
       targetFileName: exactFileName,
+      restoreFromRepo,
     });
     console.log("😢 No cache candidate found.");
     return;
@@ -200,6 +207,7 @@ export async function restore({
       path: path,
       cacheHitKind: "none",
       targetFileName: exactFileName,
+      restoreFromRepo,
     });
 
     console.log("😢 No cache candidate found (missing metadata).");
@@ -239,6 +247,7 @@ export async function restore({
       path: path,
       cacheHitKind: bestMatchKind,
       targetFileName: exactFileName,
+      restoreFromRepo,
     });
     console.log("✅ Successfully restored cache.");
     return exactFileName;

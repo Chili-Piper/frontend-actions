@@ -62633,6 +62633,7 @@ function saveState(state) {
     core.saveState("path", JSON.stringify(state.path));
     core.saveState("cache-hit-kind", state.cacheHitKind);
     core.saveState("target-file-name", state.targetFileName);
+    core.saveState("restore-from-repo", state.restoreFromRepo);
 }
 function getState() {
     const state = {
@@ -76623,7 +76624,8 @@ const BUCKET = "chili-piper-reports";
 
 const Timer = {
     start(identifier, icon) {
-        (0,lib_core.info)(`${icon} running "${identifier}"...`);
+        const iconText = icon ? `${icon} ` : "";
+        (0,lib_core.info)(`${iconText}running "${identifier}"...`);
         const startTime = performance.now();
         return () => {
             const endTime = performance.now();
@@ -76632,7 +76634,7 @@ const Timer = {
             const formattedDuration = durationMs < 1000
                 ? `${durationMs.toFixed(2)}ms`
                 : `${(durationMs / 1000).toFixed(2)}s`;
-            (0,lib_core.info)(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+            (0,lib_core.info)(`${iconText}finished running "${identifier}". took ${formattedDuration}!`);
         };
     },
 };
@@ -76703,6 +76705,10 @@ async function main() {
     const state = getState();
     if (state.cacheHitKind === "exact") {
         console.log("🌀 Skipping uploading cache as the cache was hit by exact match.");
+        return;
+    }
+    if (state.restoreFromRepo) {
+        console.log("🌀 Skipping uploading cache as the cache was restored from different repo.");
         return;
     }
     return saveInternal({

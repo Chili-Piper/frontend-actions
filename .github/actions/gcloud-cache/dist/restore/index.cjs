@@ -76930,6 +76930,7 @@ function saveState(state) {
     lib_core.saveState("path", JSON.stringify(state.path));
     lib_core.saveState("cache-hit-kind", state.cacheHitKind);
     lib_core.saveState("target-file-name", state.targetFileName);
+    lib_core.saveState("restore-from-repo", state.restoreFromRepo);
 }
 function getState() {
     const state = {
@@ -77016,7 +77017,8 @@ const BUCKET = "chili-piper-reports";
 
 const Timer = {
     start(identifier, icon) {
-        (0,lib_core.info)(`${icon} running "${identifier}"...`);
+        const iconText = icon ? `${icon} ` : "";
+        (0,lib_core.info)(`${iconText}running "${identifier}"...`);
         const startTime = performance.now();
         return () => {
             const endTime = performance.now();
@@ -77025,7 +77027,7 @@ const Timer = {
             const formattedDuration = durationMs < 1000
                 ? `${durationMs.toFixed(2)}ms`
                 : `${(durationMs / 1000).toFixed(2)}s`;
-            (0,lib_core.info)(`${icon} finished running "${identifier}". took ${formattedDuration}!`);
+            (0,lib_core.info)(`${iconText}finished running "${identifier}". took ${formattedDuration}!`);
         };
     },
 };
@@ -77041,6 +77043,7 @@ const Timer = {
 
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
+const mockedBranchToForceCacheMiss = "refs/heads/27c74ea5-557d-42c2-bd2e-4fe2762ba6ab";
 async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderPrefix, branch, isPR, }) {
     const exactPath = `${folderPrefix}/${branch}/${key}.tar`;
     lib_core.info(`Will lookup for the file ${exactPath}`);
@@ -77121,7 +77124,10 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
 async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
     const bucket = new Storage().bucket(BUCKET);
     const folderPrefix = `${github.context.repo.owner}/${restoreFromRepo || github.context.repo.repo}`;
-    const exactFileName = `${folderPrefix}/${github.context.ref}/${key}.tar`;
+    const branch = restoreFromRepo
+        ? mockedBranchToForceCacheMiss
+        : github.context.ref;
+    const exactFileName = `${folderPrefix}/${branch}/${key}.tar`;
     const finishedLookup = Timer.start("Searching the best cache archive available", "🔍");
     const [bestMatch, bestMatchKind] = await getBestMatch({
         bucket,
@@ -77129,7 +77135,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
         restoreKeys,
         restoreFromRepo,
         folderPrefix,
-        branch: github.context.ref,
+        branch,
         isPR: Boolean(github.context.payload.pull_request),
     });
     finishedLookup();
@@ -77139,6 +77145,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
             path: path,
             cacheHitKind: "none",
             targetFileName: exactFileName,
+            restoreFromRepo,
         });
         console.log("😢 No cache candidate found.");
         return;
@@ -77159,6 +77166,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
             path: path,
             cacheHitKind: "none",
             targetFileName: exactFileName,
+            restoreFromRepo,
         });
         console.log("😢 No cache candidate found (missing metadata).");
         return;
@@ -77186,6 +77194,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
             path: path,
             cacheHitKind: bestMatchKind,
             targetFileName: exactFileName,
+            restoreFromRepo,
         });
         console.log("✅ Successfully restored cache.");
         return exactFileName;

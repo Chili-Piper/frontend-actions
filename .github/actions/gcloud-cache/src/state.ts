@@ -6,6 +6,7 @@ export interface State {
   path: string[];
   cacheHitKind: CacheHitKindState;
   targetFileName: string;
+  restoreFromRepo?: string;
 }
 
 export function saveState(state: State): void {
@@ -14,6 +15,7 @@ export function saveState(state: State): void {
   core.saveState("path", JSON.stringify(state.path));
   core.saveState("cache-hit-kind", state.cacheHitKind);
   core.saveState("target-file-name", state.targetFileName);
+  core.saveState("restore-from-repo", state.restoreFromRepo);
 }
 
 export function getState(): State {

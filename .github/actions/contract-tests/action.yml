@@ -47,6 +47,7 @@ runs:
         checkout_repo: Chili-Piper/frontend
         checkout_token: ${{ inputs.checkout_token }}
         npm_token: ${{ inputs.npm_token }}
+        restore_cache_from_repo: frontend
     - name: Decide single vs multi backend
       id: decide
       shell: bash

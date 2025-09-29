@@ -90,7 +90,7 @@ runs:
 
     - name: Log node_modules
       shell: bash
-      run: ls ${{ inputs.checkout_path }}/.yarn/cache
+      run: ls ${{ inputs.checkout_path }}/.yarn/cache 2>/dev/null || true
 
     - name: NPM auth
       if: ${{ inputs.npm_token }}

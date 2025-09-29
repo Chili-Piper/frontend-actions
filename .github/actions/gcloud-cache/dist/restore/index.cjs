@@ -77267,7 +77267,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, workingDirecto
             restoreFromRepo,
         });
         console.log("✅ Successfully restored cache.");
-        return exactFileName;
+        return key;
     });
 }
 

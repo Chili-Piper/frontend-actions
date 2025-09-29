@@ -256,6 +256,6 @@ export async function restore({
       restoreFromRepo,
     });
     console.log("✅ Successfully restored cache.");
-    return exactFileName;
+    return key;
   });
 }

@@ -48172,7 +48172,7 @@ async function createTar(archivePath, paths, cwd) {
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
         ? ["-z"]
-        : ["--use-compress-program", "pzstd -p0"];
+        : ["--use-compress-program", "zstd -T0"];
     await exec.exec("tar", [
         "-c",
         ...compressionArgs,
@@ -48190,7 +48190,7 @@ async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
         ? ["-z"]
-        : ["--use-compress-program", "pzstd -d -p0"];
+        : ["--use-compress-program", "zstd -d -T0"];
     await lib_exec.exec("tar", [
         "-x",
         ...compressionArgs,

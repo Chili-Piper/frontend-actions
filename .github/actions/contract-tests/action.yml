@@ -40,9 +40,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: pzstd
-      shell: bash
-      run: sudo apt update && sudo apt-get install pzstd
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@pzstd
       with:

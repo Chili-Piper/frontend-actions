@@ -49,6 +49,7 @@ runs:
         npm_token: ${{ inputs.npm_token }}
         restore_cache_from_repo: frontend
         node_version_file: api-client-source/.nvmrc
+        gcloud_credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Decide single vs multi backend
       id: decide
       shell: bash
@@ -73,11 +74,6 @@ runs:
         if [ "${{ steps.decide.outputs.mode }}" = "single" ]; then
           echo "Backend Name: ${{ steps.decide.outputs.backend_name }}"
         fi
-    - name: Authenticate to CPCLOUD
-      if: steps.decide.outputs.mode == 'multi'
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ inputs.gcloud_credentials_json }}
     - name: Set up Cloud SDK
       if: steps.decide.outputs.mode == 'multi'
       uses: google-github-actions/setup-gcloud@v2

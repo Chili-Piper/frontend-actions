@@ -1,6 +1,8 @@
 name: "Set up"
 description: "Set up environment"
 inputs:
+  gcloud_credentials_json:
+    description: "Gcloud credentials json file for bucket access"
   ref:
     description: "Ref for checkout"
     required: false
@@ -64,6 +66,11 @@ runs:
     - name: Install yarn
       run: corepack enable
       shell: bash
+
+    - name: Authenticate to CPCLOUD
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ inputs.gcloud_credentials_json }}
 
     - name: Cache node_modules
       uses: Chili-Piper/frontend-actions/.github/actions/gcloud-cache@main

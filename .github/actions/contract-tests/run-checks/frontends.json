@@ -65,17 +65,18 @@
   },
   "chilical": {
     "repository": "Chili-Piper/chilical",
-    "directory": ".",
-    "commands": [{ "exec": "yarn tsc" }]
+    "directory": "."
   },
   "booking-app": {
     "repository": "Chili-Piper/booking-app",
-    "directory": "./v1",
-    "commands": [{ "exec": "yarn tsc" }]
+    "directory": "./v1"
   },
   "chilical-scheduler": {
     "repository": "Chili-Piper/chilical-scheduler",
-    "directory": ".",
-    "commands": [{ "exec": "yarn tsc" }]
+    "directory": "."
+  },
+  "fire-browser-extension": {
+    "repository": "Chili-Piper/fire-browser-extension",
+    "directory": "."
   }
 }

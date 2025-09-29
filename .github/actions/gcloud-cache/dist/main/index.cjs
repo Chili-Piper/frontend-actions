@@ -48313,7 +48313,7 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
     }
     return [null, "none"];
 }
-async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
+async function restore({ path, key, restoreKeys, restoreFromRepo, workingDirectory, }) {
     const bucket = new Storage().bucket(BUCKET);
     const folderPrefix = `${github.context.repo.owner}/${restoreFromRepo || github.context.repo.repo}`;
     const branch = restoreFromRepo
@@ -48363,7 +48363,11 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, }) {
         console.log("😢 No cache candidate found (missing metadata).");
         return;
     }
-    const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
+    const workingDirectoryRoot = process.env.WORKING_DIRECTORY ?? process.cwd();
+    const workspace = workingDirectory
+        ? `${workingDirectoryRoot}/${workingDirectory}`
+        : workingDirectoryRoot;
+    lib_core.info(`gcloud-cache working directory is ${process.env.WORKING_DIRECTORY}`);
     return (0,tmp_promise.withFile)(async (tmpFile) => {
         const finishedDownload = Timer.start("Download cache archive from bucket", "🌐");
         console.log(`🔹 Downloading file '${bestMatch.name}'...`);
@@ -77221,6 +77225,7 @@ function main_getInputs() {
             .split(",")
             .filter((path) => path),
         restoreFromRepo: main_core.getInput("restore-from-repo"),
+        workingDirectory: main_core.getInput("working-directory"),
     };
     main_core.debug(`Loaded inputs: ${JSON.stringify(inputs)}.`);
     return inputs;

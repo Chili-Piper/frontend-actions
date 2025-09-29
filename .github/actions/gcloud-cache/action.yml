@@ -16,6 +16,9 @@ inputs:
   restore-from-repo:
     description: Name of the repository to restore the cache from (defaults to current repository)
     required: false
+  working-directory:
+    description: "Custom working directory to run actions"
+    required: false
 
 outputs:
   cache-hit:

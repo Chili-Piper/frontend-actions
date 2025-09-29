@@ -19,6 +19,7 @@ export function getInputs(): Inputs {
       .split(",")
       .filter((path) => path),
     restoreFromRepo: core.getInput("restore-from-repo"),
+    workingDirectory: core.getInput("working-directory"),
   };
 
   core.debug(`Loaded inputs: ${JSON.stringify(inputs)}.`);

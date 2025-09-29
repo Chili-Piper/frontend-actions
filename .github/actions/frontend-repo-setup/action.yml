@@ -78,7 +78,6 @@ runs:
       env:
         cache-name: node-modules-yarn
         cache-fingerprint: ${{ env.NODE_VERSION }}-${{ hashFiles('**/yarn.lock') }}
-        GITHUB_WORKSPACE: ${{ inputs.checkout_path }}
       with:
         path: |
           ${{ inputs.checkout_path }}/**/node_modules
@@ -88,6 +87,7 @@ runs:
         key: v4-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
         restore-keys: v4-${{ runner.os }}-${{ env.cache-name }}-
         restore-from-repo: ${{ inputs.restore_cache_from_repo }}
+        working-directory: ${{ inputs.checkout_path }}
 
     - name: Log node_modules
       shell: bash

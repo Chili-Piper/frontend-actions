@@ -139,11 +139,13 @@ export async function restore({
   key,
   restoreKeys,
   restoreFromRepo,
+  workingDirectory,
 }: {
   path: string[];
   key: string;
   restoreKeys: string[];
   restoreFromRepo?: string;
+  workingDirectory?: string;
 }) {
   const bucket = new Storage().bucket(BUCKET);
 
@@ -214,7 +216,14 @@ export async function restore({
     return;
   }
 
-  const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
+  const workingDirectoryRoot = process.env.WORKING_DIRECTORY ?? process.cwd();
+  const workspace = workingDirectory
+    ? `${workingDirectoryRoot}/${workingDirectory}`
+    : workingDirectoryRoot;
+
+  core.info(
+    `gcloud-cache working directory is ${process.env.WORKING_DIRECTORY}`
+  );
 
   return withTemporaryFile(async (tmpFile) => {
     const finishedDownload = Timer.start(

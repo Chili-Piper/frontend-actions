@@ -110,7 +110,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@contract-tests-extension
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@main
       with:
         frontend: ${{ inputs.frontend }}
         backend: ${{ inputs.backend }}

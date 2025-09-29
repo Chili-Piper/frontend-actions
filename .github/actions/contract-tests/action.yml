@@ -41,7 +41,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@gcloud-cache
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend
@@ -114,7 +114,7 @@ runs:
       shell: bash
     - name: Run Checks
       id: run-checks
-      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@gcloud-cache
+      uses: Chili-Piper/frontend-actions/.github/actions/contract-tests/run-checks@main
       with:
         frontend: ${{ inputs.frontend }}
         backend: ${{ inputs.backend }}

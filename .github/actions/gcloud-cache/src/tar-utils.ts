@@ -42,7 +42,7 @@ export async function createTar(
   const compressionArgs =
     compressionMethod === CompressionMethod.GZIP
       ? ["-z"]
-      : ["--use-compress-program", "zstd -T0"];
+      : ["--use-compress-program", "lz4"];
 
   await exec.exec("tar", [
     "-c",
@@ -71,7 +71,7 @@ export async function extractTar(
   const compressionArgs =
     compressionMethod === CompressionMethod.GZIP
       ? ["-z"]
-      : ["--use-compress-program", "zstd -d -T0"];
+      : ["--use-compress-program", "lz4 -d"];
 
   await exec.exec("tar", [
     "-x",

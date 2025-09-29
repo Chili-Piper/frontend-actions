@@ -13,12 +13,12 @@ async function main() {
     return;
   }
 
-  if (state.restoreFromRepo) {
-    console.log(
-      "🌀 Skipping uploading cache as the cache was restored from different repo."
-    );
-    return;
-  }
+  // if (state.restoreFromRepo) {
+  //   console.log(
+  //     "🌀 Skipping uploading cache as the cache was restored from different repo."
+  //   );
+  //   return;
+  // }
 
   return saveInternal({
     path: state.path,

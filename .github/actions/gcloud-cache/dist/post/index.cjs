@@ -76587,7 +76587,7 @@ async function createTar(archivePath, paths, cwd) {
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
         ? ["-z"]
-        : ["--use-compress-program", "zstd -T0"];
+        : ["--use-compress-program", "lz4"];
     await lib_exec.exec("tar", [
         "-c",
         ...compressionArgs,
@@ -76605,7 +76605,7 @@ async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
         ? ["-z"]
-        : ["--use-compress-program", "zstd -d -T0"];
+        : ["--use-compress-program", "lz4 -d"];
     await exec.exec("tar", [
         "-x",
         ...compressionArgs,
@@ -76707,10 +76707,12 @@ async function main() {
         console.log("🌀 Skipping uploading cache as the cache was hit by exact match.");
         return;
     }
-    if (state.restoreFromRepo) {
-        console.log("🌀 Skipping uploading cache as the cache was restored from different repo.");
-        return;
-    }
+    // if (state.restoreFromRepo) {
+    //   console.log(
+    //     "🌀 Skipping uploading cache as the cache was restored from different repo."
+    //   );
+    //   return;
+    // }
     return saveInternal({
         path: state.path,
         targetFileName: state.targetFileName,

@@ -74,6 +74,7 @@ runs:
 
     - name: Cache node_modules
       uses: Chili-Piper/frontend-actions/.github/actions/gcloud-cache@main
+      working-directory: ${{ inputs.checkout_path }}
       id: node-modules-cache
       env:
         cache-name: node-modules-yarn

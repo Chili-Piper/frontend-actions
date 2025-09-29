@@ -1,1 +1,1 @@
-export const BUCKET = "chili-piper-reports";
+export const BUCKET = "chilipiper-github-actions-cache";

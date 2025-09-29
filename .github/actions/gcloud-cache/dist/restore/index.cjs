@@ -77011,7 +77011,7 @@ async function extractTar(archivePath, compressionMethod, cwd) {
 }
 
 ;// ./src/constants.ts
-const BUCKET = "chili-piper-reports";
+const BUCKET = "chilipiper-github-actions-cache";
 
 ;// ./src/shared.ts
 

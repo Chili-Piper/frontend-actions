@@ -320,15 +320,11 @@ async function runCommands({
   directory,
   frontendKey,
   frontendVersions,
-  isMonoRepo,
-  foundTSCacheMatch,
   failedFrontends,
 }: {
   frontendKey: keyof typeof frontendsConfig;
   frontendVersions: Record<string, string>;
   directory: string;
-  isMonoRepo: boolean;
-  foundTSCacheMatch: boolean;
   failedFrontends: Set<string>;
 }) {
   info(`Running check commands for ${frontendKey}`);
@@ -488,8 +484,6 @@ async function run() {
     for (const frontendKey of otherFrontends) {
       queue.add(async () => {
         const directory = frontendKey;
-        let foundTSCacheMatch = false;
-
         await prepareNonMonoRepo({
           frontendKey,
           frontendVersions,
@@ -503,8 +497,6 @@ async function run() {
           frontendKey,
           frontendVersions,
           directory,
-          isMonoRepo: false,
-          foundTSCacheMatch,
           failedFrontends,
         });
       });

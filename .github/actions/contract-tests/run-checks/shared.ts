@@ -4,6 +4,7 @@ import { hashFileSync } from "hasha";
 import { restoreCache } from "./cache";
 import { shardFrontends } from "./shardFrontends";
 import frontendsConfig from "./frontends.json";
+import { readFileSync } from "fs";
 
 export const monoRepo = "Chili-Piper/frontend";
 
@@ -105,10 +106,15 @@ function getCacheKey({
     : "";
 
   const runnerOS = process.env.RUNNER_OS || process.platform;
-  const nodeVersion = process.version;
-  const cacheName = "node-modules-yarn";
+  const nodeVersion =
+    readFileSync(`${directory}/.nvmrc`, "utf-8") ||
+    readFileSync(`${directory}/.tool-versions`, "utf-8")
+      ?.split("\n")
+      .find((l) => l.trim().startsWith("node "))
+      ?.replace("node ", "");
 
-  return `v4-${runnerOS}-${cacheName}-${nodeVersion}-${fingerPrint}`;
+  const cacheName = "node-modules-yarn";
+  return `v4-${runnerOS}-${cacheName}-v${nodeVersion}-${fingerPrint}`;
 }
 
 function getCachePaths(directory: string) {

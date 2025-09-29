@@ -63,6 +63,10 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
+    - name: Expose node version as environment variable
+      run: echo "node-version=$(node --version)" >> ${GITHUB_ENV}
+      shell: bash
+
     - name: Install yarn
       run: corepack enable
       shell: bash

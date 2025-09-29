@@ -362,15 +362,14 @@ async function runMonoRepoCommands({
   failedFrontends: Set<string>;
 }) {
   info(`Running check commands for ${frontendKeys.join(", ")}`);
+  const ignoreTestFilesTimerEnd = Timer.start(
+    `Ignoring test files before running tests`
+  );
   for (const frontendKey of frontendKeys) {
     const frontend = frontendsConfig[frontendKey];
-
-    const ignoreTestFilesTimerEnd = Timer.start(
-      `Ignoring test files before running tests for ${frontendKey}`
-    );
     ignoreTestFiles(path.join(directory, frontend.directory));
-    ignoreTestFilesTimerEnd();
   }
+  ignoreTestFilesTimerEnd();
 
   const queue = new PQueue({ concurrency: 2 });
   for (const frontendKey of frontendKeys) {

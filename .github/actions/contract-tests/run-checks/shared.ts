@@ -103,7 +103,12 @@ function getCacheKey({
   const fingerPrint = addFingerPrint
     ? hashFileSync(`${directory}/yarn.lock`)
     : "";
-  return `v4-integration-checks-node-modules-${directory}-${fingerPrint}`;
+
+  const runnerOS = process.env.RUNNER_OS || process.platform;
+  const nodeVersion = process.version;
+  const cacheName = "node-modules-yarn";
+
+  return `v4-${runnerOS}-${cacheName}-${nodeVersion}-${fingerPrint}`;
 }
 
 function getCachePaths(directory: string) {

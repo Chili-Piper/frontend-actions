@@ -102,7 +102,7 @@ function getCacheKey({
   addFingerPrint?: boolean;
 }) {
   const fingerPrint = addFingerPrint
-    ? hashFileSync(`${directory}/yarn.lock`)
+    ? hashFileSync(`${directory}/yarn.lock`, { algorithm: "sha256" })
     : "";
 
   const runnerOS = process.env.RUNNER_OS || process.platform;
@@ -132,6 +132,7 @@ export async function restoreYarnCache(directory: string, repository: string) {
     key,
     restoreKeys: [getCacheKey({ directory })],
     restoreFromRepo: repository,
+    workingDirectory: directory,
   });
   info(`comparing keys ${matchKey} and ${key}`);
   return matchKey === key;

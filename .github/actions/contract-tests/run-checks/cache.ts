@@ -7,4 +7,5 @@ export const restoreCache: (params: {
   key: string;
   restoreKeys: string[];
   restoreFromRepo?: string;
+  workingDirectory?: string;
 }) => string | undefined = restoreFromGCloud;

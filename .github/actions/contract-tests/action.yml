@@ -48,7 +48,9 @@ runs:
         make -C lz4 -j"$(nproc)" lz4
         install -D -m 0755 lz4/programs/lz4 "$HOME/.local/bin/lz4"
         echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-        lz4 -V
+    - name: pzstd
+      shell: bash
+      run: lz4 -V
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@pzstd
       with:

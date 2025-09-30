@@ -39,21 +39,9 @@ export async function createTar(
   const compressionMethod = await getTarCompressionMethod();
   console.log(`🔹 Using '${compressionMethod}' compression method.`);
 
-  const compressionArgs =
-    compressionMethod === CompressionMethod.GZIP
-      ? ["-z"]
-      : ["--use-compress-program", "lz4 -T0"];
-
-  await exec.exec("tar", [
+  await exec.exec("bash", [
     "-c",
-    ...compressionArgs,
-    "--posix",
-    "-P",
-    "-f",
-    archivePath,
-    "-C",
-    cwd,
-    ...paths,
+    `tar -cv -C ${cwd} ${paths.join(" ")} | lz4 - ${archivePath}`,
   ]);
 
   return compressionMethod;
@@ -70,6 +58,6 @@ export async function extractTar(
 
   await exec.exec("bash", [
     "-c",
-    `lz4 -d -c ${archivePath} | tar -xv -C ${cwd} -f -`,
+    `lz4 -d -c ${archivePath} | tar -x -C ${cwd} -f -`,
   ]);
 }

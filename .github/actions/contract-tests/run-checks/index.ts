@@ -447,82 +447,82 @@ async function run() {
     });
     prefetchingMonoRepoTagsTimerEnd();
 
-    const monoRepoFrontends = frontendsKeys.filter(
-      (key) => frontendsConfig[key].repository === monoRepo
-    );
+    // const monoRepoFrontends = frontendsKeys.filter(
+    //   (key) => frontendsConfig[key].repository === monoRepo
+    // );
 
-    const groupedMonoRepoFrontends = groupBy(
-      monoRepoFrontends,
-      (key) => frontendVersions[key] || "master"
-    );
+    // const groupedMonoRepoFrontends = groupBy(
+    //   monoRepoFrontends,
+    //   (key) => frontendVersions[key] || "master"
+    // );
 
-    const groupedMonoRepoFrontendsKeys = Object.keys(
-      groupedMonoRepoFrontends
-    ).sort((a, b) => {
-      // make master go first to reuse the parent repository branch
-      if (a === "master") return -1;
-      if (b === "master") return 1;
-      return 0;
-    });
+    // const groupedMonoRepoFrontendsKeys = Object.keys(
+    //   groupedMonoRepoFrontends
+    // ).sort((a, b) => {
+    //   // make master go first to reuse the parent repository branch
+    //   if (a === "master") return -1;
+    //   if (b === "master") return 1;
+    //   return 0;
+    // });
 
-    for (const frontendVersion of groupedMonoRepoFrontendsKeys) {
-      const sameVersionMonoRepoFrontends =
-        groupedMonoRepoFrontends[frontendVersion];
+    // for (const frontendVersion of groupedMonoRepoFrontendsKeys) {
+    //   const sameVersionMonoRepoFrontends =
+    //     groupedMonoRepoFrontends[frontendVersion];
 
-      info(
-        `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
-      );
-      await prepareMonoRepo({
-        frontendKeys: sameVersionMonoRepoFrontends,
-        frontendVersion:
-          frontendVersion !== "master" ? frontendVersion : undefined,
-        checkoutToken,
-        directory: monoRepoPath,
-        apiClientPath,
-      });
+    //   info(
+    //     `Preparing monorepo for frontends: ${sameVersionMonoRepoFrontends} which are in version ${frontendVersion}`
+    //   );
+    //   await prepareMonoRepo({
+    //     frontendKeys: sameVersionMonoRepoFrontends,
+    //     frontendVersion:
+    //       frontendVersion !== "master" ? frontendVersion : undefined,
+    //     checkoutToken,
+    //     directory: monoRepoPath,
+    //     apiClientPath,
+    //   });
 
-      await runMonoRepoCommands({
-        frontendKeys: sameVersionMonoRepoFrontends,
-        failedFrontends,
-        directory: monoRepoPath,
-      });
-    }
+    //   await runMonoRepoCommands({
+    //     frontendKeys: sameVersionMonoRepoFrontends,
+    //     failedFrontends,
+    //     directory: monoRepoPath,
+    //   });
+    // }
 
-    const otherFrontends = frontendsKeys.filter(
-      (key) => frontendsConfig[key].repository !== monoRepo
-    );
+    // const otherFrontends = frontendsKeys.filter(
+    //   (key) => frontendsConfig[key].repository !== monoRepo
+    // );
 
-    const prepareQueue = new PQueue({ concurrency: 4 });
-    for (const frontendKey of otherFrontends) {
-      prepareQueue.add(async () => {
-        const directory = frontendKey;
-        await prepareNonMonoRepo({
-          frontendKey,
-          frontendVersions,
-          checkoutToken,
-          directory,
-          apiClientPath,
-          backendVersions,
-        });
-      });
-    }
+    // const prepareQueue = new PQueue({ concurrency: 4 });
+    // for (const frontendKey of otherFrontends) {
+    //   prepareQueue.add(async () => {
+    //     const directory = frontendKey;
+    //     await prepareNonMonoRepo({
+    //       frontendKey,
+    //       frontendVersions,
+    //       checkoutToken,
+    //       directory,
+    //       apiClientPath,
+    //       backendVersions,
+    //     });
+    //   });
+    // }
 
-    await prepareQueue.onIdle();
+    // await prepareQueue.onIdle();
 
-    const queue = new PQueue({ concurrency: 2 });
-    for (const frontendKey of otherFrontends) {
-      queue.add(async () => {
-        const directory = frontendKey;
-        await runCommands({
-          frontendKey,
-          frontendVersions,
-          directory,
-          failedFrontends,
-        });
-      });
-    }
+    // const queue = new PQueue({ concurrency: 2 });
+    // for (const frontendKey of otherFrontends) {
+    //   queue.add(async () => {
+    //     const directory = frontendKey;
+    //     await runCommands({
+    //       frontendKey,
+    //       frontendVersions,
+    //       directory,
+    //       failedFrontends,
+    //     });
+    //   });
+    // }
 
-    await queue.onIdle();
+    // await queue.onIdle();
 
     setOutput("failed_frontends", JSON.stringify(Array.from(failedFrontends)));
 

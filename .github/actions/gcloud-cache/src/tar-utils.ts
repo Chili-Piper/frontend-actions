@@ -70,6 +70,6 @@ export async function extractTar(
 
   await exec.exec("bash", [
     "-c",
-    `lz4 -d -c ${archivePath} | tar -xvf  -C ${cwd}`,
+    `lz4 -d -c ${archivePath} | tar -xv -C ${cwd} -f -`,
   ]);
 }

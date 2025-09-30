@@ -48190,7 +48190,7 @@ async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
     await lib_exec.exec("bash", [
         "-c",
-        `lz4 -d -c ${archivePath} | tar -xvf  -C ${cwd}`,
+        `lz4 -d -c ${archivePath} | tar -xv -C ${cwd} -f -`,
     ]);
 }
 

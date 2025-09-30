@@ -62641,6 +62641,7 @@ function getState() {
         bucket: lib_core.getState("bucket"),
         cacheHitKind: lib_core.getState("cache-hit-kind"),
         targetFileName: lib_core.getState("target-file-name"),
+        restoreFromRepo: lib_core.getState("restore-from-repo"),
     };
     lib_core.debug(`Loaded state: ${JSON.stringify(state)}.`);
     return state;

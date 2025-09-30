@@ -24,6 +24,7 @@ export function getState(): State {
     bucket: core.getState("bucket"),
     cacheHitKind: core.getState("cache-hit-kind") as CacheHitKindState,
     targetFileName: core.getState("target-file-name"),
+    restoreFromRepo: core.getState("restore-from-repo"),
   };
 
   core.debug(`Loaded state: ${JSON.stringify(state)}.`);

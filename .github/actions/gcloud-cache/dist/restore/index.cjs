@@ -76938,6 +76938,7 @@ function getState() {
         bucket: core.getState("bucket"),
         cacheHitKind: core.getState("cache-hit-kind"),
         targetFileName: core.getState("target-file-name"),
+        restoreFromRepo: core.getState("restore-from-repo"),
     };
     core.debug(`Loaded state: ${JSON.stringify(state)}.`);
     return state;

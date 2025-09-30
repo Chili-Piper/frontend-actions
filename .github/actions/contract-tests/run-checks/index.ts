@@ -492,17 +492,22 @@ async function run() {
       (key) => frontendsConfig[key].repository !== monoRepo
     );
 
+    const prepareQueue = new PQueue({ concurrency: 4 });
     for (const frontendKey of otherFrontends) {
-      const directory = frontendKey;
-      await prepareNonMonoRepo({
-        frontendKey,
-        frontendVersions,
-        checkoutToken,
-        directory,
-        apiClientPath,
-        backendVersions,
+      prepareQueue.add(async () => {
+        const directory = frontendKey;
+        await prepareNonMonoRepo({
+          frontendKey,
+          frontendVersions,
+          checkoutToken,
+          directory,
+          apiClientPath,
+          backendVersions,
+        });
       });
     }
+
+    await prepareQueue.onIdle();
 
     const queue = new PQueue({ concurrency: 2 });
     for (const frontendKey of otherFrontends) {

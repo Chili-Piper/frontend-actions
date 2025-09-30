@@ -68,21 +68,8 @@ export async function extractTar(
     `🔹 Detected '${compressionMethod}' compression method from object metadata.`
   );
 
-  const args: string[] = [
-    "-x",
-    "--recursive-unlink",
-    "--overwrite",
-    "--strip-components=1",
-  ];
-
-  if (compressionMethod === CompressionMethod.GZIP) {
-    args.push("-z");
-  } else {
-    args.push("--use-compress-program", "lz4 -d -c -T0");
-  }
-
-  args.push("-f", archivePath, "-C", cwd);
-
-  const code = await exec.exec("tar", args);
-  if (code !== 0) throw new Error(`tar exited with code ${code}`);
+  await exec.exec("bash", [
+    "-c",
+    `lz4 -d -c ${archivePath} | tar -xvf  -C ${cwd}`,
+  ]);
 }

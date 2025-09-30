@@ -76603,7 +76603,7 @@ async function createTar(archivePath, paths, cwd) {
 }
 async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
-    const args = ["-x"];
+    const args = ["-x", "--recursive-unlink", "--overwrite"];
     if (compressionMethod === CompressionMethod.GZIP) {
         args.push("-z");
     }

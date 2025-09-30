@@ -85,8 +85,8 @@ runs:
           !**/node_modules/.cache/turbo
           ${{ inputs.checkout_path }}/.yarn/cache
           /home/runner/.cache/Cypress
-        key: v5-beta2-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
-        restore-keys: v5-beta2-${{ runner.os }}-${{ env.cache-name }}-
+        key: v5-beta3-${{ runner.os }}-${{ env.cache-name }}-${{ env.cache-fingerprint }}
+        restore-keys: v5-beta3-${{ runner.os }}-${{ env.cache-name }}-
         restore-from-repo: ${{ inputs.restore_cache_from_repo }}
         working-directory: ${{ inputs.checkout_path }}
 

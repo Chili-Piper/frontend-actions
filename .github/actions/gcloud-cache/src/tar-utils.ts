@@ -41,7 +41,7 @@ export async function createTar(
 
   await exec.exec("bash", [
     "-c",
-    `tar -c -C ${cwd} ${paths.join(" ")} | lz4 -f - ${archivePath}`,
+    `tar -c --hard-dereference -C ${cwd} ${paths.join(" ")} | lz4 -f - ${archivePath}`,
   ]);
 
   return compressionMethod;

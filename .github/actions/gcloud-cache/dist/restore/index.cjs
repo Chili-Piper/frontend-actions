@@ -76980,7 +76980,7 @@ async function createTar(archivePath, paths, cwd) {
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     const compressionArgs = compressionMethod === CompressionMethod.GZIP
         ? ["-z"]
-        : ['--use-compress-program="lz4 -T0"'];
+        : ["--use-compress-program", "lz4 -T0"];
     await exec.exec("tar", [
         "-c",
         ...compressionArgs,
@@ -76996,19 +76996,17 @@ async function createTar(archivePath, paths, cwd) {
 }
 async function extractTar(archivePath, compressionMethod, cwd) {
     console.log(`🔹 Detected '${compressionMethod}' compression method from object metadata.`);
-    const args = ["-x", "--recursive-unlink", "--overwrite"];
+    const args = ["-x"];
     if (compressionMethod === CompressionMethod.GZIP) {
         args.push("-z");
     }
     else {
-        args.push("--use-compress-program", "lz4 -d -T0");
+        args.push("--use-compress-program", "lz4 -d -c -T0");
     }
     args.push("-f", archivePath, "-C", cwd);
-    // args.push('-P');
     const code = await lib_exec.exec("tar", args);
-    if (code !== 0) {
+    if (code !== 0)
         throw new Error(`tar exited with code ${code}`);
-    }
 }
 
 ;// ./src/constants.ts

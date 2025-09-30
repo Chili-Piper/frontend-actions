@@ -77050,9 +77050,7 @@ async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderP
     const exactFileBranch = bucket.file(exactPath);
     const exactFileMaster = bucket.file(`${folderPrefix}/${masterBranch}/${key}.tar`);
     const exactFileMain = bucket.file(`${folderPrefix}/${mainBranch}/${key}.tar`);
-    const exactFilesBranch = restoreFromRepo
-        ? [Promise.resolve([false])]
-        : [exactFileBranch.exists()];
+    const exactFilesBranch = [exactFileBranch.exists()];
     const exactFilesMaster = isPR
         ? [exactFileMaster.exists(), exactFileMain.exists()]
         : [Promise.resolve([false]), Promise.resolve([false])];

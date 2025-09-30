@@ -76980,7 +76980,7 @@ async function createTar(archivePath, paths, cwd) {
     console.log(`🔹 Using '${compressionMethod}' compression method.`);
     await exec.exec("bash", [
         "-c",
-        `tar -cv -C ${cwd} ${paths.join(" ")} | lz4 -f - ${archivePath}`,
+        `tar -c -C ${cwd} ${paths.join(" ")} | lz4 -f - ${archivePath}`,
     ]);
     return compressionMethod;
 }

@@ -40,6 +40,19 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Install lz4
+      shell: bash
+      env: HAVE_MULTITHREAD=1
+        HAVE_PTHREAD=1
+      run: |
+        sudo apt-get update && sudo apt-get install -y build-essential git
+        git clone --depth 1 --branch v1.10.0 https://github.com/lz4/lz4.git
+        make -C lz4 -j"$(nproc)" lz4
+        install -D -m 0755 lz4/programs/lz4 "$HOME/.local/bin/lz4"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+    - name: Log lz4 version
+      shell: bash
+      run: lz4 -V
     - name: Setup
       uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
       with:

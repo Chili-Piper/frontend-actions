@@ -6,19 +6,19 @@ import { saveInternal } from "./save-internal";
 async function main() {
   const state = getState();
 
-  if (state.cacheHitKind === "exact") {
-    console.log(
-      "🌀 Skipping uploading cache as the cache was hit by exact match."
-    );
-    return;
-  }
+  // if (state.cacheHitKind === "exact") {
+  //   console.log(
+  //     "🌀 Skipping uploading cache as the cache was hit by exact match."
+  //   );
+  //   return;
+  // }
 
-  if (state.restoreFromRepo) {
-    console.log(
-      "🌀 Skipping uploading cache as the cache was restored from different repo."
-    );
-    return;
-  }
+  // if (state.restoreFromRepo) {
+  //   console.log(
+  //     "🌀 Skipping uploading cache as the cache was restored from different repo."
+  //   );
+  //   return;
+  // }
 
   return saveInternal({
     path: state.path,

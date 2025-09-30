@@ -68,7 +68,12 @@ export async function extractTar(
     `🔹 Detected '${compressionMethod}' compression method from object metadata.`
   );
 
-  const args: string[] = ["-x"];
+  const args: string[] = [
+    "-x",
+    "--recursive-unlink",
+    "--overwrite",
+    "--strip-components=1",
+  ];
 
   if (compressionMethod === CompressionMethod.GZIP) {
     args.push("-z");

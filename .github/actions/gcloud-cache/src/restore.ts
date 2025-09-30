@@ -219,9 +219,9 @@ export async function restore({
   }
 
   const workingDirectoryRoot = process.env.WORKING_DIRECTORY ?? process.cwd();
-  const workspace = workingDirectory
-    ? `${workingDirectoryRoot}/${workingDirectory}`
-    : workingDirectoryRoot;
+  // const workspace = workingDirectory
+  //   ? `${workingDirectoryRoot}/${workingDirectory}`
+  //   : workingDirectoryRoot;
 
   core.info(
     `gcloud-cache working directory is ${process.env.WORKING_DIRECTORY}`
@@ -246,12 +246,14 @@ export async function restore({
     finishedDownload();
 
     const finishedExtract = Timer.start("Extract cache archive", "🗜️");
-    await extractTar(tmpFile.path, compressionMethod, workspace).catch(
-      (err) => {
-        core.error("Failed to extract the archive");
-        throw err;
-      }
-    );
+    await extractTar(
+      tmpFile.path,
+      compressionMethod,
+      workingDirectoryRoot
+    ).catch((err) => {
+      core.error("Failed to extract the archive");
+      throw err;
+    });
     finishedExtract();
 
     saveState({

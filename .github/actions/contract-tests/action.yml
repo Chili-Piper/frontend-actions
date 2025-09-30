@@ -55,7 +55,7 @@ runs:
       shell: bash
       run: lz4 -V
     - name: Setup
-      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@main
+      uses: Chili-Piper/frontend-actions/.github/actions/frontend-repo-setup@improve-parallel
       with:
         checkout_path: api-client-source
         checkout_repo: Chili-Piper/frontend

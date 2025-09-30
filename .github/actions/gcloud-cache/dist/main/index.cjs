@@ -48235,7 +48235,7 @@ const Timer = {
 
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
-const mockedBranchToForceCacheMiss = "refs/heads/27c74ea5-557d-42c2-bd2e-4fe2762ba6ab";
+const mockedBranchToForceCacheMiss = "refs/heads/d2494d93-1773-4215-a62d-8ed914ca42b9";
 async function getBestMatch({ bucket, key, restoreKeys, restoreFromRepo, folderPrefix, branch, isPR, }) {
     const exactPath = `${folderPrefix}/${branch}/${key}.tar`;
     lib_core.info(`Will lookup for the file ${exactPath}`);

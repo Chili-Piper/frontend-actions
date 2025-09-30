@@ -12,7 +12,7 @@ import { Timer } from "./shared";
 const masterBranch = "refs/heads/master";
 const mainBranch = "refs/heads/main";
 const mockedBranchToForceCacheMiss =
-  "refs/heads/27c74ea5-557d-42c2-bd2e-4fe2762ba6ab";
+  "refs/heads/d2494d93-1773-4215-a62d-8ed914ca42b9";
 
 async function getBestMatch({
   bucket,

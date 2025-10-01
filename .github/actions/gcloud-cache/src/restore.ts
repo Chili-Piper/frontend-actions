@@ -259,6 +259,6 @@ export async function restore({
       restoreFromRepo,
     });
     console.log("✅ Successfully restored cache.");
-    return key;
+    return bestMatchKind === "exact" ? key : undefined;
   });
 }

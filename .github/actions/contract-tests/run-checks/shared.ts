@@ -128,7 +128,7 @@ function getCacheKey({
   const nodeVersion = nvmrcNodeVersion || toolVersionsNodeVersion;
 
   const cacheName = "node-modules-yarn";
-  return `v4-${runnerOS}-${cacheName}-v${nodeVersion}-${fingerPrint}`;
+  return `v1-${runnerOS}-${cacheName}-v${nodeVersion}-${fingerPrint}`;
 }
 
 function getCachePaths(directory: string) {

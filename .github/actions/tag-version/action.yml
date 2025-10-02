@@ -15,6 +15,10 @@ inputs:
   repo_name:
     description: "Repository name"
     required: true
+  bump_strategy:
+    description: "Bump Strategy (major, minor or patch)"
+    required: false
+    default: "patch"
   node_version:
     description: "Node version"
     required: false
@@ -42,7 +46,7 @@ runs:
         git config --global user.email "$GIT_EMAIL"
         git config --global user.name "$GIT_NAME"
         git remote set-url origin https://x-access-token:$GITHUB_PAT@github.com/Chili-Piper/$REPO_NAME
-        npm version patch -m "[skip ci] CPP-0 - Version: %s" --no-commit-hooks;
+        npm version ${BUMP_STRATEGY} -m "[skip ci] CPP-0 - Version: %s" --no-commit-hooks;
         git push && git push origin --tags;
         echo new_tag=$(git describe --tags) >> $GITHUB_OUTPUT
       env:
@@ -50,6 +54,7 @@ runs:
         GIT_NAME: ${{ inputs.git_name }}
         GIT_EMAIL: ${{ inputs.git_email }}
         REPO_NAME: ${{ inputs.repo_name }}
+        BUMP_STRATEGY: ${{ inputs.bump_strategy }}
       shell: bash
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1

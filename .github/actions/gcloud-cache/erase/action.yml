@@ -1,0 +1,16 @@
+name: "Erase Google Cloud Storage Cache"
+author: "MansaGroup"
+description: "Erse your workload cache from Google Cloud Storage bucket"
+
+inputs:
+  branch:
+    description: "Branch to erase cache"
+    required: true
+
+runs:
+  using: "node16"
+  main: "../dist/erase/index.cjs"
+
+branding:
+  icon: "hard-drive"
+  color: "blue"

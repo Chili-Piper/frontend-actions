@@ -7,6 +7,7 @@ export default {
     post: "./src/post.ts",
     restore: "./src/restore.ts",
     save: "./src/save.ts",
+    erase: "./src/erase.ts",
   },
   output: {
     path: path.resolve("dist"),

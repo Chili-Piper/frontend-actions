@@ -60864,18 +60864,11 @@ var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
 (() => {
 "use strict";
-// ESM COMPAT FLAG
-__webpack_require__.r(__webpack_exports__);
 
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  erase: () => (/* binding */ erase)
-});
-
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __webpack_require__(2453);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(6977);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __webpack_require__(2453);
 // EXTERNAL MODULE: ./node_modules/google-auth-library/build/src/index.js
 var src = __webpack_require__(3835);
 // EXTERNAL MODULE: ./node_modules/uuid/dist/esm-node/v4.js
@@ -74802,15 +74795,14 @@ const Timer = {
 
 
 
-async function eraseInternal({ branchPath }) {
+async function eraseInternal({ path }) {
     const bucket = new Storage().bucket(BUCKET);
-    console.log(`🧹 Deleting cache objects under 'gs://${BUCKET}/${branchPath}'...`);
-    console.log(`🧹 Deleting cache objects under 'gs://${BUCKET}/${branchPath}'...`);
+    console.log(`🧹 Deleting cache objects under 'gs://${BUCKET}/${path}'...`);
     const finished = Timer.start("Delete cache objects from bucket", "🗑️");
     try {
         // Deletes all objects with the prefix. `versions: true` ensures complete cleanup if object versioning is on.
         await bucket.deleteFiles({
-            prefix: branchPath,
+            prefix: path,
             force: true,
         });
         finished();
@@ -74818,7 +74810,7 @@ async function eraseInternal({ branchPath }) {
     }
     catch (err) {
         finished();
-        core.error(`Failed to delete objects under prefix '${branchPath}'`);
+        core.error(`Failed to delete objects under prefix '${path}'`);
         throw err;
     }
 }
@@ -74826,11 +74818,17 @@ async function eraseInternal({ branchPath }) {
 ;// ./src/erase.ts
 
 
-async function erase({ branch }) {
+
+async function erase() {
+    const target_ref = core.getInput("target_ref", { required: true });
     const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
-    const branchPath = `${folderPrefix}/${branch}`;
-    return eraseInternal({ branchPath });
+    const path = `${folderPrefix}/${target_ref}`;
+    return eraseInternal({ path });
 }
+void erase().catch((err) => {
+    core.error(err);
+    core.setFailed(err);
+});
 
 })();
 

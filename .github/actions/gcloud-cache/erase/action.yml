@@ -3,8 +3,8 @@ author: "MansaGroup"
 description: "Erse your workload cache from Google Cloud Storage bucket"
 
 inputs:
-  branch:
-    description: "Branch to erase cache"
+  target_ref:
+    description: "target_ref to erase cache"
     required: true
 
 runs:

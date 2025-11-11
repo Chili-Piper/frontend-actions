@@ -1,11 +1,18 @@
+import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 import { eraseInternal } from "./erase-internal";
 
-export async function erase({ branch }: { branch: string }) {
+async function erase() {
+  const target_ref = core.getInput("target_ref", { required: true });
   const folderPrefix = `${github.context.repo.owner}/${github.context.repo.repo}`;
 
-  const branchPath = `${folderPrefix}/${branch}`;
+  const path = `${folderPrefix}/${target_ref}`;
 
-  return eraseInternal({ branchPath });
+  return eraseInternal({ path });
 }
+
+void erase().catch((err: Error) => {
+  core.error(err);
+  core.setFailed(err);
+});

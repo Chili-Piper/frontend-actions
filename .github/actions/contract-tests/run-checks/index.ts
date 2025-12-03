@@ -179,9 +179,10 @@ async function installApiClient({
     // of monorepo. So we cherry-pick only the services that being checked.
     info(`Cherry-picking api-client services ${cherryPickBackends.join(", ")}`);
     cherryPickBackends.forEach((backend) => {
+      const trimmedServiceName = backend.replace("-service", "");
       fs.cpSync(
-        `${apiClientPath}/src/${backend}`,
-        `${directory}/node_modules/@chilipiper/api-client/src/${backend}`,
+        `${apiClientPath}/src/${trimmedServiceName}`,
+        `${directory}/node_modules/@chilipiper/api-client/src/${trimmedServiceName}`,
         {
           recursive: true,
           force: true,

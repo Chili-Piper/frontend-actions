@@ -33,6 +33,8 @@ async function run() {
       fs.cpSync(inputValue, docPath);
 
       info(`Updated OpenApi JSON for ${trimmedServiceName}.json`);
+      const openApiDocContent = fs.readFileSync(inputValue, "utf-8");
+      info(openApiDocContent);
     });
   } catch (error: any) {
     setFailed(error.message);

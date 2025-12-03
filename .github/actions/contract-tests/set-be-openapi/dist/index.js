@@ -30747,6 +30747,8 @@ async function run() {
             const docPath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "docs", `${trimmedServiceName}.json`);
             external_node_fs_default().cpSync(inputValue, docPath);
             (0,core.info)(`Updated OpenApi JSON for ${trimmedServiceName}.json`);
+            const openApiDocContent = external_node_fs_default().readFileSync(inputValue, "utf-8");
+            (0,core.info)(openApiDocContent);
         });
     }
     catch (error) {

@@ -19,20 +19,19 @@ async function run() {
         return;
       }
 
-      const trimmedServiceName = inputService.replace("-service", "");
-      info(`Found OpenApi JSON for ${trimmedServiceName}`);
+      info(`Found OpenApi JSON for ${inputService}`);
 
       const docPath = path.join(
         apiClientSourcePath,
         "frontend-packages",
         "api-client",
         "docs",
-        `${trimmedServiceName}.json`
+        `${inputService}.json`
       );
 
       fs.cpSync(inputValue, docPath);
 
-      info(`Updated OpenApi JSON for ${trimmedServiceName}.json`);
+      info(`Updated OpenApi JSON for ${inputService}.json`);
     });
   } catch (error: any) {
     setFailed(error.message);

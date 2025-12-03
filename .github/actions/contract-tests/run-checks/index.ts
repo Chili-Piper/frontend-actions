@@ -120,7 +120,9 @@ function ignoreTestFiles(directory: string) {
       "**/*.test.tsx",
       "**/*.test.ts",
       "**/*.spec.tsx",
-      "**/*.spec.ts"
+      "**/*.spec.ts",
+      "**/mocks/**/*.ts",
+      "**/mock/**/*.ts"
     );
   });
 }

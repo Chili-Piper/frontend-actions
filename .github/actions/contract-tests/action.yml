@@ -93,23 +93,12 @@ runs:
       with:
         api_client_source_path: api-client-source
         backend: ${{ inputs.backend }}
-    - name: Log docs
-      shell: bash
-      run: |
-        echo "OpenAPI Docs:"
-        cat /home/runner/_work/meeting-types-service/meeting-types-service/api-client-source/frontend-packages/api-client/docs/meeting-types.json
     - name: Build API code
       shell: bash
       working-directory: api-client-source
       env:
         SERVICE: ${{ steps.decide.outputs.backend_name }}
       run: yarn workspace @chilipiper/api-client generate-code
-    - name: Log docs generated
-      shell: bash
-      run: |
-        echo "OpenAPI Docs:"
-        cat /home/runner/_work/meeting-types-service/meeting-types-service/api-client-source/frontend-packages/api-client/src/meeting-types/data-contracts.ts
-
     - name: Get api-client path
       id: get-api-client-path
       working-directory: api-client-source

@@ -1,10 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { info, getInput, setFailed } from "@actions/core";
-import { DefaultArtifactClient } from "@actions/artifact";
 import * as yaml from "js-yaml";
-
-const artifact = new DefaultArtifactClient();
 
 async function run() {
   try {
@@ -15,7 +12,7 @@ async function run() {
       string
     >;
 
-    Object.keys(backendVersions).forEach(async (inputService) => {
+    Object.keys(backendVersions).forEach((inputService) => {
       const inputValue = backendVersions[inputService];
 
       if (!inputValue.startsWith("/")) {
@@ -36,19 +33,6 @@ async function run() {
       fs.cpSync(inputValue, docPath);
 
       info(`Updated OpenApi JSON for ${trimmedServiceName}.json`);
-
-      const artifactName = "debug-logs";
-      const files = [docPath];
-      const options = {};
-
-      const { id, size } = await artifact.uploadArtifact(
-        artifactName,
-        files,
-        ".",
-        options
-      );
-
-      info(`Created artifact with id: ${id} (bytes: ${size}`);
     });
   } catch (error: any) {
     setFailed(error.message);

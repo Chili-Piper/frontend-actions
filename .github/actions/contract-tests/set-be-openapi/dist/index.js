@@ -30742,10 +30742,11 @@ async function run() {
             if (!inputValue.startsWith("/")) {
                 return;
             }
-            (0,core.info)(`Found OpenApi JSON for ${inputService}`);
-            const docPath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "docs", `${inputService}.json`);
+            const trimmedServiceName = inputService.replace("-service", "");
+            (0,core.info)(`Found OpenApi JSON for ${trimmedServiceName}`);
+            const docPath = external_node_path_default().join(apiClientSourcePath, "frontend-packages", "api-client", "docs", `${trimmedServiceName}.json`);
             external_node_fs_default().cpSync(inputValue, docPath);
-            (0,core.info)(`Updated OpenApi JSON for ${inputService}.json`);
+            (0,core.info)(`Updated OpenApi JSON for ${trimmedServiceName}.json`);
         });
     }
     catch (error) {

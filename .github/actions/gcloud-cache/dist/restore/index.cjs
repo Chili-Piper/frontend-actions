@@ -77180,7 +77180,7 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, workingDirecto
         ? `${workingDirectoryRoot}/${workingDirectory}`
         : workingDirectoryRoot;
     lib_core.info(`gcloud-cache working directory is ${process.env.WORKING_DIRECTORY}`);
-    return (0,tmp_promise.withFile)(async (tmpFile) => {
+    return await (0,tmp_promise.withFile)(async (tmpFile) => {
         const finishedDownload = Timer.start("Download cache archive from bucket", "🌐");
         console.log(`🔹 Downloading file '${bestMatch.name}'...`);
         await bestMatch
@@ -77188,9 +77188,14 @@ async function restore({ path, key, restoreKeys, restoreFromRepo, workingDirecto
             destination: tmpFile.path,
         })
             .catch((err) => {
+            console.log(`Error downloading file '${bestMatch.name}'...`);
             lib_core.error("Failed to download the file");
             throw err;
+        })
+            .then(() => {
+            console.log(`✅ Finished downloading file '${bestMatch.name}'...`);
         });
+        console.log(`🔹 Downloaded file '${bestMatch.name}'...`);
         finishedDownload();
         const finishedExtract = Timer.start("Extract cache archive", "🗜️");
         await extractTar(tmpFile.path, compressionMethod, workspace).catch((err) => {

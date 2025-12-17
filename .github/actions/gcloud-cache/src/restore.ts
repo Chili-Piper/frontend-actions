@@ -225,7 +225,7 @@ export async function restore({
     `gcloud-cache working directory is ${process.env.WORKING_DIRECTORY}`
   );
 
-  return withTemporaryFile(async (tmpFile) => {
+  return await withTemporaryFile(async (tmpFile) => {
     const finishedDownload = Timer.start(
       "Download cache archive from bucket",
       "🌐"
@@ -237,9 +237,15 @@ export async function restore({
         destination: tmpFile.path,
       })
       .catch((err) => {
+        console.log(`Error downloading file '${bestMatch.name}'...`);
         core.error("Failed to download the file");
         throw err;
+      })
+      .then(() => {
+        console.log(`✅ Finished downloading file '${bestMatch.name}'...`);
       });
+
+    console.log(`🔹 Downloaded file '${bestMatch.name}'...`);
 
     finishedDownload();
 

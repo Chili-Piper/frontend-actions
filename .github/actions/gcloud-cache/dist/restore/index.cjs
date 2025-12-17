@@ -76935,8 +76935,9 @@ function saveState(state) {
 function getState() {
     console.log("Getting state...");
     console.log(`Path state: ${core.getState("path")}`);
+    const path = core.getState("path");
     const state = {
-        path: JSON.parse(core.getState("path")),
+        path: path ? JSON.parse(core.getState("path")) : [],
         bucket: core.getState("bucket"),
         cacheHitKind: core.getState("cache-hit-kind"),
         targetFileName: core.getState("target-file-name"),

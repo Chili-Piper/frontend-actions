@@ -21,8 +21,9 @@ export function saveState(state: State): void {
 export function getState(): State {
   console.log("Getting state...");
   console.log(`Path state: ${core.getState("path")}`);
+  const path = core.getState("path")
   const state = {
-    path: JSON.parse(core.getState("path")) as string[],
+    path: path ? JSON.parse(core.getState("path")) as string[] : [],
     bucket: core.getState("bucket"),
     cacheHitKind: core.getState("cache-hit-kind") as CacheHitKindState,
     targetFileName: core.getState("target-file-name"),

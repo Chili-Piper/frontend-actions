@@ -76933,6 +76933,8 @@ function saveState(state) {
     lib_core.saveState("restore-from-repo", state.restoreFromRepo);
 }
 function getState() {
+    console.log("Getting state...");
+    console.log(`Path state: ${core.getState("path")}`);
     const state = {
         path: JSON.parse(core.getState("path")),
         bucket: core.getState("bucket"),

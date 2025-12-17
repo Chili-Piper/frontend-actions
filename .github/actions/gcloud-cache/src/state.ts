@@ -19,6 +19,8 @@ export function saveState(state: State): void {
 }
 
 export function getState(): State {
+  console.log("Getting state...");
+  console.log(`Path state: ${core.getState("path")}`);
   const state = {
     path: JSON.parse(core.getState("path")) as string[],
     bucket: core.getState("bucket"),

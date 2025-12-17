@@ -17,7 +17,10 @@ export async function saveInternal({
   path: string[];
   targetFileName: string;
 }) {
+  console.log("Starting saveInternal...");
   const bucket = new Storage().bucket(BUCKET);
+
+  console.log("Checking if file exists...");
 
   const [targetFileExists] = await bucket
     .file(targetFileName)
@@ -37,18 +40,25 @@ export async function saveInternal({
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
   const pattern = path.join("\n");
 
+  console.log("Creating globber...");
   const globber = await glob.create(pattern, {
     implicitDescendants: false,
   });
 
+  console.log("Running globber...");
   const paths = await globber
     .glob()
     .then((files) => files.map((file) => nodePath.relative(workspace, file)));
 
+  console.log("Running withTemporaryFile...");
   return withTemporaryFile(async (tmpFile) => {
     const finishedArchive = Timer.start("Creating cache archive", "🗜️");
 
-    const compressionMethod = await createTar(tmpFile.path, paths, workspace).catch((err) => {
+    const compressionMethod = await createTar(
+      tmpFile.path,
+      paths,
+      workspace
+    ).catch((err) => {
       core.error("Failed to create the archive");
       throw err;
     });

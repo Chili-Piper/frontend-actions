@@ -62636,6 +62636,8 @@ function saveState(state) {
     core.saveState("restore-from-repo", state.restoreFromRepo);
 }
 function getState() {
+    console.log("Getting state...");
+    console.log(`Path state: ${lib_core.getState("path")}`);
     const state = {
         path: JSON.parse(lib_core.getState("path")),
         bucket: lib_core.getState("bucket"),
@@ -76650,7 +76652,9 @@ const Timer = {
 
 
 async function saveInternal({ path, targetFileName, }) {
+    console.log("Starting saveInternal...");
     const bucket = new Storage().bucket(BUCKET);
+    console.log("Checking if file exists...");
     const [targetFileExists] = await bucket
         .file(targetFileName)
         .exists()
@@ -76664,12 +76668,15 @@ async function saveInternal({ path, targetFileName, }) {
     }
     const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
     const pattern = path.join("\n");
+    console.log("Creating globber...");
     const globber = await glob.create(pattern, {
         implicitDescendants: false,
     });
+    console.log("Running globber...");
     const paths = await globber
         .glob()
         .then((files) => files.map((file) => external_node_path_namespaceObject.relative(workspace, file)));
+    console.log("Running withTemporaryFile...");
     return (0,tmp_promise.withFile)(async (tmpFile) => {
         const finishedArchive = Timer.start("Creating cache archive", "🗜️");
         const compressionMethod = await createTar(tmpFile.path, paths, workspace).catch((err) => {

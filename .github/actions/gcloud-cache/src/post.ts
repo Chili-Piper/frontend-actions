@@ -6,6 +6,11 @@ import { saveInternal } from "./save-internal";
 async function main() {
   const state = getState();
 
+  if (!state.path || state.path.length === 0) {
+    console.log("🌀 Skipping uploading cache as no paths were provided.");
+    return;
+  }
+
   if (state.cacheHitKind === "exact") {
     console.log(
       "🌀 Skipping uploading cache as the cache was hit by exact match."
